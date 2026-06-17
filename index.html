@@ -3584,7 +3584,7 @@ function _tierRank(t){ return ({free:0,signal:1,strategic:2,elite:3})[t]||0; }
 // Никогда не понижаем тариф из ответов отдельных эндпоинтов — только повышаем.
 function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)) _clientCaps=_getClientCaps(t); }
 // Авторитетный тариф из сессии — не зависит от того, какой эндпоинт ответил первым.
-async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); } }catch(e){} }
+async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} }catch(_s){} } }catch(e){} }
 try{ _ccEstablishTier(); }catch(e){}
 
 // ── Fetch helpers ──────────────────────────────────────────────────────────
@@ -9792,11 +9792,16 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
     var tier=tierNow(), info=CAB_TIER[tier]||CAB_TIER.free, h='';
     h+='<div class="cab-eyebrow">Atlas Signals</div><h2 class="cab-title">Личный кабинет</h2>';
     if(info.member){
-      h+='<div class="cab-statuscard"><div class="cab-sc-tier"><span class="cab-sc-dot"></span>'+info.full+'</div><div class="cab-sc-sub">Активен · Тариф «Навсегда»</div></div>';
+      var _arc=true,_spx=null; try{_arc=localStorage.getItem('cc_arch_life')!=='0';_spx=localStorage.getItem('cc_sp_exp')||null;}catch(_e){}
+      var _free=(tier==='free');
+      var _dl=_spx?Math.ceil((new Date(_spx)-new Date())/86400000):null;
+      var _dw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'дней';if(k>=2&&k<=4)return 'дня';if(k===1)return 'день';return 'дней';};
+      h+='<div class="cab-statuscard"><div class="cab-sc-tier"><span class="cab-sc-dot"></span>'+info.full+'</div><div class="cab-sc-sub">'+(_free?'Базовый доступ':'Полный доступ активен')+'</div></div>';
       h+='<div class="cab-seclabel">Подписка</div><div class="cab-list">';
-      h+=row('archive','Архив','Активен');
-      h+=row('signal','Signal Pro', tier==='free'?'—':'Активен');
+      h+=row('archive','Архив', _free?'—':'<span style="color:#D4AF5A">∞ Постоянный</span>');
+      h+=row('signal','Signal Pro', _free?'—':(_spx?(_dl>0?'<span style="color:#D4AF5A">Осталось '+_dl+' '+_dw(_dl)+'</span>':'<span style="color:#ef4444">Истёк</span>'):'<span style="color:#27AE60">Активен</span>'));
       h+='</div>';
+      if(!_free&&_spx){var _d2=new Date(_spx);var _MM=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];if(!isNaN(_d2.getTime())){h+='<div style="font-size:10px;color:rgba(203,213,225,.42);margin:8px 2px 0;letter-spacing:.02em">Signal Pro активен до '+_d2.getDate()+' '+_MM[_d2.getMonth()]+' '+_d2.getFullYear()+'</div>';}}
       h+='<div class="cab-seclabel">Аккаунт</div><div class="cab-list">';
       h+=row('profile','Профиль', info.label);
       h+=row('access','Управление доступом','', "cabAccess()");
