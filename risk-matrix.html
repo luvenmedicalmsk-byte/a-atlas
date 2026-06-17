@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Архив · Карта взаимосвязей рисков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#B8973A;--gold-light:#D4AF5A;--gold-dim:rgba(184,151,58,0.22);
+  --bg:#06050A;--bg2:rgba(255,255,255,0.03);--bg3:rgba(255,255,255,0.06);
+  --text:#E8E0D0;--text2:rgba(232,224,208,0.6);--text3:rgba(232,224,208,0.35);
+  --border:rgba(184,151,58,0.15);--border2:rgba(184,151,58,0.3);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;overflow-x:hidden}
+
+/* HEADER */
+#header{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,5,10,0.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+#header-title{font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold-light);font-weight:500}
+#header-right{display:flex;align-items:center;gap:12px}
+#back-btn{
+  font-size:8px;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--text2);padding:5px 10px;
+  border:1px solid var(--gold-dim);border-radius:2px;
+  cursor:pointer;text-decoration:none;transition:all .2s;
+}
+#back-btn:hover{color:var(--gold-light);border-color:var(--gold)}
+#updated{font-size:9px;color:var(--text3);letter-spacing:0.1em}
+
+/* MAIN */
+#main{
+  padding-top:56px;padding-bottom:40px;
+  max-width:900px;margin:0 auto;
+  padding-left:20px;padding-right:20px;
+}
+
+/* INTRO */
+#intro{padding:28px 0 20px}
+#intro h1{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--gold-light);margin-bottom:8px;letter-spacing:0.05em}
+#intro p{font-size:11px;color:var(--text2);line-height:1.7;max-width:520px;letter-spacing:0.03em}
+
+/* TABS */
+#tabs{display:flex;gap:3px;margin-bottom:16px}
+.tab{
+  padding:8px 18px;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;
+  border:1px solid var(--gold-dim);border-radius:2px;cursor:pointer;
+  color:var(--text2);background:transparent;transition:all .2s;font-family:'Montserrat',sans-serif;
+}
+.tab:hover{border-color:var(--gold);color:var(--text)}
+.tab.active{border-color:var(--gold);color:var(--gold-light);background:rgba(184,151,58,0.08)}
+#mode-toggle{display:flex;gap:6px;margin:2px 0 10px}
+.mode-btn{padding:7px 16px;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;border:1px solid var(--gold-dim);border-radius:2px;cursor:pointer;color:var(--text2);background:transparent;transition:all .2s;font-family:'Montserrat',sans-serif}
+.mode-btn:hover{border-color:var(--gold);color:var(--text)}
+.mode-btn.active{border-color:var(--gold);color:var(--gold-light);background:rgba(184,151,58,0.08)}
+
+/* DESC */
+#desc-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;min-height:36px;flex-wrap:wrap;gap:8px;
+}
+#tab-desc{font-size:10px;color:var(--text2);letter-spacing:0.04em;line-height:1.6}
+#risk-count{font-size:9px;color:var(--text3);letter-spacing:0.1em}
+
+/* LEGEND */
+#legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.leg{
+  display:flex;align-items:center;gap:6px;
+  font-size:9px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text2);cursor:pointer;padding:4px 8px;
+  border:1px solid transparent;border-radius:2px;transition:all .2s;
+}
+.leg:hover,.leg.on{border-color:var(--gold-dim);color:var(--text)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* CHART */
+#chart-area{position:relative;margin-bottom:6px}
+#y-axis{
+  position:absolute;left:0;top:0;bottom:28px;width:36px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  align-items:flex-end;padding:4px 6px 4px 0;
+}
+.ytick{font-size:9px;color:var(--text3)}
+#y-label{
+  position:absolute;left:0;top:50%;
+  font-size:8px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;
+  writing-mode:vertical-rl;transform:rotate(180deg) translateY(50%);
+  white-space:nowrap;
+}
+#canvas-wrap{position:relative;margin-left:38px;margin-bottom:28px}
+#cv{
+  width:100%;display:block;cursor:crosshair;
+  border:1px solid var(--border);border-radius:4px;
+}
+#x-axis{display:flex;justify-content:space-between;padding:4px 0 0;margin-left:38px}
+.xtick{font-size:9px;color:var(--text3)}
+#x-label{
+  text-align:center;font-size:8px;color:var(--text3);
+  letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;margin-left:38px;
+}
+
+/* TOOLTIP */
+#tooltip{
+  position:absolute;
+  background:rgba(6,5,10,0.96);
+  border:1px solid var(--gold-dim);
+  border-radius:4px;padding:10px 12px;
+  pointer-events:none;display:none;
+  max-width:200px;z-index:50;
+  backdrop-filter:blur(8px);
+}
+#tt-title{font-size:11px;font-weight:500;color:var(--text);margin-bottom:3px;line-height:1.3}
+#tt-domain{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+#tt-scores{display:flex;gap:12px}
+.tt-s{font-size:10px;color:var(--text2)}
+.tt-v{font-weight:500;color:var(--text)}
+#tt-hint{font-size:9px;color:var(--text3);margin-top:6px;border-top:1px solid var(--border);padding-top:5px}
+
+/* SIDE PANEL */
+#side{
+  position:fixed;right:0;top:56px;bottom:0;width:280px;
+  background:rgba(6,5,10,0.97);border-left:1px solid var(--border);
+  transform:translateX(100%);transition:transform .3s ease;
+  overflow-y:auto;z-index:80;padding:20px;
+}
+#side.open{transform:translateX(0)}
+#side-close{
+  position:absolute;top:14px;right:14px;
+  font-size:16px;color:var(--text3);cursor:pointer;
+  width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);border-radius:2px;
+}
+#side-close:hover{color:var(--text);border-color:var(--gold-dim)}
+#side-domain{font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+#side-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--text);margin-bottom:12px;line-height:1.3}
+#side-scores{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.side-score{
+  padding:6px 10px;border:1px solid var(--gold-dim);border-radius:2px;
+  font-size:9px;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;
+}
+.side-score span{display:block;font-size:16px;font-weight:500;color:var(--gold-light);font-family:'Cormorant Garamond',serif}
+#side-summary{font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+#side-region{font-size:9px;color:var(--text3);letter-spacing:0.08em}
+.side-divider{height:1px;background:var(--border);margin:14px 0}
+#side-links p{font-size:10px;color:var(--text2);line-height:1.6}
+
+/* TOP RISKS LIST */
+#top-risks{margin-top:32px}
+#top-risks h2{
+  font-size:9px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:14px;
+}
+#risks-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;
+}
+.risk-card{
+  padding:12px 14px;border:1px solid var(--border);border-radius:3px;
+  cursor:pointer;transition:all .2s;background:var(--bg2);
+}
+.risk-card:hover{border-color:var(--gold-dim);background:var(--bg3)}
+.rc-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.rc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rc-domain{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
+.rc-title{font-size:11px;color:var(--text);line-height:1.4;margin-bottom:6px}
+.rc-bar-wrap{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-bottom:4px}
+.rc-bar{height:2px;border-radius:1px;background:var(--gold)}
+.rc-sev{font-size:9px;color:var(--text3)}
+
+/* MOBILE */
+@media(max-width:600px){
+  #intro h1{font-size:22px}
+  #tabs{flex-wrap:wrap}
+  .tab{padding:6px 12px;font-size:7px}
+  #side{width:100%;top:auto;bottom:0;height:70vh;transform:translateY(100%)}
+  #side.open{transform:translateY(0)}
+  #risks-grid{grid-template-columns:1fr}
+}
+</style>
+<style>#header{display:none!important}#main{padding-top:10px!important}</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-title">Архив · Карта взаимосвязей рисков</div>
+  <div id="header-right">
+    <span id="updated"></span>
+    
+  </div>
+</div>
+
+<div id="main">
+  <div id="intro">
+    <h1>Карта взаимосвязей рисков</h1>
+    <p>Позиция каждого риска определяется двумя координатами: краткосрочная тяжесть (ось X) и долгосрочная тяжесть (ось Y). Размер точки — авторский индекс риска. Три горизонта: 2 года, 5 лет, 10 лет.</p>
+  </div>
+
+  <div id="mode-toggle">
+    <button class="mode-btn active" data-m="matrix">◆ Матрица</button>
+    <button class="mode-btn" data-m="graph">◆ Граф связей</button>
+  </div>
+
+  <div id="tabs">
+    <button class="tab active" data-h="2y">◆ 2 года</button>
+    <button class="tab" data-h="5y">5 лет</button>
+    <button class="tab" data-h="10y">10 лет</button>
+  </div>
+
+  <div id="desc-bar">
+    <span id="tab-desc"></span>
+    <span id="risk-count"></span>
+  </div>
+
+  <div id="legend">
+    <div class="leg on" data-d="all"><div class="leg-dot" style="background:#888"></div>Все</div>
+    <div class="leg" data-d="geopolitics"><div class="leg-dot" style="background:#ff7a00"></div>Геополитика</div>
+    <div class="leg" data-d="economy"><div class="leg-dot" style="background:#38bdf8"></div>Экономика</div>
+    <div class="leg" data-d="climate"><div class="leg-dot" style="background:#22c55e"></div>Климат</div>
+    <div class="leg" data-d="technology"><div class="leg-dot" style="background:#a855f7"></div>Технологии</div>
+    <div class="leg" data-d="social"><div class="leg-dot" style="background:#ef4444"></div>Социум</div>
+  </div>
+
+  <div id="chart-area">
+    <span id="y-label">Долгосрочная тяжесть</span>
+    <div id="y-axis">
+      <span class="ytick">95</span>
+      <span class="ytick">88</span>
+      <span class="ytick">80</span>
+      <span class="ytick">72</span>
+      <span class="ytick">65</span>
+    </div>
+    <div id="canvas-wrap">
+      <canvas id="cv" role="img" aria-label="Карта взаимосвязей рисков"></canvas>
+      <div id="tooltip">
+        <div id="tt-title"></div>
+        <div id="tt-domain"></div>
+        <div id="tt-scores">
+          <span class="tt-s">Индекс: <span id="tt-sev" class="tt-v"></span></span>
+          <span class="tt-s">Регион: <span id="tt-reg" class="tt-v"></span></span>
+        </div>
+        <div id="tt-hint">Нажмите для подробностей</div>
+      </div>
+    </div>
+    <div id="x-axis">
+      <span class="xtick">65</span><span class="xtick">72</span>
+      <span class="xtick">80</span><span class="xtick">88</span><span class="xtick">95</span>
+    </div>
+    <div id="x-label">Краткосрочная тяжесть →</div>
+  </div>
+
+  <div id="top-risks">
+    <h2>◆ Все риски горизонта</h2>
+    <div id="risks-grid"></div>
+  </div>
+</div>
+
+<div id="rm-cta" style="margin:8px 16px 28px;padding:18px 16px;border:1px solid rgba(184,151,58,0.28);border-radius:10px;background:rgba(184,151,58,0.05);text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF5A;margin-bottom:6px">Проекция риска по странам</div><div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.55;margin:0 auto 14px;max-width:520px">Эта карта — открытый обзор глобальных взаимосвязей рисков. Персональная проекция на 2 и 5 лет по отдельным странам сейчас в разработке: открыты Россия и Турция, остальные страны Атласа добавляем постепенно. Подписчики Signal Pro получают доступ первыми.</div><button id="rm-cta-btn" style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:6px;padding:12px 24px;cursor:pointer">Получить Архив + Signal Pro →</button></div>
+
+<!-- SIDE PANEL -->
+<div id="side">
+  <div id="side-close">✕</div>
+  <div id="side-domain"></div>
+  <div id="side-title"></div>
+  <div id="side-scores">
+    <div class="side-score">Индекс<span id="sd-sev"></span></div>
+    <div class="side-score">Краткосрочный<span id="sd-x"></span></div>
+    <div class="side-score">Долгосрочный<span id="sd-y"></span></div>
+  </div>
+  <div id="side-summary"></div>
+  <div class="side-divider"></div>
+  <div id="side-region"></div>
+</div>
+
+<script>
+const DN={geopolitics:'Геополитика',economy:'Экономика',climate:'Климат',technology:'Технологии',social:'Социум'};
+const DC={geopolitics:'#ff7a00',economy:'#38bdf8',climate:'#22c55e',technology:'#a855f7',social:'#ef4444'};
+
+const DESCS={
+  '2y':'Горизонт 2026–2028 · Доминируют геополитика и экономика · Острая фаза рисков',
+  '5y':'Горизонт 2028–2031 · Переход к структурным рискам · Климат нарастает',
+  '10y':'Горизонт 2031–2036 · Климатические риски выходят на первый план'
+};
+
+const RISKS={
+  '2y':[
+    {t:'Геоэкономическое противостояние',d:'geopolitics',x:92,y:78,sev:92,r:'Глобально',s:'Санкции, тарифы и инвестскрининг стали оружием великих держав. Ведёт к фрагментации мировой торговли.'},
+    {t:'Дезинформация',d:'technology',x:91,y:90,sev:91,r:'Глобально',s:'ИИ-дипфейки и манипуляции подрывают доверие к информации.'},
+    {t:'Социальная поляризация',d:'social',x:90,y:86,sev:90,r:'Глобально',s:'Поляризация общества давит на демократические институты. Нарратив «улицы против элит» растёт.'},
+    {t:'Экстремальные погодные явления',d:'climate',x:90,y:92,sev:90,r:'Глобально',s:'Засухи, наводнения, жара одновременно на нескольких континентах.'},
+    {t:'Вооружённые конфликты между государствами',d:'geopolitics',x:89,y:83,sev:89,r:'Глобально',s:'Межгосударственные конфликты несут риск дальнейшего расширения.'},
+    {t:'Кибербезопасность',d:'technology',x:88,y:86,sev:88,r:'Глобально',s:'Атаки на энергосети, финансы и инфраструктуру учащаются. Государственные группы используют уязвимости.'},
+    {t:'Неравенство',d:'social',x:87,y:87,sev:87,r:'Глобально',s:'Концентрация богатства ускоряется, социальный контракт под вопросом.'},
+    {t:'Эрозия прав человека и свобод',d:'social',x:86,y:80,sev:86,r:'Глобально',s:'Сокращение гражданских свобод и правовой защиты.'},
+    {t:'Загрязнение',d:'climate',x:86,y:85,sev:86,r:'Глобально',s:'Загрязнение воздуха, воды и почв с прямым ущербом здоровью.'},
+    {t:'Вынужденная миграция и перемещение',d:'social',x:85,y:82,sev:85,r:'Глобально',s:'Конфликты и климат вытесняют миллионы людей.'},
+    {t:'Экономический спад',d:'economy',x:84,y:74,sev:84,r:'Глобально',s:'Высокий долг и дорогое обслуживание повышают риск рецессии.'},
+    {t:'Онлайн-вред',d:'technology',x:83,y:78,sev:83,r:'Глобально',s:'Вред от цифровых платформ: зависимость, травля, манипуляции.'},
+    {t:'Безработица и нехватка экон. возможностей',d:'social',x:82,y:82,sev:82,r:'Глобально',s:'Сокращение рабочих мест и возможностей, в т.ч. из-за автоматизации.'},
+    {t:'Цензура и слежка',d:'technology',x:82,y:81,sev:82,r:'Глобально',s:'Государственный контроль информации и массовое наблюдение.'},
+    {t:'Концентрация стратег. ресурсов и технологий',d:'economy',x:81,y:84,sev:81,r:'Глобально',s:'Борьба за контроль над чипами, минералами и критическими технологиями.'},
+    {t:'Долговая нагрузка',d:'economy',x:80,y:79,sev:80,r:'Глобально',s:'Глобальный долг у исторических максимумов; рефинансирование при высоких ставках.'},
+    {t:'Нехватка природных ресурсов',d:'climate',x:79,y:88,sev:79,r:'Глобально',s:'Истощение воды, почв и сырья.'},
+    {t:'Схлопывание пузырей активов',d:'economy',x:78,y:71,sev:78,r:'Глобально',s:'Перегрев рынков (ИИ, недвижимость) грозит резкой коррекцией.'},
+    {t:'Сбои цепочек поставок',d:'economy',x:78,y:72,sev:78,r:'Глобально',s:'Нарушения системно значимых логистических цепочек.'},
+    {t:'Недостаток инфраструктуры и соцзащиты',d:'social',x:77,y:76,sev:77,r:'Глобально',s:'Нехватка публичной инфраструктуры и социальной защиты.'},
+    {t:'Инфляция',d:'economy',x:76,y:68,sev:76,r:'Глобально',s:'Рост цен на фоне геоэкономической напряжённости.'},
+    {t:'Сбои критической инфраструктуры',d:'economy',x:75,y:74,sev:75,r:'Глобально',s:'Отказы энергетики, связи, водоснабжения.'},
+    {t:'Преступность и теневая экономика',d:'economy',x:74,y:70,sev:74,r:'Глобально',s:'Рост организованной и нелегальной экономической активности.'}
+  ],
+  '5y':[
+    {t:'Экстремальные погодные явления',d:'climate',x:90,y:92,sev:91,r:'Глобально',s:'Засухи, наводнения, жара одновременно на нескольких континентах.'},
+    {t:'Дезинформация',d:'technology',x:91,y:90,sev:90,r:'Глобально',s:'ИИ-дипфейки и манипуляции подрывают доверие к информации.'},
+    {t:'Социальная поляризация',d:'social',x:90,y:86,sev:88,r:'Глобально',s:'Поляризация общества давит на демократические институты. Нарратив «улицы против элит» растёт.'},
+    {t:'Кибербезопасность',d:'technology',x:88,y:86,sev:87,r:'Глобально',s:'Атаки на энергосети, финансы и инфраструктуру учащаются. Государственные группы используют уязвимости.'},
+    {t:'Неравенство',d:'social',x:87,y:87,sev:87,r:'Глобально',s:'Концентрация богатства ускоряется, социальный контракт под вопросом.'},
+    {t:'Вооружённые конфликты между государствами',d:'geopolitics',x:89,y:83,sev:86,r:'Глобально',s:'Межгосударственные конфликты несут риск дальнейшего расширения.'},
+    {t:'Загрязнение',d:'climate',x:86,y:85,sev:86,r:'Глобально',s:'Загрязнение воздуха, воды и почв с прямым ущербом здоровью.'},
+    {t:'Геоэкономическое противостояние',d:'geopolitics',x:92,y:78,sev:85,r:'Глобально',s:'Санкции, тарифы и инвестскрининг стали оружием великих держав. Ведёт к фрагментации мировой торговли.'},
+    {t:'Вынужденная миграция и перемещение',d:'social',x:85,y:82,sev:84,r:'Глобально',s:'Конфликты и климат вытесняют миллионы людей.'},
+    {t:'Нехватка природных ресурсов',d:'climate',x:79,y:88,sev:84,r:'Глобально',s:'Истощение воды, почв и сырья.'},
+    {t:'Эрозия прав человека и свобод',d:'social',x:86,y:80,sev:83,r:'Глобально',s:'Сокращение гражданских свобод и правовой защиты.'},
+    {t:'Концентрация стратег. ресурсов и технологий',d:'economy',x:81,y:84,sev:82,r:'Глобально',s:'Борьба за контроль над чипами, минералами и критическими технологиями.'},
+    {t:'Безработица и нехватка экон. возможностей',d:'social',x:82,y:82,sev:82,r:'Глобально',s:'Сокращение рабочих мест и возможностей, в т.ч. из-за автоматизации.'},
+    {t:'Критические изменения систем Земли',d:'climate',x:74,y:90,sev:82,r:'Глобально',s:'Приближение к необратимым порогам климатической системы.'},
+    {t:'Потеря биоразнообразия',d:'climate',x:72,y:91,sev:82,r:'Глобально',s:'Коллапс экосистем и утрата видов.'},
+    {t:'Цензура и слежка',d:'technology',x:82,y:81,sev:82,r:'Глобально',s:'Государственный контроль информации и массовое наблюдение.'},
+    {t:'Онлайн-вред',d:'technology',x:83,y:78,sev:80,r:'Глобально',s:'Вред от цифровых платформ: зависимость, травля, манипуляции.'},
+    {t:'Долговая нагрузка',d:'economy',x:80,y:79,sev:80,r:'Глобально',s:'Глобальный долг у исторических максимумов; рефинансирование при высоких ставках.'},
+    {t:'Экономический спад',d:'economy',x:84,y:74,sev:79,r:'Глобально',s:'Высокий долг и дорогое обслуживание повышают риск рецессии.'},
+    {t:'Неблагоприятные исходы ИИ',d:'technology',x:69,y:89,sev:79,r:'Глобально',s:'ИИ-системы в критических сферах действуют непредсказуемо; утрата контроля.'},
+    {t:'Недостаток инфраструктуры и соцзащиты',d:'social',x:77,y:76,sev:76,r:'Глобально',s:'Нехватка публичной инфраструктуры и социальной защиты.'},
+    {t:'Схлопывание пузырей активов',d:'economy',x:78,y:71,sev:74,r:'Глобально',s:'Перегрев рынков (ИИ, недвижимость) грозит резкой коррекцией.'},
+    {t:'Сбои цепочек поставок',d:'economy',x:78,y:72,sev:75,r:'Глобально',s:'Нарушения системно значимых логистических цепочек.'},
+    {t:'Сбои критической инфраструктуры',d:'economy',x:75,y:74,sev:74,r:'Глобально',s:'Отказы энергетики, связи, водоснабжения.'}
+  ],
+  '10y':[
+    {t:'Экстремальные погодные явления',d:'climate',x:90,y:92,sev:92,r:'Глобально',s:'Засухи, наводнения, жара одновременно на нескольких континентах.'},
+    {t:'Потеря биоразнообразия',d:'climate',x:72,y:91,sev:91,r:'Глобально',s:'Коллапс экосистем и утрата видов.'},
+    {t:'Критические изменения систем Земли',d:'climate',x:74,y:90,sev:90,r:'Глобально',s:'Приближение к необратимым порогам климатической системы.'},
+    {t:'Дезинформация',d:'technology',x:91,y:90,sev:90,r:'Глобально',s:'ИИ-дипфейки и манипуляции подрывают доверие к информации.'},
+    {t:'Неблагоприятные исходы ИИ',d:'technology',x:69,y:89,sev:89,r:'Глобально',s:'ИИ-системы в критических сферах действуют непредсказуемо; утрата контроля.'},
+    {t:'Нехватка природных ресурсов',d:'climate',x:79,y:88,sev:88,r:'Глобально',s:'Истощение воды, почв и сырья.'},
+    {t:'Неравенство',d:'social',x:87,y:87,sev:87,r:'Глобально',s:'Концентрация богатства ускоряется, социальный контракт под вопросом.'},
+    {t:'Кибербезопасность',d:'technology',x:88,y:86,sev:86,r:'Глобально',s:'Атаки на энергосети, финансы и инфраструктуру учащаются. Государственные группы используют уязвимости.'},
+    {t:'Социальная поляризация',d:'social',x:90,y:86,sev:86,r:'Глобально',s:'Поляризация общества давит на демократические институты. Нарратив «улицы против элит» растёт.'},
+    {t:'Загрязнение',d:'climate',x:86,y:85,sev:85,r:'Глобально',s:'Загрязнение воздуха, воды и почв с прямым ущербом здоровью.'},
+    {t:'Концентрация стратег. ресурсов и технологий',d:'economy',x:81,y:84,sev:84,r:'Глобально',s:'Борьба за контроль над чипами, минералами и критическими технологиями.'},
+    {t:'Вооружённые конфликты между государствами',d:'geopolitics',x:89,y:83,sev:83,r:'Глобально',s:'Межгосударственные конфликты несут риск дальнейшего расширения.'},
+    {t:'Вынужденная миграция и перемещение',d:'social',x:85,y:82,sev:82,r:'Глобально',s:'Конфликты и климат вытесняют миллионы людей.'},
+    {t:'Безработица и нехватка экон. возможностей',d:'social',x:82,y:82,sev:82,r:'Глобально',s:'Сокращение рабочих мест и возможностей, в т.ч. из-за автоматизации.'},
+    {t:'Цензура и слежка',d:'technology',x:82,y:81,sev:81,r:'Глобально',s:'Государственный контроль информации и массовое наблюдение.'},
+    {t:'Эрозия прав человека и свобод',d:'social',x:86,y:80,sev:80,r:'Глобально',s:'Сокращение гражданских свобод и правовой защиты.'},
+    {t:'Долговая нагрузка',d:'economy',x:80,y:79,sev:79,r:'Глобально',s:'Глобальный долг у исторических максимумов; рефинансирование при высоких ставках.'},
+    {t:'Онлайн-вред',d:'technology',x:83,y:78,sev:78,r:'Глобально',s:'Вред от цифровых платформ: зависимость, травля, манипуляции.'},
+    {t:'Геоэкономическое противостояние',d:'geopolitics',x:92,y:78,sev:78,r:'Глобально',s:'Санкции, тарифы и инвестскрининг стали оружием великих держав. Ведёт к фрагментации мировой торговли.'},
+    {t:'Био-, хим- и ядерные угрозы',d:'geopolitics',x:70,y:77,sev:77,r:'Глобально',s:'Риск применения оружия массового поражения и опасных веществ.'},
+    {t:'Недостаток инфраструктуры и соцзащиты',d:'social',x:77,y:76,sev:76,r:'Глобально',s:'Нехватка публичной инфраструктуры и социальной защиты.'},
+    {t:'Инфекционные заболевания',d:'social',x:71,y:75,sev:75,r:'Глобально',s:'Риск новых вспышек и пандемий.'},
+    {t:'Сбои критической инфраструктуры',d:'economy',x:75,y:74,sev:74,r:'Глобально',s:'Отказы энергетики, связи, водоснабжения.'}
+  ]
+};
+
+let curH='2y', curD='all', pts=[], W, H;
+const MIN=63, MAX=97;
+const cv=document.getElementById('cv');
+const tt=document.getElementById('tooltip');
+
+function px(v){return((v-MIN)/(MAX-MIN))*W;}
+function py(v){return H-((v-MIN)/(MAX-MIN))*H;}
+
+function draw(){
+  const dpr=window.devicePixelRatio||1;
+  const rect=cv.getBoundingClientRect();
+  W=rect.width; H=Math.round(W*0.68);
+  cv.width=W*dpr; cv.height=H*dpr;
+  cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  // Зоны
+  ctx.fillStyle='rgba(255,122,0,0.06)';
+  ctx.fillRect(px(84),0,W-px(84),py(84));
+  ctx.fillStyle='rgba(34,197,94,0.05)';
+  ctx.fillRect(0,0,px(76),py(88));
+
+  // Сетка
+  ctx.strokeStyle='rgba(184,151,58,0.08)';
+  ctx.lineWidth=0.5;
+  [68,72,76,80,84,88,92,96].forEach(v=>{
+    ctx.beginPath();ctx.moveTo(px(v),0);ctx.lineTo(px(v),H);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,py(v));ctx.lineTo(W,py(v));ctx.stroke();
+  });
+
+  // Диагональ
+  ctx.strokeStyle='rgba(184,151,58,0.12)';
+  ctx.setLineDash([4,5]);
+  ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(W,0);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Метки зон
+  ctx.font='9px Montserrat,sans-serif';
+  ctx.fillStyle='rgba(255,122,0,0.45)';
+  ctx.fillText('Нарастающие риски',px(85)+4,13);
+  ctx.fillStyle='rgba(34,197,94,0.45)';
+  ctx.fillText('Долгосрочные',4,py(89)-4);
+
+  pts=[];
+  (RISKS[curH]||[]).forEach(r=>{
+    const active=curD==='all'||r.d===curD;
+    const x=px(r.x),y=py(r.y);
+    const rad=5+(r.sev-65)/32*9;
+    ctx.globalAlpha=active?1:0.12;
+    ctx.beginPath();ctx.arc(x,y,rad,0,Math.PI*2);
+    ctx.fillStyle=DC[r.d];ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.2)';
+    ctx.lineWidth=0.5;ctx.stroke();
+    ctx.globalAlpha=1;
+    pts.push({x,y,r:rad,risk:r});
+  });
+}
+
+function nearest(mx,my){
+  let best=null,bd=999;
+  pts.forEach(p=>{const d=Math.hypot(p.x-mx,p.y-my);if(d<bd&&d<p.r+18){bd=d;best=p;}});
+  return best;
+}
+
+cv.addEventListener('mousemove',e=>{
+  if(mode==='graph'&&_drag)return;
+  const rc=cv.getBoundingClientRect();
+  const mx=e.clientX-rc.left,my=e.clientY-rc.top;
+  const h=nearest(mx,my);
+  if(h){
+    tt.style.display='block';
+    document.getElementById('tt-title').textContent=h.risk.t;
+    document.getElementById('tt-domain').textContent=DN[h.risk.d];
+    document.getElementById('tt-sev').textContent=h.risk.sev;
+    document.getElementById('tt-reg').textContent=h.risk.r;
+    let tx=mx+14,ty=my-10;
+    if(tx+205>W)tx=mx-210;
+    if(ty<0)ty=2;
+    tt.style.left=tx+'px';tt.style.top=ty+'px';
+  } else tt.style.display='none';
+});
+cv.addEventListener('mouseleave',()=>tt.style.display='none');
+
+/* ── Перетаскивание узлов графа (центр «Неравенство» статичен) ── */
+function _evPos(e){var rc=cv.getBoundingClientRect();var t=(e.touches&&e.touches[0])||e;return{x:t.clientX-rc.left,y:t.clientY-rc.top};}
+function _grab(p){var h=nearest(p.x,p.y);if(h&&h.node&&h.node.id!=='ineq'){_drag=h.node;_dragMoved=false;}else _drag=null;}
+function _move(p){if(!_drag)return;_drag.nx=Math.max(10,Math.min(W-10,p.x));_drag.ny=Math.max(10,Math.min(H-10,p.y));_dragMoved=true;drawNetwork();}
+cv.addEventListener('mousedown',function(e){if(mode!=='graph')return;_grab(_evPos(e));});
+cv.addEventListener('mousemove',function(e){if(mode==='graph'&&_drag){_move(_evPos(e));}});
+window.addEventListener('mouseup',function(){_drag=null;});
+cv.addEventListener('touchstart',function(e){if(mode!=='graph')return;_grab(_evPos(e));},{passive:true});
+cv.addEventListener('touchmove',function(e){if(mode!=='graph'||!_drag)return;e.preventDefault();_move(_evPos(e));},{passive:false});
+cv.addEventListener('touchend',function(){setTimeout(function(){_drag=null;},0);});
+
+cv.addEventListener('click',e=>{
+  if(_dragMoved){_dragMoved=false;return;}
+  const rc=cv.getBoundingClientRect();
+  const h=nearest(e.clientX-rc.left,e.clientY-rc.top);
+  if(h)openSide(h.risk);
+});
+
+function openSide(r){
+  document.getElementById('side-domain').textContent=DN[r.d];
+  document.getElementById('side-title').textContent=r.t;
+  document.getElementById('sd-sev').textContent=r.sev;
+  document.getElementById('sd-x').textContent=r.x;
+  document.getElementById('sd-y').textContent=r.y;
+  document.getElementById('side-summary').textContent=r.s||'';
+  document.getElementById('side-region').textContent='Регион: '+r.r;
+  document.getElementById('side').classList.add('open');
+  document.getElementById('side-domain').style.color=DC[r.d];
+}
+
+document.getElementById('side-close').addEventListener('click',()=>{
+  document.getElementById('side').classList.remove('open');
+});
+
+document.querySelectorAll('.tab').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    curH=el.dataset.h;
+    document.getElementById('tab-desc').textContent=DESCS[curH];
+    document.getElementById('risk-count').textContent=(RISKS[curH]||[]).length+' рисков';
+    render(); renderGrid();
+  });
+});
+
+document.querySelectorAll('.leg').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.leg').forEach(l=>l.classList.remove('on'));
+    el.classList.add('on');
+    curD=el.dataset.d;
+    render(); renderGrid();
+  });
+});
+
+function renderGrid(){
+  const grid=document.getElementById('risks-grid');
+  grid.innerHTML='';
+  const list=(RISKS[curH]||[])
+    .filter(r=>curD==='all'||r.d===curD)
+    .sort((a,b)=>b.sev-a.sev);
+  list.forEach(r=>{
+    const card=document.createElement('div');
+    card.className='risk-card';
+    card.innerHTML=`
+      <div class="rc-top">
+        <div class="rc-dot" style="background:${DC[r.d]}"></div>
+        <span class="rc-domain">${DN[r.d]}</span>
+      </div>
+      <div class="rc-title">${r.t}</div>
+      <div class="rc-bar-wrap"><div class="rc-bar" style="width:${r.sev}%"></div></div>
+      <div class="rc-sev">Индекс: ${r.sev} · ${r.r}</div>`;
+    card.addEventListener('click',()=>openSide(r));
+    grid.appendChild(card);
+  });
+}
+
+/* Граф взаимосвязей рисков (Figure 6) — Неравенство в центре, остальные по кругу секторами категорий. */
+var mode='matrix';
+var _netLaid=false,_netW=0,_drag=null,_dragMoved=false;
+/* nxr,nyr — нормированные координаты (0..1) по образцу WEF Figure 6; lab — короткая подпись */
+var NET_NODES=[
+ {id:'ineq',t:'Неравенство',lab:'Неравенство',d:'social',inf:100,nxr:0.48,nyr:0.49,s:'Самый взаимосвязанный глобальный риск (2 года подряд). Центр, через который сцепляются почти все остальные.'},
+ {id:'downturn',t:'Экономический спад',lab:'Экономический спад',d:'economy',inf:82,nxr:0.44,nyr:0.42,s:'Рецессия усиливает долг, безработицу и социальное напряжение.'},
+ {id:'health',t:'Спад здоровья и благополучия',lab:'Здоровье',d:'social',inf:80,nxr:0.29,nyr:0.42,s:'Связан с неравенством, загрязнением, климатом и инфекциями.'},
+ {id:'polar',t:'Социальная поляризация',lab:'Поляризация',d:'social',inf:78,nxr:0.52,nyr:0.59,s:'Питается дезинформацией и неравенством; ведёт к насилию.'},
+ {id:'geoecon',t:'Геоэкономическое противостояние',lab:'Геоэкономика',d:'geopolitics',inf:76,nxr:0.57,nyr:0.42,s:'Санкции и тарифы рвут цепочки поставок, разгоняют инфляцию.'},
+ {id:'misinfo',t:'Дезинформация',lab:'Дезинформация',d:'technology',inf:74,nxr:0.73,nyr:0.34,s:'Усиливает поляризацию, переплетается с кибер-рисками и ИИ.'},
+ {id:'migration',t:'Вынужденная миграция',lab:'Миграция',d:'social',inf:68,nxr:0.40,nyr:0.34,s:'Следствие конфликтов и климата; обостряет неравенство.'},
+ {id:'weather',t:'Экстремальные погодные явления',lab:'Экстремальная погода',d:'climate',inf:66,nxr:0.36,nyr:0.22,s:'Корень климатического кластера: биоразнообразие, ресурсы, миграция.'},
+ {id:'cyber',t:'Кибербезопасность',lab:'Кибербезопасность',d:'technology',inf:64,nxr:0.89,nyr:0.35,s:'Бьёт по критической инфраструктуре и цепочкам поставок.'},
+ {id:'rights',t:'Эрозия прав человека',lab:'Права человека',d:'social',inf:62,nxr:0.64,nyr:0.53,s:'Связана с цензурой, поляризацией и насилием.'},
+ {id:'conflict',t:'Вооружённые конфликты',lab:'Вооружённые конфликты',d:'geopolitics',inf:60,nxr:0.74,nyr:0.14,s:'Драйвер миграции и угрозы ОМП.'},
+ {id:'infra',t:'Недостаток инфраструктуры и соцзащиты',lab:'Социальная защита',d:'social',inf:60,nxr:0.35,nyr:0.49,s:'Усиливает неравенство и спад здоровья.'},
+ {id:'ai',t:'Неблагоприятные исходы ИИ',lab:'Исходы ИИ',d:'technology',inf:58,nxr:0.89,nyr:0.44,s:'Связан с дезинформацией, кибер-рисками и безработицей.'},
+ {id:'unemploy',t:'Безработица и нехватка возможностей',lab:'Безработица',d:'social',inf:58,nxr:0.43,nyr:0.66,s:'Сцеплена с неравенством, спадом и автоматизацией.'},
+ {id:'concentr',t:'Концентрация стратег. ресурсов',lab:'Концентрация ресурсов',d:'economy',inf:56,nxr:0.56,nyr:0.29,s:'Контроль над минералами и технологиями как рычаг давления.'},
+ {id:'critinfra',t:'Сбои критической инфраструктуры',lab:'Критическая инфраструктура',d:'economy',inf:56,nxr:0.53,nyr:0.21,s:'На пересечении кибер-рисков, поставок и погоды.'},
+ {id:'biodiv',t:'Потеря биоразнообразия',lab:'Биоразнообразие',d:'climate',inf:56,nxr:0.28,nyr:0.10,s:'Тесно связана с экстремальной погодой и системами Земли.'},
+ {id:'earth',t:'Критические изменения систем Земли',lab:'Системы Земли',d:'climate',inf:54,nxr:0.46,nyr:0.07,s:'Необратимые пороги; усиливают погодные явления.'},
+ {id:'supply',t:'Сбои цепочек поставок',lab:'Цепочки поставок',d:'economy',inf:54,nxr:0.55,nyr:0.34,s:'Узел между геоэкономикой, инфляцией и кибер-рисками.'},
+ {id:'resources',t:'Нехватка природных ресурсов',lab:'Нехватка ресурсов',d:'climate',inf:52,nxr:0.25,nyr:0.33,s:'Вода и продовольствие; источник конфликтов и миграции.'},
+ {id:'debt',t:'Долговая нагрузка',lab:'Долг',d:'economy',inf:52,nxr:0.24,nyr:0.60,s:'Связана со спадом и инфляцией.'},
+ {id:'disease',t:'Инфекционные заболевания',lab:'Инфекции',d:'social',inf:50,nxr:0.10,nyr:0.41,s:'Сцеплены со здоровьем, миграцией и климатом.'},
+ {id:'inflation',t:'Инфляция',lab:'Инфляция',d:'economy',inf:50,nxr:0.28,nyr:0.66,s:'Разгоняется геоэкономикой и сбоями поставок.'},
+ {id:'bubble',t:'Схлопывание пузырей активов',lab:'Пузыри активов',d:'economy',inf:48,nxr:0.33,nyr:0.57,s:'Связано со спадом и долгом.'},
+ {id:'pollution',t:'Загрязнение',lab:'Загрязнение',d:'climate',inf:48,nxr:0.11,nyr:0.33,s:'Влияет на здоровье и экосистемы.'},
+ {id:'online',t:'Онлайн-вред',lab:'Онлайн-вред',d:'technology',inf:46,nxr:0.80,nyr:0.53,s:'Переплетается с дезинформацией и ИИ.'},
+ {id:'intraviol',t:'Внутригосударственное насилие',lab:'Внутреннее насилие',d:'geopolitics',inf:46,nxr:0.70,nyr:0.45,s:'Следствие поляризации и эрозии прав.'},
+ {id:'crime',t:'Преступность и теневая экономика',lab:'Преступность',d:'economy',inf:44,nxr:0.58,nyr:0.66,s:'Связана с неравенством и насилием.'},
+ {id:'censor',t:'Цензура и слежка',lab:'Цензура и слежка',d:'technology',inf:44,nxr:0.73,nyr:0.61,s:'Сцеплена с правами человека и дезинформацией.'},
+ {id:'cbrn',t:'Био-, хим- и ядерные угрозы',lab:'Био- и ядерные угрозы',d:'geopolitics',inf:42,nxr:0.62,nyr:0.08,s:'Связаны с вооружёнными конфликтами.'},
+ {id:'talent',t:'Дефицит кадров и труда',lab:'Дефицит кадров',d:'economy',inf:40,nxr:0.13,nyr:0.47,s:'Связан с безработицей и спадом.'},
+ {id:'frontier',t:'Передовые технологии',lab:'Передовые технологии',d:'technology',inf:40,nxr:0.83,nyr:0.23,s:'Квантовые и био-технологии; смыкаются с ИИ.'},
+ {id:'disasters',t:'Стихийные бедствия (непогодные)',lab:'Стихийные бедствия',d:'climate',inf:38,nxr:0.17,nyr:0.20,s:'Землетрясения, вулканы; бьют по инфраструктуре.'}
+];
+var NET_EDGES=[
+ ['ineq','polar',3],['ineq','unemploy',3],['ineq','downturn',2],['ineq','rights',2],['ineq','health',2],
+ ['ineq','migration',2],['ineq','infra',2],['ineq','crime',1],['ineq','disease',1],
+ ['polar','misinfo',3],['polar','rights',2],['polar','censor',2],['polar','intraviol',2],
+ ['misinfo','cyber',2],['misinfo','online',2],['misinfo','ai',2],['misinfo','censor',2],
+ ['geoecon','supply',3],['geoecon','inflation',2],['geoecon','concentr',2],['geoecon','conflict',2],['geoecon','downturn',2],
+ ['downturn','debt',2],['downturn','inflation',2],['downturn','bubble',2],['downturn','unemploy',2],['downturn','talent',1],
+ ['weather','biodiv',3],['weather','earth',3],['weather','resources',2],['weather','pollution',2],['weather','migration',2],['weather','disease',1],['weather','disasters',1],
+ ['biodiv','earth',2],['biodiv','resources',2],
+ ['cyber','critinfra',3],['cyber','supply',1],['cyber','ai',2],
+ ['ai','frontier',2],['ai','unemploy',2],['ai','online',1],
+ ['conflict','cbrn',2],['conflict','migration',2],['conflict','intraviol',2],
+ ['migration','disease',1],['migration','rights',1],
+ ['health','disease',2],['health','pollution',1],
+ ['supply','critinfra',2],['supply','inflation',1],
+ ['concentr','supply',1],['concentr','ai',1],
+ ['rights','censor',2],['rights','intraviol',1],
+ ['unemploy','talent',1],['infra','health',1],['inflation','debt',1],
+ ['resources','conflict',1],['crime','intraviol',1],['pollution','disease',1],
+ ['bubble','debt',1],['disasters','critinfra',1]
+];
+function layoutNet(){
+  /* круговая раскладка — Неравенство в центре, остальные радиально по секторам категорий */
+  var cx=W/2, cy=H/2, Rring=Math.min(W,H)*0.33;
+  var order=['climate','geopolitics','technology','social','economy'];
+  var groups={}; order.forEach(function(c){groups[c]=[];});
+  NET_NODES.forEach(function(n){ if(n.id!=='ineq' && groups[n.d]) groups[n.d].push(n); });
+  order.forEach(function(c){ groups[c].sort(function(a,b){return b.inf-a.inf;}); });
+  var seq=[]; order.forEach(function(c){ seq=seq.concat(groups[c]); });
+  var N=seq.length;
+  seq.forEach(function(n,i){
+    var ang=-Math.PI/2 + (i/N)*Math.PI*2;
+    var rf=0.60 + (1-(n.inf-38)/(100-38))*0.42; if(rf>1)rf=1;
+    n.nx=cx+Math.cos(ang)*Rring*rf;
+    n.ny=cy+Math.sin(ang)*Rring*rf;
+  });
+  var iq=NET_NODES.filter(function(n){return n.id==='ineq';})[0];
+  if(iq){ iq.nx=cx; iq.ny=cy; }
+}
+function drawNetwork(){
+  var dpr=window.devicePixelRatio||1;
+  var rect=cv.getBoundingClientRect();
+  W=rect.width; H=Math.round(W*1.04);
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
+  var ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
+  /* круглая подложка — золотистый тон + рамка (как нижний блок), чтобы граф выделялся */
+  var cx=W/2, cy=H/2, Rbg=Math.min(W,H)*0.46;
+  var g=ctx.createRadialGradient(cx,cy,Rbg*0.2,cx,cy,Rbg);
+  g.addColorStop(0,'rgba(184,151,58,0.07)'); g.addColorStop(1,'rgba(184,151,58,0.025)');
+  ctx.beginPath(); ctx.arc(cx,cy,Rbg,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+  if(!_netLaid||_netW!==W){ layoutNet(); _netLaid=true; _netW=W; }
+  var idx={}; NET_NODES.forEach(function(n){idx[n.id]=n;});
+  NET_EDGES.forEach(function(e){
+    var a=idx[e[0]], b=idx[e[1]]; if(!a||!b)return;
+    var act=curD==='all'||a.d===curD||b.d===curD;
+    ctx.strokeStyle='rgba(184,151,58,'+(act?(0.06+0.05*(e[2]||1)):0.025)+')';
+    ctx.lineWidth=(e[2]||1)*0.55;
+    ctx.beginPath(); ctx.moveTo(a.nx,a.ny); ctx.lineTo(b.nx,b.ny); ctx.stroke();
+  });
+  pts=[];
+  NET_NODES.forEach(function(n){
+    var active=curD==='all'||n.d===curD;
+    var rad=4+n.inf/100*10;
+    ctx.globalAlpha=active?1:0.1;
+    ctx.beginPath(); ctx.arc(n.nx,n.ny,rad,0,Math.PI*2); ctx.fillStyle=DC[n.d]; ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=0.6; ctx.stroke();
+    ctx.globalAlpha=1;
+    pts.push({x:n.nx,y:n.ny,r:rad,node:n,risk:{t:n.t,d:n.d,sev:n.inf,r:'Глобально',s:n.s||'',x:'—',y:'—'}});
+  });
+  /* подписи — короткие, наружу от центра, с тенью */
+  ctx.font='8px Montserrat,sans-serif';
+  ctx.shadowColor='rgba(6,5,10,0.98)'; ctx.shadowBlur=4;
+  ctx.fillStyle='rgba(232,224,208,0.92)';
+  NET_NODES.forEach(function(n){
+    var active=curD==='all'||n.d===curD; if(!active)return;
+    var rad=4+n.inf/100*10, w=ctx.measureText(n.lab).width;
+    if(n.nx>=cx){
+      var sx=n.nx+rad+4;
+      if(sx+w>W-2){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(n.lab,Math.max(w/2+2,Math.min(W-w/2-2,n.nx)),n.ny-rad-3); }
+      else { ctx.textAlign='start'; ctx.textBaseline='middle'; ctx.fillText(n.lab,sx,n.ny); }
+    } else {
+      var ex=n.nx-rad-4;
+      if(ex-w<2){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(n.lab,Math.max(w/2+2,Math.min(W-w/2-2,n.nx)),n.ny-rad-3); }
+      else { ctx.textAlign='end'; ctx.textBaseline='middle'; ctx.fillText(n.lab,ex,n.ny); }
+    }
+  });
+  ctx.shadowBlur=0; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+}
+function render(){ if(mode==='graph') drawNetwork(); else draw(); }
+document.querySelectorAll('.mode-btn').forEach(function(el){
+  el.addEventListener('click',function(){
+    document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+    el.classList.add('active');
+    mode=el.dataset.m;
+    var graph=(mode==='graph');
+    ['x-label','y-label','y-axis','x-axis','tabs','desc-bar','top-risks'].forEach(function(id){
+      var e=document.getElementById(id); if(e) e.style.display=graph?'none':'';
+    });
+    cv.style.border=graph?'none':'';
+    var cw=document.getElementById('canvas-wrap'); if(cw) cw.style.marginLeft=graph?'0':'';
+    render();
+  });
+});
+
+document.getElementById('tab-desc').textContent=DESCS['2y'];
+document.getElementById('risk-count').textContent=(RISKS['2y']||[]).length+' рисков';
+function _boot(){ render(); renderGrid(); }
+setTimeout(_boot,80); setTimeout(_boot,500); setTimeout(_boot,1200);
+window.addEventListener('load',_boot);
+window.addEventListener('resize',render);
+/* перерисовать, когда холст впервые получает ненулевую ширину (панель открывается с анимацией) */
+if(window.ResizeObserver){ try{ new ResizeObserver(function(){ var w=cv.getBoundingClientRect().width; if(w>0 && Math.abs(w-(W||0))>1) _boot(); }).observe(cv); }catch(e){} }
+</script>
+<script>
+(function(){
+  var b=document.getElementById("rm-cta-btn"); if(!b) return;
+  b.addEventListener("click", function(){
+    var pay="https://payform.ru/bebmpSh/";
+    try{
+      if (window.self !== window.top){ window.parent.postMessage({type:"atlas-open-access"}, location.origin); }
+      else { window.open(pay,"_blank"); }
+    }catch(e){ window.open(pay,"_blank"); }
+  });
+})();
+</script>
+</body>
+</html>
