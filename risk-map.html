@@ -9790,18 +9790,24 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
   function render(){
     var body=document.getElementById('cab-body'); if(!body) return;
     var tier=tierNow(), info=CAB_TIER[tier]||CAB_TIER.free, h='';
-    h+='<div class="cab-eyebrow">Atlas Signals</div><h2 class="cab-title">Личный кабинет</h2>';
+    h+='<h2 class="cab-title">Личный кабинет</h2>';
     if(info.member){
       var _arc=true,_spx=null; try{_arc=localStorage.getItem('cc_arch_life')!=='0';_spx=localStorage.getItem('cc_sp_exp')||null;}catch(_e){}
       var _free=(tier==='free');
       var _dl=_spx?Math.ceil((new Date(_spx)-new Date())/86400000):null;
       var _dw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'дней';if(k>=2&&k<=4)return 'дня';if(k===1)return 'день';return 'дней';};
-      h+='<div class="cab-statuscard"><div class="cab-sc-tier"><span class="cab-sc-dot"></span>'+info.full+'</div><div class="cab-sc-sub">'+(_free?'Базовый доступ':'Полный доступ активен')+'</div></div>';
-      h+='<div class="cab-seclabel">Подписка</div><div class="cab-list">';
-      h+=row('archive','Архив', _free?'—':'<span style="color:#D4AF5A">∞ Постоянный</span>');
-      h+=row('signal','Signal Pro', _free?'—':(_spx?(_dl>0?'<span style="color:#D4AF5A">Осталось '+_dl+' '+_dw(_dl)+'</span>':'<span style="color:#ef4444">Истёк</span>'):'<span style="color:#27AE60">Активен</span>'));
-      h+='</div>';
-      if(!_free&&_spx){var _d2=new Date(_spx);var _MM=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];if(!isNaN(_d2.getTime())){h+='<div style="font-size:10px;color:rgba(203,213,225,.42);margin:8px 2px 0;letter-spacing:.02em">Signal Pro активен до '+_d2.getDate()+' '+_MM[_d2.getMonth()]+' '+_d2.getFullYear()+'</div>';}}
+      var _spv=_free?'—':(_spx?(_dl>0?'<span style="color:#D4AF5A">Осталось '+_dl+' '+_dw(_dl)+'</span>':'<span style="color:#ef4444">Истёк</span>'):'<span style="color:#27AE60">Активен</span>');
+      var _dstr=''; if(_spx){var _d2=new Date(_spx);var _MM=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];if(!isNaN(_d2.getTime())) _dstr=_d2.getDate()+' '+_MM[_d2.getMonth()]+' '+_d2.getFullYear();}
+      h+='<div class="cab-statuscard">'
+        +'<div class="cab-sc-tier"><span class="cab-sc-dot"></span>'+info.full+'</div>'
+        +'<div class="cab-sc-sub">'+(_free?'Базовый доступ':'Полный доступ активен')+'</div>'
+        +(_free?'':('<div style="margin-top:13px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.18)">'
+          +'<div style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(203,213,225,.4);margin-bottom:10px">Подписка</div>'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;margin:7px 0;font-size:12.5px"><span style="color:#cbd5e1">Архив</span><span style="color:#D4AF5A;font-weight:600">∞ Постоянный</span></div>'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;margin:7px 0;font-size:12.5px"><span style="color:#cbd5e1">Signal Pro</span><span style="font-weight:600">'+_spv+'</span></div>'
+          +(_dstr?'<div style="font-size:10px;color:rgba(203,213,225,.4);margin-top:9px;letter-spacing:.02em">активен до '+_dstr+'</div>':'')
+          +'</div>'))
+        +'</div>';
       h+='<div class="cab-seclabel">Аккаунт</div><div class="cab-list">';
       h+=row('profile','Профиль', info.label);
       h+=row('access','Управление доступом','', "cabAccess()");
