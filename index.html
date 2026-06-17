@@ -1995,7 +1995,7 @@ document.querySelectorAll('.fb').forEach(btn => {
 // Приоритет: Worker API → events.json → fallback
 /* polyfill: AbortSignal.timeout для старых браузеров (Safari<16) — без него все fetch к Worker падают до отправки */
 if(typeof AbortSignal!=='undefined' && !AbortSignal.timeout){AbortSignal.timeout=function(ms){var _c=new AbortController();setTimeout(function(){try{_c.abort();}catch(_e){}},ms);return _c.signal;};}
-const API_BASE = 'https://archive-api.luven-medical-msk.workers.dev';
+const API_BASE = 'https://api.a-atlas.com';
 
 
 function _fmtNow(){ var d=new Date(); var m=new Date(d.getTime()+(3*60+d.getTimezoneOffset())*60000); return m.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+' (GMT+3)'; }
@@ -3007,7 +3007,7 @@ window._grdfDisasterEnsure=function(){
 //   region,summary,source,date}
 // ═══════════════════════════════════════════════════════════════════
 
-const EXT_FEED_URL = 'https://archive-api.luven-medical-msk.workers.dev/api/proxy/events-feed'; // HTTP proxied via Worker (mixed-content fix)
+const EXT_FEED_URL = 'https://api.a-atlas.com/api/proxy/events-feed'; // HTTP proxied via Worker (mixed-content fix)
 const EXT_FEED_INTERVAL_MS = 60000;
 // S37: вторичный живой фид с VPS :8001 отключён — основная лента целиком на GitHub (docs/events.json через воркер /api/events и фолбэки)
 const USE_EXT_FEED = false;
@@ -3525,7 +3525,7 @@ setInterval(() => {
 (function() {
 'use strict';
 
-const API = 'https://archive-api.luven-medical-msk.workers.dev';
+const API = 'https://api.a-atlas.com';
 
 // Country flag emoji by ISO2
 const FLAGS = {
@@ -8440,7 +8440,7 @@ window._renderCountryArchive = function(el, cc, cname, ds){
   box.innerHTML='<div class="sp-block" style="margin:0;opacity:.5"><div class="sp-p">Загрузка контекста страны…</div></div>';
   el.appendChild(box);
   var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
-  var base=(typeof API!=='undefined'&&API)?API:'https://archive-api.luven-medical-msk.workers.dev';
+  var base=(typeof API!=='undefined'&&API)?API:'https://api.a-atlas.com';
   var h={'Content-Type':'application/json'}; if(tok) h['X-Snapshot-Token']=tok;
   fetch(base+'/api/archive-context',{method:'POST',headers:h,body:JSON.stringify({country:cc, domain_levels:ds||{}})})
     .then(function(r){return r.json();})
@@ -8599,7 +8599,7 @@ window._renderCountryLocal = function(c){
     dominant:c.dominant_domain||'', escalation:c.escalation_level||'' };
   if(c.forecast_7d) payload.forecast=c.forecast_7d;
   var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
-  var base=(typeof API!=='undefined'&&API)?API:'https://archive-api.luven-medical-msk.workers.dev';
+  var base=(typeof API!=='undefined'&&API)?API:'https://api.a-atlas.com';
   var h={'Content-Type':'application/json'}; if(tok) h['X-Snapshot-Token']=tok;
   el.innerHTML='<div style="margin:0 14px 8px"><div class="sp-block"><div class="sp-p" style="opacity:.5">Загрузка локальной аналитики…</div></div></div>';
   fetch(base+'/api/signal-pro',{method:'POST',headers:h,body:JSON.stringify(payload)})
@@ -8944,7 +8944,7 @@ window.grdfRenderAtlas = function(){
   var gc={}; try{ if(window._COV_TOTALS&&window._COV_TOTALS.global) gc=window._COV_TOTALS.global; }catch(e){}
   var payload={countries:countries, global_counts:gc};
   var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
-  var base=(typeof API!=='undefined'&&API)?API:'https://archive-api.luven-medical-msk.workers.dev';
+  var base=(typeof API!=='undefined'&&API)?API:'https://api.a-atlas.com';
   var h={'Content-Type':'application/json'}; if(tok) h['X-Snapshot-Token']=tok;
   function setAcl(pro){ try{ var scr=document.getElementById('grdf-analytics-screen'); if(!scr) return; ['.grdf-acl','.free-lock-block'].forEach(function(sel){ var el=scr.querySelector(sel); if(el) el.style.display = pro ? 'none' : ''; }); }catch(e){} }
   if(bEl.getAttribute('data-done')!=='1') bEl.innerHTML='<div class="sp-block" style="margin:0"><div class="sp-p" style="opacity:.5">Сборка стратегической сводки…</div></div>';
@@ -9234,7 +9234,7 @@ window._renderSignalPro = function(M){
   var perDom={}; DOMS.forEach(function(d){ var pd=(M.perDom&&M.perDom[d])||{}; perDom[d]={n:pd.n||0,rec:pd.rec||0,old:pd.old||0,sys:pd.sys||0}; });
   var payload={total:M.total,active:M.active,systemic:M.systemic,critical:M.critical,pressure:M.pressure,crossLinks:M.crossLinks,perDom:perDom,dyn:M.dyn||{},drivers:M.drivers||[],country:cc,country_name:cname};
   var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
-  var base=(typeof API!=='undefined'&&API)?API:'https://archive-api.luven-medical-msk.workers.dev';
+  var base=(typeof API!=='undefined'&&API)?API:'https://api.a-atlas.com';
   var h={'Content-Type':'application/json'}; if(tok) h['X-Snapshot-Token']=tok;
   if(el.getAttribute('data-done')!=='1') el.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">SIGNAL PRO</span></div><div class="sp-sub">Аналитическая интерпретация сигналов</div><div class="sp-body"><div class="sp-blocks"><div class="sp-block"><div class="sp-p" style="opacity:.5">Загрузка аналитики…</div></div></div></div></div>';
   fetch(base+'/api/signal-pro',{method:'POST',headers:h,body:JSON.stringify(payload)})
@@ -9520,13 +9520,13 @@ function grdfPopulateCountriesList(countries) {
 
 // ── Sprint 7: Load forecast accuracy data ─────────────────────────
 function grdfLoadAccuracyData() {
-  fetch('https://archive-api.luven-medical-msk.workers.dev/api/grdf/mobile/accuracy')
+  fetch('https://api.a-atlas.com/api/grdf/mobile/accuracy')
     .then(function(r){ return r.json(); })
     .then(function(d){
       var metrics = d.displayed_metrics||[];
       function setEl(id, val){ var el=document.getElementById(id); if(el) el.textContent=val||'—'; }
       // Try to get accuracy data from API
-      fetch('https://archive-api.luven-medical-msk.workers.dev/api/grdf/launch/readiness')
+      fetch('https://api.a-atlas.com/api/grdf/launch/readiness')
         .then(function(r2){ return r2.json(); })
         .then(function(rd){
           setEl('grdf-acc-score', (rd.readiness_pct||78)+'%');
@@ -9568,7 +9568,7 @@ var _grdfDataHookInstalled = false;
 function installDataHook() {
   if(_grdfDataHookInstalled) return;
   _grdfDataHookInstalled = true;
-  var API_M = 'https://archive-api.luven-medical-msk.workers.dev';
+  var API_M = 'https://api.a-atlas.com';
 
   function tryLoad(d) {
     if(!d) return false;
@@ -9855,7 +9855,7 @@ window.onTelegramAuth=function(user){
   var ctrl=(typeof AbortController!=='undefined')?new AbortController():null;
   var to=setTimeout(function(){ if(ctrl){try{ctrl.abort();}catch(_){}} setm('#ef4444','Таймаут: сервер не ответил за 12с (CORS/сеть)'); },12000);
   try{
-    fetch('https://archive-api.luven-medical-msk.workers.dev/api/auth/telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(user),signal:ctrl?ctrl.signal:undefined})
+    fetch('https://api.a-atlas.com/api/auth/telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(user),signal:ctrl?ctrl.signal:undefined})
      .then(function(r){
         clearTimeout(to);
         return r.text().then(function(tx){ var d={}; try{d=JSON.parse(tx);}catch(_){d={_raw:(tx||'').slice(0,80)};} return {s:r.status,ok:r.ok,d:d}; });
