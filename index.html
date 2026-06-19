@@ -7856,10 +7856,15 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
       var _kews = ews>=60?'сигналы быстро нарастают':ews>=35?'умеренная динамика нарастания':'резкого ускорения нет';
       var _kcri = cri>=60?'риск системный — затрагивает несколько доменов':cri>=35?'риск частично межсекторный':'риск сконцентрирован в одном домене';
       var _kl1 = 'GRI '+gri+' — '+_klvl+'. '+_kews.charAt(0).toUpperCase()+_kews.slice(1)+' (EWS '+ews+'); '+_kcri+' (CRI '+cri+').';
+      var _kwhy=function(_e){ if(!_e) return '';
+        if(_e.country_code===_kcc || _e.iso===_kcc) return 'Основной фокус сигнала';
+        if(_e.country_codes && _e.country_codes.indexOf(_kcc)>=0) return 'Затрагивает страну';
+        return 'Упоминается в тексте'; };
       var _kpress = _kord.slice(0,2).map(function(d){
         var _e=_kdt[d], _ti=(_e&&_e.title)?String(_e.title).replace(/\s+/g,' ').trim():'';
         if(_ti.length>58) _ti=_ti.slice(0,58)+'…';
-        return '<div style="margin-top:4px"><span style="color:'+(DOM_COLORS[d]||'#94a3b8')+'">'+(DOM_LABELS[d]||d)+'</span> — '+_esc(_ti)+' <span style="color:#6f88ab">('+_kdc[d]+' сигн.)</span></div>';
+        var _wl=_kwhy(_e);
+        return '<div style="margin-top:4px"><span style="color:'+(DOM_COLORS[d]||'#94a3b8')+'">'+(DOM_LABELS[d]||d)+'</span> — '+_esc(_ti)+' <span style="color:#6f88ab">('+_kdc[d]+' сигн.)</span>'+(_wl?'<span style="display:block;font-size:9px;color:#6f88ab;margin-top:1px;letter-spacing:.04em">'+_wl+'</span>':'')+'</div>';
       }).join('');
       var _kwatch=[];
       if(ews>=45) _kwatch.push('ускорение сигналов');
