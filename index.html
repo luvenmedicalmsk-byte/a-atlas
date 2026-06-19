@@ -9806,11 +9806,6 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         +'<div class="cab-sc-tier"><span class="cab-sc-dot"></span>'+info.full+'</div>'
         +'<div class="cab-sc-sub">Полный доступ активен</div>'
         +(_since?'<div class="cab-since">Участник с '+_since+'</div>':'')
-        +'<div class="cab-sc-grid">'
-          +'<div class="cab-sc-line"><span>Архив</span><b style="color:#D4AF5A">∞ Постоянный</b></div>'
-          +'<div class="cab-sc-line"><span>Signal Pro</span><b>'+(_spDate?('до '+_spDate):'Активен')+'</b></div>'
-          +((_dl!=null&&_dl>0)?'<div class="cab-sc-foot">осталось '+_dl+' '+_dw(_dl)+'</div>':'')
-        +'</div>'
         +'</div>';
       var _mods=['Архив исследований','Signal Pro','Атлас рисков','Карта взаимосвязей','Аналитика стран','Сценарии и прогнозы','Стратегические активы'];
       h+='<div class="cab-seclabel">Доступные модули</div><div class="cab-mods">';
