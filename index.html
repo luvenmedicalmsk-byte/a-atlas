@@ -1877,7 +1877,7 @@ function renderList() {
     const d = document.createElement('div');
     d.className = 'ei' + (selected?.id===ev.id ? ' sel' : '');
     d.innerHTML = `<div class="ei-tag" style="color:${col}"><div class="ei-dot" style="background:${col}"></div>${DL[ev.domain]||ev.domain}</div><div class="ei-title">${esc(ev.title)}</div><div class="ei-meta"><span>${esc(ev.region)}</span><span>${fd(ev.date)}</span></div><div class="ei-bar"><div class="ei-fill" style="width:${ev.severity}%;background:${sc(ev.severity)}"></div></div>`;
-    d.onclick = () => { if(ev.lat&&ev.lng){ try{ map.setView([ev.lat,ev.lng], Math.max(map.getZoom()||3,4)); L.popup({maxWidth:240}).setLatLng([ev.lat,ev.lng]).setContent(_evPopup(ev)).openOn(map); }catch(_){} } };
+    d.onclick = () => { try{ if(window.atlasTrackMaterial) atlasTrackMaterial(ev.id||ev.title); }catch(_e){} if(ev.lat&&ev.lng){ try{ map.setView([ev.lat,ev.lng], Math.max(map.getZoom()||3,4)); L.popup({maxWidth:240}).setLatLng([ev.lat,ev.lng]).setContent(_evPopup(ev)).openOn(map); }catch(_){} } };
     list.appendChild(d);
   });
 }
@@ -2064,6 +2064,7 @@ async function fetchStats() {
 
 function applyEvents(events, updatedIso) {
   ALL_EVENTS = events;
+  try{ window._ARCHIVE_UPDATED = updatedIso || window._ARCHIVE_UPDATED || null; }catch(_e){}
   filtered = filter === 'all' ? [...ALL_EVENTS] : ALL_EVENTS.filter(e => e.domain === filter);
   updateStats(); renderList(); renderMarkers();
   try{ if(window.grdfOnDataLoad) window.grdfOnDataLoad(window._lastSnapshotData||{}); }catch(_e){}
@@ -7754,6 +7755,7 @@ function _grdfScrollReset() {
 window.grdfOpenCountrySheet = function(cc) {
   if(false) return; // forced mobile (desktop uses mobile UI)
   _grdfCurrentCountry = cc;
+  try{ if(window.atlasTrackCountry) atlasTrackCountry(cc); }catch(_e){}
   var sheet = document.getElementById('grdf-country-sheet');
   var drawer = document.getElementById('grdf-intel-drawer');
   if(!sheet) return;
@@ -9722,9 +9724,24 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
 .cab-value-item .cab-row-ic{margin-top:1px}
 .cab-logout{margin-top:26px}
 .cab-logout .cab-btn{background:transparent;border:0.5px solid rgba(239,68,68,.3);color:#e07a7a}
+.cab-since{font-size:11px;color:rgba(212,175,90,.72);margin-top:9px;letter-spacing:.02em}
+.cab-sc-grid{margin-top:13px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.18)}
+.cab-sc-line{display:flex;align-items:center;justify-content:space-between;margin:7px 0;font-size:12.5px;color:#cbd5e1}
+.cab-sc-line b{font-weight:600;color:#cbd5e1}
+.cab-sc-foot{font-size:10px;color:rgba(203,213,225,.4);margin-top:9px;letter-spacing:.02em}
+.cab-mods{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;border:0.5px solid rgba(184,151,58,.13);border-radius:11px;padding:15px 16px}
+.cab-mod{display:flex;align-items:center;gap:8px;font-size:12px;color:#cbd5e1;line-height:1.3}
+.cab-mod-ck{width:14px;height:14px;flex-shrink:0;color:#27AE60;display:inline-flex}
+.cab-mod-ck svg{width:100%;height:100%}
+.cab-upd{border:0.5px solid rgba(184,151,58,.13);border-radius:11px;padding:15px 17px}
+.cab-upd-date{font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600;color:#E8C77E;line-height:1.05}
+.cab-upd-sub{font-size:11.5px;color:rgba(203,213,225,.55);margin-top:5px;letter-spacing:.01em}
 </style>
 <script>
 (function(){
+  try{ var _n=new Date().toISOString(); var _c=localStorage.getItem('cc_last_seen'); if(_c) localStorage.setItem('cc_prev_seen',_c); localStorage.setItem('cc_last_seen',_n); }catch(_e){}
+  window.atlasTrackCountry=window.atlasTrackCountry||function(cc){ try{ if(!cc)return; var a=JSON.parse(localStorage.getItem('cc_studied_countries')||'[]'); if(a.indexOf(cc)<0){a.push(cc);localStorage.setItem('cc_studied_countries',JSON.stringify(a));} }catch(e){} };
+  window.atlasTrackMaterial=window.atlasTrackMaterial||function(id){ try{ var a=JSON.parse(localStorage.getItem('cc_viewed_ids')||'[]'); if(id&&a.indexOf(id)<0){a.push(id); if(a.length>5000)a=a.slice(-5000); localStorage.setItem('cc_viewed_ids',JSON.stringify(a)); localStorage.setItem('cc_viewed_materials',String(a.length));} }catch(e){} };
   var W='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">';
   var CAB_IC={
     profile:W+'<circle cx="12" cy="8" r="3.6"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>',
@@ -9764,27 +9781,52 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
     var tier=tierNow(), info=CAB_TIER[tier]||CAB_TIER.free, h='';
     h+='<h2 class="cab-title">Личный кабинет</h2>';
     if(info.member){
-      var _arc=true,_spx=null; try{_arc=localStorage.getItem('cc_arch_life')!=='0';_spx=localStorage.getItem('cc_sp_exp')||null;}catch(_e){}
-      var _free=(tier==='free');
+      var _spx=null; try{_spx=localStorage.getItem('cc_sp_exp')||null;}catch(_e){}
+      var _MM=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+      var _fd=function(x){var d=new Date(x);if(isNaN(d.getTime()))return '';return d.getDate()+' '+_MM[d.getMonth()]+' '+d.getFullYear();};
+      var _fmy=function(x){var d=new Date(x);if(isNaN(d.getTime()))return '';return _MM[d.getMonth()]+' '+d.getFullYear();};
       var _dl=_spx?Math.ceil((new Date(_spx)-new Date())/86400000):null;
       var _dw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'дней';if(k>=2&&k<=4)return 'дня';if(k===1)return 'день';return 'дней';};
-      var _spv=_free?'—':(_spx?(_dl>0?'<span style="color:#D4AF5A">Осталось '+_dl+' '+_dw(_dl)+'</span>':'<span style="color:#ef4444">Истёк</span>'):'<span style="color:#27AE60">Активен</span>');
-      var _dstr=''; if(_spx){var _d2=new Date(_spx);var _MM=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];if(!isNaN(_d2.getTime())) _dstr=_d2.getDate()+' '+_MM[_d2.getMonth()]+' '+_d2.getFullYear();}
+      var _mw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'материалов';if(k===1)return 'материал';if(k>=2&&k<=4)return 'материала';return 'материалов';};
+      var _sw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'стран';if(k===1)return 'страна';if(k>=2&&k<=4)return 'страны';return 'стран';};
+      var _spDate=_spx?_fd(_spx):'';
+      var _act=null; try{_act=localStorage.getItem('cc_activated'); if(!_act){_act=new Date().toISOString(); localStorage.setItem('cc_activated',_act);}}catch(_e){}
+      var _since=_act?_fmy(_act):'';
+      var _aUpd=window._ARCHIVE_UPDATED||null,_aDate='',_aCnt=0;
+      try{var _evs=window.ALL_EVENTS||[];var _mx=_aUpd?new Date(_aUpd):null;
+        _evs.forEach(function(e){var d=(e&&e.date)?new Date(e.date):null;if(d&&!isNaN(d.getTime())&&(!_mx||d>_mx))_mx=d;});
+        if(_mx&&!isNaN(_mx.getTime())){_aDate=_fd(_mx);var _k=_mx.toISOString().slice(0,10);_aCnt=_evs.filter(function(e){return e&&(e.date||'').slice(0,10)===_k;}).length;}
+      }catch(_e){}
+      var _last=null,_cN=0,_mN=0;
+      try{_last=localStorage.getItem('cc_prev_seen');}catch(_e){}
+      try{_cN=JSON.parse(localStorage.getItem('cc_studied_countries')||'[]').length;}catch(_e){}
+      try{_mN=parseInt(localStorage.getItem('cc_viewed_materials')||'0',10)||0;}catch(_e){}
+      var _CK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
       h+='<div class="cab-statuscard">'
         +'<div class="cab-sc-tier"><span class="cab-sc-dot"></span>'+info.full+'</div>'
-        +'<div class="cab-sc-sub">'+(_free?'Базовый доступ':'Полный доступ активен')+'</div>'
-        +(_free?'':('<div style="margin-top:13px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.18)">'
-          +'<div style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(203,213,225,.4);margin-bottom:10px">Подписка</div>'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin:7px 0;font-size:12.5px"><span style="color:#cbd5e1">Архив</span><span style="color:#D4AF5A;font-weight:600">∞ Постоянный</span></div>'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin:7px 0;font-size:12.5px"><span style="color:#cbd5e1">Signal Pro</span><span style="font-weight:600">'+_spv+'</span></div>'
-          +(_dstr?'<div style="font-size:10px;color:rgba(203,213,225,.4);margin-top:9px;letter-spacing:.02em">активен до '+_dstr+'</div>':'')
-          +'</div>'))
+        +'<div class="cab-sc-sub">Полный доступ активен</div>'
+        +(_since?'<div class="cab-since">Участник с '+_since+'</div>':'')
+        +'<div class="cab-sc-grid">'
+          +'<div class="cab-sc-line"><span>Архив</span><b style="color:#D4AF5A">∞ Постоянный</b></div>'
+          +'<div class="cab-sc-line"><span>Signal Pro</span><b>'+(_spDate?('до '+_spDate):'Активен')+'</b></div>'
+          +((_dl!=null&&_dl>0)?'<div class="cab-sc-foot">осталось '+_dl+' '+_dw(_dl)+'</div>':'')
+        +'</div>'
         +'</div>';
-      h+='<div class="cab-seclabel">Аккаунт</div><div class="cab-list">';
-      h+=row('profile','Профиль', info.label);
-      h+=row('access','Управление доступом','', "cabAccess()");
-      h+=row('history','История платежей','Появится здесь');
-      h+=row('settings','Настройки аккаунта','Скоро');
+      var _mods=['Архив исследований','Signal Pro','Атлас рисков','Карта взаимосвязей','Аналитика стран','Сценарии и прогнозы','Стратегические активы'];
+      h+='<div class="cab-seclabel">Доступные модули</div><div class="cab-mods">';
+      for(var _im=0;_im<_mods.length;_im++){ h+='<div class="cab-mod"><span class="cab-mod-ck">'+_CK+'</span>'+_mods[_im]+'</div>'; }
+      h+='</div>';
+      if(_aDate){
+        h+='<div class="cab-seclabel">Последнее обновление Архива</div>'
+          +'<div class="cab-upd"><div class="cab-upd-date">'+_aDate+'</div>'
+          +(_aCnt>0?'<div class="cab-upd-sub">Добавлено '+_aCnt+' '+_mw(_aCnt)+'</div>':'')
+          +'</div>';
+      }
+      h+='<div class="cab-seclabel">Статус доступа</div><div class="cab-list">';
+      h+=row('archive','Архив','<span style="color:#D4AF5A">Постоянный доступ</span>');
+      h+=row('signal','Signal Pro',_spDate?('до '+_spDate):'Активен');
+      h+=row('history','Дата активации',_act?_fd(_act):'—');
+      h+=row('access','Управление кодом доступа','', "cabAccess()");
       h+='</div>';
       h+='<div id="cab-access-blk" style="display:none;margin-top:10px;padding:14px;border:0.5px solid rgba(184,151,58,.13);border-radius:11px">'
         +'<div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(203,213,225,.4);margin-bottom:7px">Код доступа</div>'
@@ -9794,6 +9836,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         +'<button class="cab-btn ghost" onclick="cabLogin(\'cab-code2\')">Применить</button>'
         +'<div id="cab-login-msg" class="cab-msg"></div>'
         +'</div>';
+      h+='<div class="cab-seclabel">Ваша активность</div><div class="cab-list">';
+      h+=row('history','Последний вход',_last?_fd(_last):'—');
+      h+=row('profile','Изучено стран',_cN+' '+_sw(_cN));
+      h+=row('archive','Просмотрено материалов',_mN+' '+_mw(_mN));
+      h+='</div>';
       h+='<div class="cab-logout"><button class="cab-btn" onclick="cabLogout()">Выйти</button></div>';
     } else {
       h+='<div class="cab-statuscard"><div class="cab-sc-tier"><span class="cab-sc-dot" style="background:#6b7280;box-shadow:none"></span>Бесплатный доступ</div><div class="cab-sc-sub">Базовые сигналы и профили стран</div></div>';
