@@ -8298,7 +8298,7 @@ window._spRenderCountryLocal = function(el, d, cname){
   if(d && d.locked){
     el.innerHTML='<div style="margin:0 14px 8px"><div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:14px">'
       +''
-      +'<div class="sp-sub" style="font-size:15px;color:#D4AF5A;font-weight:600;letter-spacing:0;margin:0 0 8px">Что текущие сигналы означают для страны: '+esc(cname||'')+'</div>'
+      +'<div class="sp-sub" style="font-size:12px;color:rgba(203,213,225,.72);font-weight:500;letter-spacing:.02em;margin:0 0 10px">Что текущие сигналы означают для страны: '+esc(cname||'')+'</div>'
       +'<div class="sp-body"><div class="sp-block">'
       +ul(['Рейтинг стратегического влияния по доменам (0–100)','Прогноз стратегического влияния на 7 и 30 дней','Траектория и смещение стратегического давления','Карта переходов давления между доменами','Баланс фактического, стратегического и прогнозного давления','Ключевой локальный вывод'])
       +'<div class="sp-lock-t" style="margin:12px 0 14px;max-width:none">Signal Pro объясняет, что означают текущие сигналы и куда смещается давление.</div>'
@@ -8391,7 +8391,7 @@ window._spRenderCountryLocal = function(el, d, cname){
        '<p class="sp-p" style="margin-bottom:8px">'+esc(dlc(wd))+'</p>'
       +frow('Влияние на каскады', sfc.cascade)+frow('Скорость роста', sfc.velocity)+frow('Прогноз', sfc.forecast)+frow('Междоменное распространение', sfc.cross)+frow('Страновой коэффициент', wq));
   }
-  var _SH=function(t){return '<div style="font-size:9px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:15px 0 8px">'+t+'</div>';};
+  var _SH=function(t){return '<div style="font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:18px 0 9px">'+t+'</div>';};
   var blocks= _SH('Стратегическая интерпретация')
     +blk('Практическая интерпретация', subL('Для бизнеса',L.business)+subL('Для инвесторов',L.investors)+subL('Для частных лиц',L.private))
     +(L.watch?blk('На что обратить внимание','<p class="sp-p">'+esc(L.watch)+'</p>'):'')
@@ -8402,7 +8402,7 @@ window._spRenderCountryLocal = function(el, d, cname){
     +rk + pb;
   el.innerHTML='<div style="margin:0 14px 8px"><div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:14px">'
     +''
-    +'<div class="sp-sub" style="font-size:15px;color:#D4AF5A;font-weight:600;letter-spacing:0;margin:0 0 8px">Что текущие сигналы означают для страны: '+esc(L.country_name)+(L.generic?' · базовый профиль':'')+'</div>'
+    +'<div class="sp-sub" style="font-size:12px;color:rgba(203,213,225,.72);font-weight:500;letter-spacing:.02em;margin:0 0 10px">Что текущие сигналы означают для страны: '+esc(L.country_name)+(L.generic?' · базовый профиль':'')+'</div>'
     +'<div class="sp-body"><div class="sp-blocks">'+blocks+'</div></div></div></div>';
 };
 
@@ -8463,10 +8463,10 @@ window._renderCountryArchive = function(el, cc, cname, ds){
       var conclusion='На фоне усиления '+(dlist.length?(dlist.slice(0,-1).join(', ')+(dlist.length>1?' и ':'')+dlist[dlist.length-1]):'системного')+' давления наибольшую устойчивость сохраняют реальные активы, критическая инфраструктура, энергия, вода и человеческий капитал.';
       var keyDesc='<div style="font-size:10px;color:rgba(148,163,184,.6);margin:-1px 0 8px;line-height:1.4">Ручная выборка наиболее значимых материалов из архива исследований по '+esc(gname)+'.</div>';
       var html='<div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:14px">'
-        +'<div class="sp-head"><span class="sp-badge">СТРАТЕГИЧЕСКИЙ КОНТЕКСТ</span></div>'
-        +'<div class="sp-sub">Почему формируется давление: '+esc(cname||cc)+'</div>'
+        +'<div class="sp-head"><span class="sp-badge" style="color:#b8973a">СТРАТЕГИЧЕСКИЙ КОНТЕКСТ</span></div>'
+        +'<div class="sp-sub">Долгосрочные факторы и структурные причины давления</div>'
         +'<div class="sp-body"><div class="sp-blocks">'+(ctxBody||'<div class="sp-p" style="opacity:.5">Недостаточно материалов по стране.</div>')+'</div></div>'
-        +'<div class="sp-head" style="margin-top:20px"><span class="sp-badge" style="font-size:15px;color:#D4AF5A">АРХИВ ИССЛЕДОВАНИЙ</span></div>'
+        +'<div class="sp-head" style="margin-top:20px"><span class="sp-badge" style="color:#b8973a">АРХИВ ИССЛЕДОВАНИЙ</span></div>'
         +'<div class="sp-body">'+fundCard
           +'<div class="sp-blocks" style="margin-top:14px">'
           +subL('Ключевые исследования', keyDesc+krStyle+krGroups())
