@@ -8142,26 +8142,7 @@ function _grdfContextHtml(c){
   function cardS(label, inner){ if(label==='Обновлено'){ return '<div style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><div style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+label+'</div>'+inner+'</div>'; } return '<details class="grdf-acc" style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><summary class="grdf-acc-h" style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>'; }
   var H='';
 
-  // ── 1. Risk Momentum ──
-  (function(){
-    var g=c.gri_delta_7d||0, ew=c.ews_delta_7d||0, cr=c.cri_delta_7d||0, sum=g+ew+cr, st,col;
-    if(sum<=1){ st='Стабильно'; col='#10b981'; }
-    else if(sum<=8){ st='Ускорение'; col='#eab308'; }
-    else if(sum<=18){ st='Рост риска'; col='#f97316'; }
-    else { st='Резкий рост'; col='#ef4444'; }
-    function dt(v){ if(v==null) return '<span style="color:#6f88ab">накапливается</span>'; var cl=v===0?'#6f88ab':v>0?'#f97316':'#10b981',ar=v===0?'→':v>0?'▲':'▼'; return '<span style="color:'+cl+'">'+ar+' '+(v>0?'+':'')+v+'</span>'; }
-    H+=card('Динамика изменений',
-      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">'
-      +'<span style="width:10px;height:10px;border-radius:50%;background:'+col+'"></span>'
-      +'<b style="color:'+col+';font-size:14px">'+st+'</b></div>'
-      +'<div style="display:flex;gap:16px;font-size:12px;color:#94a3b8">'
-      +'<div>GRI '+dt(c.gri_delta_7d)+'</div><div>EWS '+dt(c.ews_delta_7d)+'</div><div>CRI '+dt(c.cri_delta_7d)+'</div></div>'
-      +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
-  })();
-
-  // ── 2. Динамика риска · график (history) ──
-  H+=card('История индексов', '<div id="grdf-hist" style="min-height:70px"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>');
-
+  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Текущая ситуация</div>';
   // ── 3. Структура GRI · рейтинг доменов (полосы вместо радиала) ──
   (function(){
     function dlvl(v){ if(v>=75)return['критический','#ef4444']; if(v>=60)return['высокий','#f97316']; if(v>=40)return['повышенный','#eab308']; if(v>=20)return['низкий','#10b981']; return['минимальный','#6f88ab']; }
@@ -8176,7 +8157,51 @@ function _grdfContextHtml(c){
     }).join('');
     H+=card('Источники давления', rows+'<div style="font-size:9px;color:#6f88ab;margin-top:7px">Уровень домена и его вклад в итоговый GRI.</div>');
   })();
+  // ── 4. Главные драйверы риска ──
+  var byDom={}; evs.forEach(function(e){ var dd=e.domain||'other'; (byDom[dd]=byDom[dd]||[]).push(e); });
+  var ds0=c.domain_scores||{};
+  var _shown=0, _MAXSIG=2;
+  var drv=Object.keys(byDom).sort(function(a,b){ return byDom[b].length-byDom[a].length; }).map(function(dd){
+    var list=byDom[dd].slice().sort(function(a,b){ return (b.severity||0)-(a.severity||0); });
+    var head='<div style="display:flex;align-items:center;gap:7px;margin:9px 0 4px">'
+      +'<span style="width:8px;height:8px;border-radius:50%;background:'+(DOM_COLORS[dd]||'#888')+';flex-shrink:0"></span>'
+      +'<b style="color:#cbd5e1;font-size:12px">'+(DOM_LABELS[dd]||dd)+'</b>'
+      +'<span style="color:#6f88ab;font-size:11px">'+list.length+' сигн.'+(ds0[dd]!=null?' · уровень '+Math.round(ds0[dd]):'')+'</span></div>';
+    var items=list.slice(0,_MAXSIG).map(function(e){ var ttl=String(e.title||'').replace(/\s+/g,' ').trim(); if(ttl.length>56) ttl=ttl.slice(0,56)+'…';
+      return '<div style="font-size:11px;color:#94a3b8;padding:2px 0 2px 15px">• '+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+(function(){var X=c.country;var r=(e.event_country===X)?'Произошло в стране':((e.impact_countries&&e.impact_countries.indexOf(X)>=0)?'Влияет на страну':((e.primary_country===X||e.country_code===X||e.iso===X)?'Основной объект сигнала':'Упоминается в тексте'));var cf=(r==='Произошло в стране')?(e.attribution_confidence||'low'):((r==='Основной объект сигнала')?'medium':'low');var D=cf==='high'?['●','Высокая','#5fae7a']:(cf==='medium'?['◐','Средняя','#caa45a']:['○','Низкая','#8a93a6']);return '<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'+r+' · <span style="color:'+D[2]+'">'+D[0]+' '+D[1]+'</span></span>';})()+'</div>'; }).join('');
+    _shown += Math.min(list.length, _MAXSIG);
+    return head+items;
+  }).join('');
+  var _total=evs.length, _more='';
+  if(_total>_shown){
+    var _all=evs.slice().sort(function(a,b){ return (b.severity||0)-(a.severity||0); }).map(function(e){ var ttl=String(e.title||'').replace(/\s+/g,' ').trim(); if(ttl.length>64) ttl=ttl.slice(0,64)+'…';
+      return '<div style="font-size:11px;color:#94a3b8;padding:3px 0;display:flex;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[e.domain]||'#888')+';margin-top:4px;flex-shrink:0"></span><span>'+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+(function(){var X=c.country;var r=(e.event_country===X)?'Произошло в стране':((e.impact_countries&&e.impact_countries.indexOf(X)>=0)?'Влияет на страну':((e.primary_country===X||e.country_code===X||e.iso===X)?'Основной объект сигнала':'Упоминается в тексте'));var cf=(r==='Произошло в стране')?(e.attribution_confidence||'low'):((r==='Основной объект сигнала')?'medium':'low');var D=cf==='high'?['●','Высокая','#5fae7a']:(cf==='medium'?['◐','Средняя','#caa45a']:['○','Низкая','#8a93a6']);return '<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'+r+' · <span style="color:'+D[2]+'">'+D[0]+' '+D[1]+'</span></span>';})()+'</span></div>'; }).join('');
+    _more='<details style="margin-top:9px"><summary style="cursor:pointer;color:#6f88ab;font-size:11px;list-style:none">Показать все сигналы ('+_total+')</summary><div style="margin-top:6px">'+_all+'</div></details>';
+  }
+  H+=card('Главные драйверы риска', drv+_more);
+  // ── 6. Каскадный риск (CRI) ──
+  var _g=parseFloat(c.risk_score)||0, _t=_next(_g), _m=c.gri_delta_7d;
+  var _traj=(_t==null)?'<span style="color:#6f88ab">верхний уровень</span>'
+    :'до порога '+_t+' · '+(_t-_g)+' п.'+(_m!=null&&_m>0?' <span style="color:#f97316">(+'+_m+'/нед)</span>':(_m!=null&&_m<0?' <span style="color:#10b981">('+_m+'/нед)</span>':''));
+  var _dots=_AD.map(function(d){var on=(_ds[d]||0)>=60;return '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+(DOM_COLORS[d]||'#888')+';opacity:'+(on?1:.18)+';margin-right:3px"></span>';}).join('');
+  var _casc=(_act.length>=5)?'Полный каскад':(_act.length>=3)?'Множественная активация':(_act.length>=1)?'Локальная активация':'Нет активных доменов';
+  H+=card('Каскадный риск (CRI)',
+    '<div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#94a3b8">'
+    +(_cri!=null?'<div>Каскадный риск (CRI): <b style="color:#cbd5e1">'+_cri+'</b> <span style="color:#6f88ab">'+_cband(_cri)+'</span></div>':'')
+    +'<div>Активны домены: '+_dots+' <span style="color:#cbd5e1">'+_act.length+'/5</span> <span style="color:#6f88ab">· '+_casc+'</span></div>'
+    +'<div>Траектория: '+_traj+'</div></div>');
+  // ── 7. Горячие регионы ──
+  var rc={};
+  evs.forEach(function(e){ var _raw=String(e.region||''); if(cnLc && _raw.toLowerCase().indexOf(cnLc)<0) return; var r=_raw.replace(/,?\s*(Россия|Russia|Турция|Turkey)\s*$/i,'').trim(); if(r && r.toLowerCase()!==cnLc) rc[r]=(rc[r]||0)+1; });
+  var regs=Object.keys(rc).sort(function(a,b){ return rc[b]-rc[a]; }).slice(0,8);
+  if(regs.length){
+    var _mx=rc[regs[0]]||1;
+    var f4=regs.map(function(r){ var hot=(rc[r]>=Math.max(2,_mx*0.6));
+      return '<span style="display:inline-block;font-size:11px;color:'+(hot?'#e8eef5':'#94a3b8')+';background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.10);border-radius:6px;padding:3px 9px;margin:0 5px 5px 0">'+esc(r)+' <span style="color:#6f88ab">'+rc[r]+'</span></span>'; }).join('');
+    H+=card('Горячие регионы', f4);
+  }
 
+  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
   // ── 5. Прогноз риска (линейная проекция + сценарии модели) ──
   (function(){
     var gri=Math.round(parseFloat(c.risk_score)||0), m=c.gri_delta_7d, ds=c.domain_scores||{}, nt=null, ts=[40,60,75];
@@ -8203,54 +8228,26 @@ function _grdfContextHtml(c){
       + '<div id="grdf-scen"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>';
     H+=card('Горизонт прогноза', inner);
   })();
-  // ── 4. Главные драйверы риска ──
-  var byDom={}; evs.forEach(function(e){ var dd=e.domain||'other'; (byDom[dd]=byDom[dd]||[]).push(e); });
-  var ds0=c.domain_scores||{};
-  var _shown=0, _MAXSIG=2;
-  var drv=Object.keys(byDom).sort(function(a,b){ return byDom[b].length-byDom[a].length; }).map(function(dd){
-    var list=byDom[dd].slice().sort(function(a,b){ return (b.severity||0)-(a.severity||0); });
-    var head='<div style="display:flex;align-items:center;gap:7px;margin:9px 0 4px">'
-      +'<span style="width:8px;height:8px;border-radius:50%;background:'+(DOM_COLORS[dd]||'#888')+';flex-shrink:0"></span>'
-      +'<b style="color:#cbd5e1;font-size:12px">'+(DOM_LABELS[dd]||dd)+'</b>'
-      +'<span style="color:#6f88ab;font-size:11px">'+list.length+' сигн.'+(ds0[dd]!=null?' · уровень '+Math.round(ds0[dd]):'')+'</span></div>';
-    var items=list.slice(0,_MAXSIG).map(function(e){ var ttl=String(e.title||'').replace(/\s+/g,' ').trim(); if(ttl.length>56) ttl=ttl.slice(0,56)+'…';
-      return '<div style="font-size:11px;color:#94a3b8;padding:2px 0 2px 15px">• '+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+(function(){var X=c.country;var r=(e.event_country===X)?'Произошло в стране':((e.impact_countries&&e.impact_countries.indexOf(X)>=0)?'Влияет на страну':((e.primary_country===X||e.country_code===X||e.iso===X)?'Основной объект сигнала':'Упоминается в тексте'));var cf=(r==='Произошло в стране')?(e.attribution_confidence||'low'):((r==='Основной объект сигнала')?'medium':'low');var D=cf==='high'?['●','Высокая','#5fae7a']:(cf==='medium'?['◐','Средняя','#caa45a']:['○','Низкая','#8a93a6']);return '<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'+r+' · <span style="color:'+D[2]+'">'+D[0]+' '+D[1]+'</span></span>';})()+'</div>'; }).join('');
-    _shown += Math.min(list.length, _MAXSIG);
-    return head+items;
-  }).join('');
-  var _total=evs.length, _more='';
-  if(_total>_shown){
-    var _all=evs.slice().sort(function(a,b){ return (b.severity||0)-(a.severity||0); }).map(function(e){ var ttl=String(e.title||'').replace(/\s+/g,' ').trim(); if(ttl.length>64) ttl=ttl.slice(0,64)+'…';
-      return '<div style="font-size:11px;color:#94a3b8;padding:3px 0;display:flex;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[e.domain]||'#888')+';margin-top:4px;flex-shrink:0"></span><span>'+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+(function(){var X=c.country;var r=(e.event_country===X)?'Произошло в стране':((e.impact_countries&&e.impact_countries.indexOf(X)>=0)?'Влияет на страну':((e.primary_country===X||e.country_code===X||e.iso===X)?'Основной объект сигнала':'Упоминается в тексте'));var cf=(r==='Произошло в стране')?(e.attribution_confidence||'low'):((r==='Основной объект сигнала')?'medium':'low');var D=cf==='high'?['●','Высокая','#5fae7a']:(cf==='medium'?['◐','Средняя','#caa45a']:['○','Низкая','#8a93a6']);return '<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'+r+' · <span style="color:'+D[2]+'">'+D[0]+' '+D[1]+'</span></span>';})()+'</span></div>'; }).join('');
-    _more='<details style="margin-top:9px"><summary style="cursor:pointer;color:#6f88ab;font-size:11px;list-style:none">Показать все сигналы ('+_total+')</summary><div style="margin-top:6px">'+_all+'</div></details>';
-  }
-  H+=card('Главные драйверы риска', drv+_more);
+  // ── 1. Risk Momentum ──
+  (function(){
+    var g=c.gri_delta_7d||0, ew=c.ews_delta_7d||0, cr=c.cri_delta_7d||0, sum=g+ew+cr, st,col;
+    if(sum<=1){ st='Стабильно'; col='#10b981'; }
+    else if(sum<=8){ st='Ускорение'; col='#eab308'; }
+    else if(sum<=18){ st='Рост риска'; col='#f97316'; }
+    else { st='Резкий рост'; col='#ef4444'; }
+    function dt(v){ if(v==null) return '<span style="color:#6f88ab">накапливается</span>'; var cl=v===0?'#6f88ab':v>0?'#f97316':'#10b981',ar=v===0?'→':v>0?'▲':'▼'; return '<span style="color:'+cl+'">'+ar+' '+(v>0?'+':'')+v+'</span>'; }
+    H+=card('Динамика изменений',
+      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">'
+      +'<span style="width:10px;height:10px;border-radius:50%;background:'+col+'"></span>'
+      +'<b style="color:'+col+';font-size:14px">'+st+'</b></div>'
+      +'<div style="display:flex;gap:16px;font-size:12px;color:#94a3b8">'
+      +'<div>GRI '+dt(c.gri_delta_7d)+'</div><div>EWS '+dt(c.ews_delta_7d)+'</div><div>CRI '+dt(c.cri_delta_7d)+'</div></div>'
+      +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
+  })();
 
-
-
-  // ── 6. Каскадный риск (CRI) ──
-  var _g=parseFloat(c.risk_score)||0, _t=_next(_g), _m=c.gri_delta_7d;
-  var _traj=(_t==null)?'<span style="color:#6f88ab">верхний уровень</span>'
-    :'до порога '+_t+' · '+(_t-_g)+' п.'+(_m!=null&&_m>0?' <span style="color:#f97316">(+'+_m+'/нед)</span>':(_m!=null&&_m<0?' <span style="color:#10b981">('+_m+'/нед)</span>':''));
-  var _dots=_AD.map(function(d){var on=(_ds[d]||0)>=60;return '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+(DOM_COLORS[d]||'#888')+';opacity:'+(on?1:.18)+';margin-right:3px"></span>';}).join('');
-  var _casc=(_act.length>=5)?'Полный каскад':(_act.length>=3)?'Множественная активация':(_act.length>=1)?'Локальная активация':'Нет активных доменов';
-  H+=card('Каскадный риск (CRI)',
-    '<div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:#94a3b8">'
-    +(_cri!=null?'<div>Каскадный риск (CRI): <b style="color:#cbd5e1">'+_cri+'</b> <span style="color:#6f88ab">'+_cband(_cri)+'</span></div>':'')
-    +'<div>Активны домены: '+_dots+' <span style="color:#cbd5e1">'+_act.length+'/5</span> <span style="color:#6f88ab">· '+_casc+'</span></div>'
-    +'<div>Траектория: '+_traj+'</div></div>');
-
-  // ── 7. Горячие регионы ──
-  var rc={};
-  evs.forEach(function(e){ var _raw=String(e.region||''); if(cnLc && _raw.toLowerCase().indexOf(cnLc)<0) return; var r=_raw.replace(/,?\s*(Россия|Russia|Турция|Turkey)\s*$/i,'').trim(); if(r && r.toLowerCase()!==cnLc) rc[r]=(rc[r]||0)+1; });
-  var regs=Object.keys(rc).sort(function(a,b){ return rc[b]-rc[a]; }).slice(0,8);
-  if(regs.length){
-    var _mx=rc[regs[0]]||1;
-    var f4=regs.map(function(r){ var hot=(rc[r]>=Math.max(2,_mx*0.6));
-      return '<span style="display:inline-block;font-size:11px;color:'+(hot?'#e8eef5':'#94a3b8')+';background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.10);border-radius:6px;padding:3px 9px;margin:0 5px 5px 0">'+esc(r)+' <span style="color:#6f88ab">'+rc[r]+'</span></span>'; }).join('');
-    H+=card('Горячие регионы', f4);
-  }
-
+  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
+  // ── 2. Динамика риска · график (history) ──
+  H+=card('История индексов', '<div id="grdf-hist" style="min-height:70px"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>');
   // ── 8. Статистика обработки сигналов ──
   var _covC=(window._COV_TOTALS&&window._COV_TOTALS.countries&&window._COV_TOTALS.countries[c.country])?window._COV_TOTALS.countries[c.country]:null;
   var _covSrc=_covC||dc;
@@ -8266,7 +8263,6 @@ function _grdfContextHtml(c){
     return '<div style="display:flex;justify-content:space-between;font-size:11px;color:'+(_cn?'#94a3b8':'#6f88ab')+';padding:2px 0"><span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[d]||'#888')+';margin-right:6px;opacity:'+(_cn?'1':'.4')+'"></span>'+(DOM_LABELS[d]||d)+'</span><span style="color:'+(_cn?'#cbd5e1':'#6f88ab')+';font-weight:600">'+_cn+'</span></div>'; }).join('');
   _statInner+='<div style="font-size:10px;color:#6f88ab;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Покрытие · '+esc(c.country_name||c.country)+'</div>'+_covLine;
   H+=cardS('Статистика обработки сигналов', _statInner);
-
   // ── 9. Уверенность оценки ──
   var sc={}; evs.forEach(function(e){ var ss=String(e.source||'').trim(); if(ss) sc[ss]=(sc[ss]||0)+1; });
   var nsrc=Object.keys(sc).length, n=evs.length;
@@ -8279,7 +8275,6 @@ function _grdfContextHtml(c){
     +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">'+n+' сигналов · '+nsrc+' источников · '+_act.length+' активных доменов'+(hrs!=null?' · обновление '+hrs+' ч назад':'')+'</div>');
   var dt2=(typeof _todayData!=='undefined'&&_todayData&&_todayData.date)?_todayData.date:'';
   if(dt2) H+=cardS('Обновлено', '<div style="font-size:11px;color:#cbd5e1">'+esc(dt2)+(hrs!=null?' · '+hrs+' ч назад':'')+'</div>');
-
   // ── 10. Методология оценки ──
   function _mc(col,lab,txt,src){ return '<div><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+col+';margin-right:7px;vertical-align:middle"></span><b style="color:#cbd5e1">'+lab+'</b> — '+txt+(src?'<div style="color:#6f88ab;font-size:11px;margin-top:3px;margin-left:14px">Источники: '+src+'</div>':'')+'</div>'; }
   H+=cardS('Методология оценки',
