@@ -8142,7 +8142,7 @@ function _grdfContextHtml(c){
   function cardS(label, inner){ if(label==='Обновлено'){ return '<div style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><div style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+label+'</div>'+inner+'</div>'; } return '<details class="grdf-acc" style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><summary class="grdf-acc-h" style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>'; }
   var H='';
 
-  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Текущая ситуация</div>';
+  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
   // ── 3. Структура GRI · рейтинг доменов (полосы вместо радиала) ──
   (function(){
     function dlvl(v){ if(v>=75)return['критический','#ef4444']; if(v>=60)return['высокий','#f97316']; if(v>=40)return['повышенный','#eab308']; if(v>=20)return['низкий','#10b981']; return['минимальный','#6f88ab']; }
@@ -8201,7 +8201,7 @@ function _grdfContextHtml(c){
     H+=card('Горячие регионы', f4);
   }
 
-  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
+  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
   // ── 5. Прогноз риска (линейная проекция + сценарии модели) ──
   (function(){
     var gri=Math.round(parseFloat(c.risk_score)||0), m=c.gri_delta_7d, ds=c.domain_scores||{}, nt=null, ts=[40,60,75];
@@ -8245,7 +8245,7 @@ function _grdfContextHtml(c){
       +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
   })();
 
-  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Стратегический контекст и Архив</div>';H+='<div id="grdf-cc-local"></div>';H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
+  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Стратегический контекст и Архив</div>';H+='<div id="grdf-cc-local"></div>';H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
   // ── 2. Динамика риска · график (history) ──
   H+=card('История индексов', '<div id="grdf-hist" style="min-height:70px"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>');
   // ── 8. Статистика обработки сигналов ──
