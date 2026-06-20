@@ -8391,12 +8391,15 @@ window._spRenderCountryLocal = function(el, d, cname){
        '<p class="sp-p" style="margin-bottom:8px">'+esc(dlc(wd))+'</p>'
       +frow('Влияние на каскады', sfc.cascade)+frow('Скорость роста', sfc.velocity)+frow('Прогноз', sfc.forecast)+frow('Междоменное распространение', sfc.cross)+frow('Страновой коэффициент', wq));
   }
-  var blocks= focus + traj + nextp + trans + rk + pb
-    +(L.changed7d?blk('Что изменилось за 7 дней','<p class="sp-p">'+esc(L.changed7d)+'</p>'):'')
+  var _SH=function(t){return '<div style="font-size:9px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:15px 0 8px">'+t+'</div>';};
+  var blocks= _SH('Интерпретация')
     +blk('Практическая интерпретация', subL('Для бизнеса',L.business)+subL('Для инвесторов',L.investors)+subL('Для частных лиц',L.private))
     +(L.watch?blk('На что обратить внимание','<p class="sp-p">'+esc(L.watch)+'</p>'):'')
-    +why
-    +(L.keyLocal?blk('Ключевой локальный вывод','<p class="sp-p sp-key">'+esc(L.keyLocal)+'</p>'):'');
+    +(L.keyLocal?blk('Ключевой локальный вывод','<p class="sp-p sp-key">'+esc(L.keyLocal)+'</p>'):'')
+    +_SH('Стратегический прогноз')
+    +focus + traj + nextp + trans + why
+    +(L.changed7d?blk('Что изменилось за 7 дней','<p class="sp-p">'+esc(L.changed7d)+'</p>'):'')
+    +rk + pb;
   el.innerHTML='<div style="margin:0 14px 8px"><div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:14px">'
     +''
     +'<div class="sp-sub" style="font-size:15px;color:#D4AF5A;font-weight:600;letter-spacing:0;margin:0 0 8px">Что текущие сигналы означают для страны: '+esc(L.country_name)+(L.generic?' · базовый профиль':'')+'</div>'
