@@ -8245,7 +8245,7 @@ function _grdfContextHtml(c){
       +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
   })();
 
-  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Что сигналы означают для страны</div>';H+='<div id="grdf-cc-local"></div>';H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
+  H+='<div id="grdf-cc-local"></div>';H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
   // ── 2. Динамика риска · график (history) ──
   H+=card('История индексов', '<div id="grdf-hist" style="min-height:70px"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>');
   // ── 8. Статистика обработки сигналов ──
@@ -8392,7 +8392,7 @@ window._spRenderCountryLocal = function(el, d, cname){
       +frow('Влияние на каскады', sfc.cascade)+frow('Скорость роста', sfc.velocity)+frow('Прогноз', sfc.forecast)+frow('Междоменное распространение', sfc.cross)+frow('Страновой коэффициент', wq));
   }
   var _SH=function(t){return '<div style="font-size:9px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:15px 0 8px">'+t+'</div>';};
-  var blocks= _SH('Интерпретация')
+  var blocks= _SH('Стратегическая интерпретация')
     +blk('Практическая интерпретация', subL('Для бизнеса',L.business)+subL('Для инвесторов',L.investors)+subL('Для частных лиц',L.private))
     +(L.watch?blk('На что обратить внимание','<p class="sp-p">'+esc(L.watch)+'</p>'):'')
     +(L.keyLocal?blk('Ключевой локальный вывод','<p class="sp-p sp-key">'+esc(L.keyLocal)+'</p>'):'')
@@ -8466,7 +8466,7 @@ window._renderCountryArchive = function(el, cc, cname, ds){
         +'<div class="sp-head"><span class="sp-badge">СТРАТЕГИЧЕСКИЙ КОНТЕКСТ</span></div>'
         +'<div class="sp-sub">Почему формируется давление: '+esc(cname||cc)+'</div>'
         +'<div class="sp-body"><div class="sp-blocks">'+(ctxBody||'<div class="sp-p" style="opacity:.5">Недостаточно материалов по стране.</div>')+'</div></div>'
-        +'<div class="sp-head" style="margin-top:20px"><span class="sp-badge" style="font-size:15px;color:#D4AF5A">МАТЕРИАЛЫ АРХИВА</span></div>'
+        +'<div class="sp-head" style="margin-top:20px"><span class="sp-badge" style="font-size:15px;color:#D4AF5A">АРХИВ ИССЛЕДОВАНИЙ</span></div>'
         +'<div class="sp-body">'+fundCard
           +'<div class="sp-blocks" style="margin-top:14px">'
           +subL('Ключевые исследования', keyDesc+krStyle+krGroups())
