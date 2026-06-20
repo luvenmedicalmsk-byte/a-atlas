@@ -8210,7 +8210,7 @@ function _grdfContextHtml(c){
     if(m!=null&&m>0&&nt!=null){ var wk=Math.max(0.5,Math.round((nt-gri)/m*10)/10), lt=nt>=75?'критический':nt>=60?'высокий':'повышенный'; rows.push('Если рост продолжится темпом <b style="color:#f97316">+'+m+'/нед</b>, уровень «'+lt+'» (порог '+nt+') — ориентировочно через <b style="color:#cbd5e1">~'+wk+' нед</b>.'); }
     else if(m!=null&&m<=0){ rows.push('Риск <b style="color:#10b981">не растёт</b> ('+(m>0?'+':'')+m+'/нед) — порог не приближается.'); }
     var ina=_AD.filter(function(d){return (ds[d]||0)<60;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});
-    if(ina.length && (ds[ina[0]]||0)>=35){ var nd=ina[0], scn=Math.round(ds[nd]||0); rows.push('Ближе всего к зоне риска: <b style="color:'+(DOM_COLORS[nd]||'#888')+'">'+(DOM_LABELS[nd]||nd)+'</b> — '+scn+'/100, до порога 60 осталось <b style="color:#cbd5e1">'+(60-scn)+'</b> п.'); }
+    if(ina.length && (ds[ina[0]]||0)>=35){ var nd=ina[0], scn=Math.round(ds[nd]||0); rows.push('Ближе всего к порогу риска: <b style="color:'+(DOM_COLORS[nd]||'#888')+'">'+(DOM_LABELS[nd]||nd)+'</b> — '+scn+'/100, до порога 60 осталось <b style="color:#cbd5e1">'+(60-scn)+'</b> п.'); }
     var f7=c.forecast_7d, f30=c.forecast_30d, fs='';
     if(f7&&f7.score_min!=null) fs+='7д '+Math.round(f7.score_min)+'–'+Math.round(f7.score_max);
     if(f30&&f30.base_case!=null){ fs+=(fs?' · ':'')+'30д '+Math.round(f30.base_case)+(f30.best_case!=null?' ('+Math.round(f30.best_case)+'–'+Math.round(f30.worst_case)+')':''); }
@@ -8339,8 +8339,8 @@ window._spRenderCountryLocal = function(el, d, cname){
   var nextp='';
   if(L.next_pressure && L.next_pressure.domain){
     var NP=L.next_pressure;
-    nextp=blk('Следующий домен под давлением',
-       '<div class="sp-dyn"><span class="sp-dyn-d">Домен</span><span class="sp-dyn-v" style="color:#ff7a00;font-weight:600">'+esc(dlc(NP.domain))+'</span></div>'
+    nextp=blk('Каскадное распространение давления',
+       '<p class="sp-note" style="margin-top:0;opacity:.72">Куда давление ведущего домена распространяется в первую очередь.</p><div class="sp-dyn"><span class="sp-dyn-d">Домен</span><span class="sp-dyn-v" style="color:#ff7a00;font-weight:600">'+esc(dlc(NP.domain))+'</span></div>'
       +'<div class="sp-dyn"><span class="sp-dyn-d">Источник давления</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(NP.source))+'</span></div>'
       +(NP.confidence!=null?'<div class="sp-dyn"><span class="sp-dyn-d">Уверенность</span><span class="sp-dyn-v" style="color:#cbd5e1">'+NP.confidence+'%</span></div>':'')
       +(NP.cause?'<p class="sp-note">'+esc(NP.cause)+'</p>':''));
@@ -8644,7 +8644,7 @@ function grdfRenderCountryPanel(cc) {
   html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div>'+_miniCri+'</div>';
   html += '</div>';
   html += '<div id="grdf-idx-info" class="grdf-idx-info"></div>';
-  html += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Следующий вероятный домен под давлением — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:#cbd5e1">'+s+'</div>';})();
+  html += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Ближе всего к порогу риска — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:#cbd5e1">'+s+'</div>';})();
 
 
   // GRI formation — index is assembled from 5 domain models (V1–V34)
@@ -8825,7 +8825,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
       +'<div class="sp-dyn"><span class="sp-dyn-d">30д</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(d30t)+'</span></div>';
     var leadDom=(d.brief_free&&d.brief_free.lead_strategic)||'';
     var leadHtml=leadDom?('<div class="sp-dyn"><span class="sp-dyn-d">Текущий ведущий домен</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(leadDom))+'</span></div>'):'';
-    var nextHtml=(FB.next_pressure&&FB.next_pressure.domain)?('<div class="sp-dyn"><span class="sp-dyn-d">Следующий домен под давлением</span><span class="sp-dyn-v" style="color:#ff7a00">'+esc(dlc(FB.next_pressure.domain))+'</span></div>'):'';
+    var nextHtml=(FB.next_pressure&&FB.next_pressure.domain)?('<div class="sp-dyn"><span class="sp-dyn-d">Каскадное распространение давления</span><span class="sp-dyn-v" style="color:#ff7a00">'+esc(dlc(FB.next_pressure.domain))+'</span></div>'):'';
     var focusHtml=leadHtml+nextHtml;
     function subLine(t){ return '<div style="font-size:11px;color:rgba(148,163,184,.7);margin:0 0 9px">'+esc(t)+'</div>'; }
     var domHtml=(DY.by_domain||[]).map(function(x){
