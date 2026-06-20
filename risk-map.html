@@ -8142,7 +8142,7 @@ function _grdfContextHtml(c){
   function cardS(label, inner){ if(label==='Обновлено'){ return '<div style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><div style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+label+'</div>'+inner+'</div>'; } return '<details class="grdf-acc" style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><summary class="grdf-acc-h" style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>'; }
   var H='';
 
-  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
+  H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
   // ── 3. Структура GRI · рейтинг доменов (полосы вместо радиала) ──
   (function(){
     function dlvl(v){ if(v>=75)return['критический','#ef4444']; if(v>=60)return['высокий','#f97316']; if(v>=40)return['повышенный','#eab308']; if(v>=20)return['низкий','#10b981']; return['минимальный','#6f88ab']; }
@@ -8201,7 +8201,7 @@ function _grdfContextHtml(c){
     H+=card('Горячие регионы', f4);
   }
 
-  H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
+  H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
   // ── 5. Прогноз риска (линейная проекция + сценарии модели) ──
   (function(){
     var gri=Math.round(parseFloat(c.risk_score)||0), m=c.gri_delta_7d, ds=c.domain_scores||{}, nt=null, ts=[40,60,75];
@@ -8245,7 +8245,7 @@ function _grdfContextHtml(c){
       +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
   })();
 
-  H+='<div id="grdf-cc-local"></div>';H+='<div style="font-size:10px;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:22px 14px 9px;padding-top:13px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
+  H+='<div id="grdf-cc-local"></div>';H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
   // ── 2. Динамика риска · график (history) ──
   H+=card('История индексов', '<div id="grdf-hist" style="min-height:70px"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>');
   // ── 8. Статистика обработки сигналов ──
@@ -8298,7 +8298,7 @@ window._spRenderCountryLocal = function(el, d, cname){
   if(d && d.locked){
     el.innerHTML='<div style="margin:0 14px 8px"><div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:14px">'
       +''
-      +'<div class="sp-sub" style="font-size:12px;color:rgba(203,213,225,.72);font-weight:500;letter-spacing:.02em;margin:0 0 10px">Что текущие сигналы означают для страны: '+esc(cname||'')+'</div>'
+      +'<div class="sp-sub" style="font-size:11.5px;color:#b8973a;font-weight:500;letter-spacing:.04em;margin:0 0 11px;font-family:Montserrat,sans-serif">Интерпретация текущих сигналов</div>'
       +'<div class="sp-body"><div class="sp-block">'
       +ul(['Рейтинг стратегического влияния по доменам (0–100)','Прогноз стратегического влияния на 7 и 30 дней','Траектория и смещение стратегического давления','Карта переходов давления между доменами','Баланс фактического, стратегического и прогнозного давления','Ключевой локальный вывод'])
       +'<div class="sp-lock-t" style="margin:12px 0 14px;max-width:none">Signal Pro объясняет, что означают текущие сигналы и куда смещается давление.</div>'
@@ -8391,7 +8391,7 @@ window._spRenderCountryLocal = function(el, d, cname){
        '<p class="sp-p" style="margin-bottom:8px">'+esc(dlc(wd))+'</p>'
       +frow('Влияние на каскады', sfc.cascade)+frow('Скорость роста', sfc.velocity)+frow('Прогноз', sfc.forecast)+frow('Междоменное распространение', sfc.cross)+frow('Страновой коэффициент', wq));
   }
-  var _SH=function(t){return '<div style="font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:18px 0 9px">'+t+'</div>';};
+  var _SH=function(t){return '<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 0 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.18)">'+t+'</div>';};
   var blocks= _SH('Стратегическая интерпретация')
     +blk('Практическая интерпретация', subL('Для бизнеса',L.business)+subL('Для инвесторов',L.investors)+subL('Для частных лиц',L.private))
     +(L.watch?blk('На что обратить внимание','<p class="sp-p">'+esc(L.watch)+'</p>'):'')
@@ -8402,7 +8402,7 @@ window._spRenderCountryLocal = function(el, d, cname){
     +rk + pb;
   el.innerHTML='<div style="margin:0 14px 8px"><div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:14px">'
     +''
-    +'<div class="sp-sub" style="font-size:12px;color:rgba(203,213,225,.72);font-weight:500;letter-spacing:.02em;margin:0 0 10px">Что текущие сигналы означают для страны: '+esc(L.country_name)+(L.generic?' · базовый профиль':'')+'</div>'
+    +'<div class="sp-sub" style="font-size:11.5px;color:#b8973a;font-weight:500;letter-spacing:.04em;margin:0 0 11px;font-family:Montserrat,sans-serif">Интерпретация текущих сигналов</div>'
     +'<div class="sp-body"><div class="sp-blocks">'+blocks+'</div></div></div></div>';
 };
 
@@ -8464,9 +8464,9 @@ window._renderCountryArchive = function(el, cc, cname, ds){
       var keyDesc='<div style="font-size:10px;color:rgba(148,163,184,.6);margin:-1px 0 8px;line-height:1.4">Ручная выборка наиболее значимых материалов из архива исследований по '+esc(gname)+'.</div>';
       var html='<div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:14px">'
         +'<div class="sp-head"><span class="sp-badge" style="color:#b8973a">СТРАТЕГИЧЕСКИЙ КОНТЕКСТ</span></div>'
-        +'<div class="sp-sub">Долгосрочные факторы и структурные причины давления</div>'
+        +'<div class="sp-sub" style="color:rgba(203,213,225,.62)">Долгосрочные факторы и структурные причины давления</div>'
         +'<div class="sp-body"><div class="sp-blocks">'+(ctxBody||'<div class="sp-p" style="opacity:.5">Недостаточно материалов по стране.</div>')+'</div></div>'
-        + (function(){var _PADJ={geopolitics:'геополитическом',economy:'экономическом',climate:'климатическом',technology:'технологическом',social:'социальном'};var _tp=(top||[]).slice(0,2).map(function(x){return _PADJ[x.d]||x.d;}).filter(Boolean);var _sum='Система фиксирует устойчивое давление'+(_tp.length?(' в '+_tp.join(' и ')+' контур'+(_tp.length>1?'ах':'е')):'')+'.';if(top&&top[0]&&_PADJ[top[0].d])_sum+=' Наиболее выраженное — в '+_PADJ[top[0].d]+' домене.';return '<div style="border:0.5px solid rgba(184,151,58,.28);border-radius:10px;padding:14px 15px;margin-top:20px;background:linear-gradient(180deg,rgba(184,151,58,.07),rgba(184,151,58,.02))">'+'<div style="font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin-bottom:8px">Итоговая стратегическая оценка</div>'+'<div style="font-size:12.5px;line-height:1.6;color:#dbe3ec">'+_sum+'</div></div>';})() +'<div class="sp-head" style="margin-top:20px"><span class="sp-badge" style="color:#b8973a">АРХИВ ИССЛЕДОВАНИЙ</span></div>'
+        + (function(){var _PADJ={geopolitics:'геополитическом',economy:'экономическом',climate:'климатическом',technology:'технологическом',social:'социальном'};var _tp=(top||[]).slice(0,2).map(function(x){return _PADJ[x.d]||x.d;}).filter(Boolean);var _sum='Система фиксирует устойчивое давление'+(_tp.length?(' в '+_tp.join(' и ')+' контур'+(_tp.length>1?'ах':'е')):'')+'.';if(top&&top[0]&&_PADJ[top[0].d])_sum+=' Наиболее выраженное — в '+_PADJ[top[0].d]+' домене.';return '<div style="border:0.5px solid rgba(184,151,58,.28);border-radius:10px;padding:14px 15px;margin-top:20px;background:linear-gradient(180deg,rgba(184,151,58,.07),rgba(184,151,58,.02))">'+'<div style="font-size:8px;font-weight:600;color:rgba(184,151,58,.65);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px">◆ Сводка системы</div><div style="font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin-bottom:8px">Итоговая стратегическая оценка</div>'+'<div style="font-size:12.5px;line-height:1.6;color:#dbe3ec">'+_sum+'</div></div>';})() +'<div class="sp-head" style="margin-top:22px;padding-top:14px;border-top:0.5px solid rgba(184,151,58,.22)"><span style="color:#b8973a;margin-right:6px;font-size:11px">◈</span><span class="sp-badge" style="color:#b8973a">АРХИВ ИССЛЕДОВАНИЙ</span></div>'
         +'<div class="sp-body">'+fundCard
           +'<div class="sp-blocks" style="margin-top:14px">'
           +subL('Ключевые исследования', keyDesc+krStyle+krGroups())
