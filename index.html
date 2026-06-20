@@ -7861,11 +7861,12 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
         if(_e.impact_countries && _e.impact_countries.indexOf(_kcc)>=0) return 'Влияет на страну';
         if(_e.primary_country===_kcc || _e.country_code===_kcc || _e.iso===_kcc) return 'Основной объект сигнала';
         return 'Упоминается в тексте'; };
+      _kconf=function(_e,_r){ var _c; if(_r==='Произошло в стране') _c=(_e&&_e.attribution_confidence)||'low'; else if(_r==='Основной объект сигнала') _c='medium'; else _c='low'; if(_c==='high') return {d:'●',t:'Высокая',col:'#5fae7a'}; if(_c==='medium') return {d:'◐',t:'Средняя',col:'#caa45a'}; return {d:'○',t:'Низкая',col:'#8a93a6'}; };
       var _kpress = _kord.slice(0,2).map(function(d){
         var _e=_kdt[d], _ti=(_e&&_e.title)?String(_e.title).replace(/\s+/g,' ').trim():'';
         if(_ti.length>58) _ti=_ti.slice(0,58)+'…';
-        var _wl=_kwhy(_e);
-        return '<div style="margin-top:4px"><span style="color:'+(DOM_COLORS[d]||'#94a3b8')+'">'+(DOM_LABELS[d]||d)+'</span> — '+_esc(_ti)+' <span style="color:#6f88ab">('+_kdc[d]+' сигн.)</span>'+(_wl?'<span style="display:block;font-size:9px;color:#6f88ab;margin-top:1px;letter-spacing:.04em">'+_wl+'</span>':'')+'</div>';
+        var _wl=_kwhy(_e); var _wc=_wl?_kconf(_e,_wl):null;
+        return '<div style="margin-top:4px"><span style="color:'+(DOM_COLORS[d]||'#94a3b8')+'">'+(DOM_LABELS[d]||d)+'</span> — '+_esc(_ti)+' <span style="color:#6f88ab">('+_kdc[d]+' сигн.)</span>'+(_wl?'<span style="display:block;font-size:9px;color:#6f88ab;margin-top:1px;letter-spacing:.04em">'+_wl+' <span style="color:'+(_wc?_wc.col:'#6f88ab')+'">'+(_wc?(_wc.d+' '+_wc.t):'')+'</span></span>':'')+'</div>';
       }).join('');
       var _kwatch=[];
       if(ews>=45) _kwatch.push('ускорение сигналов');
