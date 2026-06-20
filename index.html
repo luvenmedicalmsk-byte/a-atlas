@@ -8214,7 +8214,7 @@ function _grdfContextHtml(c){
       +'<b style="color:#cbd5e1;font-size:12px">'+(DOM_LABELS[dd]||dd)+'</b>'
       +'<span style="color:#6f88ab;font-size:11px">'+list.length+' сигн.'+(ds0[dd]!=null?' · уровень '+Math.round(ds0[dd]):'')+'</span></div>';
     var items=list.slice(0,_MAXSIG).map(function(e){ var ttl=String(e.title||'').replace(/\s+/g,' ').trim(); if(ttl.length>56) ttl=ttl.slice(0,56)+'…';
-      var _r=_kwhy(e,cc), _cf=_r?_kconf(e,_r):null;
+      var _r=_kwhy(e,c.country), _cf=_r?_kconf(e,_r):null;
       return '<div style="font-size:11px;color:#94a3b8;padding:2px 0 2px 15px">• '+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+(_r?'<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'+_r+(_cf?' · <span style="color:'+_cf.col+'">'+_cf.d+' '+_cf.t+'</span>':'')+'</span>':'')+'</div>'; }).join('');
     _shown += Math.min(list.length, _MAXSIG);
     return head+items;
@@ -8222,7 +8222,7 @@ function _grdfContextHtml(c){
   var _total=evs.length, _more='';
   if(_total>_shown){
     var _all=evs.slice().sort(function(a,b){ return (b.severity||0)-(a.severity||0); }).map(function(e){ var ttl=String(e.title||'').replace(/\s+/g,' ').trim(); if(ttl.length>64) ttl=ttl.slice(0,64)+'…';
-      var _r2=_kwhy(e,cc), _cf2=_r2?_kconf(e,_r2):null;
+      var _r2=_kwhy(e,c.country), _cf2=_r2?_kconf(e,_r2):null;
       return '<div style="font-size:11px;color:#94a3b8;padding:3px 0;display:flex;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[e.domain]||'#888')+';margin-top:4px;flex-shrink:0"></span><span>'+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+(_r2?'<span style="display:block;font-size:9px;margin-top:1px;letter-spacing:.03em;color:#6f88ab">'+_r2+(_cf2?' · <span style="color:'+_cf2.col+'">'+_cf2.d+' '+_cf2.t+'</span>':'')+'</span>':'')+'</span></div>'; }).join('');
     _more='<details style="margin-top:9px"><summary style="cursor:pointer;color:#6f88ab;font-size:11px;list-style:none">Показать все сигналы ('+_total+')</summary><div style="margin-top:6px">'+_all+'</div></details>';
   }
