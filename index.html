@@ -7849,7 +7849,7 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
     if(cnLc){ var t=((e.title||'')+' '+(e.region||'')).toLowerCase(); return t.indexOf(cnLc)>=0; }
     return false;
   });
-  var n=evs.length; if(!n) return ''; if(!isSig){ return '<div style="margin:12px 14px 4px;padding:13px 13px;background:rgba(184,151,58,.05);border:0.5px solid rgba(184,151,58,.18);border-radius:10px">'+'<div style="font-size:12.5px;color:#f1f5f9;font-weight:600;line-height:1.45"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Анализ страны завершён</div>'+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">Система выявила ведущий источник формирования риска, рассчитала вероятные сценарии развития ситуации и определила наиболее вероятные направления дальнейшего распространения давления.</div>'+'<button onclick="openAccess()" style="margin-top:13px;font-size:11.5px;font-weight:700;color:#06050A;background:#E3B23C;border:none;border-radius:20px;padding:8px 18px;cursor:pointer;font-family:Montserrat,sans-serif">Разблокировать полный профиль страны \u2192</button>'+'</div>'; } var _plu_nom=_plu(n,'сигнал','сигнала','сигналов'), _plu_prep=_plu(n,'сигнале','сигналах','сигналах');
+  var n=evs.length; if(!n) return ''; if(!isSig){ return '<div style="margin:12px 14px 4px;padding:13px 13px;background:rgba(184,151,58,.05);border:0.5px solid rgba(184,151,58,.18);border-radius:10px">'+'<div style="font-size:12.5px;color:#f1f5f9;font-weight:600;line-height:1.45"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Анализ страны завершён</div>'+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">Система обработала сигналы, оценила междоменные связи, выявила источники давления, рассчитала вероятные сценарии развития и сформировала стратегический прогноз.</div>'+'<button onclick="openAccess()" style="margin-top:13px;font-size:11.5px;font-weight:700;color:#06050A;background:#E3B23C;border:none;border-radius:20px;padding:8px 18px;cursor:pointer;font-family:Montserrat,sans-serif">Разблокировать полный профиль страны \u2192</button>'+'</div>'; } var _plu_nom=_plu(n,'сигнал','сигнала','сигналов'), _plu_prep=_plu(n,'сигнале','сигналах','сигналах');
   var sev=evs.map(function(e){return +e.severity||0;});
   var avg=Math.round(sev.reduce(function(a,b){return a+b;},0)/n);
   var dsum={}; evs.forEach(function(e){var d=e.domain||'other';dsum[d]=(dsum[d]||0)+(+e.severity||0);});
@@ -7922,23 +7922,23 @@ function _grdfFreeMirror(c){ try{
     'Источники давления':['Определены основные источники формирования риска.','Доступен главный источник риска'],
     'Главные драйверы риска':['Ключевые драйверы выявлены.','Доступны ключевые выводы'],
     'Каскадный риск (CRI)':['Каскадная модель рассчитана.','Доступны каскадные связи'],
-    'Каскадное распространение давления':['Карта распространения давления между доменами построена.','Доступны сценарии развития'],
+    'Каскадное распространение давления':['Карта распространения риска между сферами построена.','Доступны сценарии развития'],
     'Горячие регионы':['Регионы концентрации сигналов выявлены.','Доступны критические регионы'],
     'Горизонт прогноза':['Прогноз сформирован.','Доступен прогноз системы'],
     'Динамика изменений':['Изменение уровня давления за 7 дней зафиксировано.','Доступен полный разбор изменений'],
     'Практическая интерпретация':['Интерпретация текущих сигналов завершена.','Доступна полная интерпретация'],
     'На что обратить внимание':['Критические точки наблюдения определены.','Доступны критические точки'],
     'Ключевой локальный вывод':['Ключевой вывод по стране сформирован.','Доступен ведущий вывод'],
-    'Стратегический фокус':['Стратегический фокус давления определён.','Доступен ведущий контур'],
+    'Стратегический фокус':['Стратегический фокус давления определён.','Доступен ведущий контур давления'],
     'Траектория стратегического давления':['Траектория развития давления рассчитана.','Доступен прогноз системы'],
-    'Следующая зона распространения риска':['Вероятные направления распространения давления рассчитаны.','Доступны точки передачи риска'],
+    'Следующая зона распространения риска':['Вероятные направления распространения давления рассчитаны.','Доступны направления распространения риска'],
     'Почему система считает этот домен стратегическим':['Стратегическая значимость ведущего контура обоснована.','Доступен стратегический разбор'],
     'Что изменилось за 7 дней':['Изменения уровня давления за неделю зафиксированы.','Доступен полный разбор изменений'],
-    'Рейтинг стратегического влияния (0–100)':['Стратегическое влияние по доменам рассчитано.','Доступен полный анализ домена'],
+    'Рейтинг стратегического влияния (0–100)':['Стратегическое влияние по сферам риска рассчитано.','Доступен полный анализ сферы риска'],
     'Баланс факторов давления':['Баланс факторов рассчитан.','Доступны скрытые зависимости'],
     'Структурные уязвимости':['Структурные уязвимости выявлены.','Доступен стратегический разбор'],
     'Исторически устойчивые драйверы':['Исторически устойчивые драйверы определены.','Доступны скрытые зависимости'],
-    'Текущие риски (доменное давление)':['Текущее доменное давление оценено.','Доступен полный анализ домена'],
+    'Текущие риски':['Текущие риски оценены.','Доступен полный анализ сферы риска'],
     'Временные всплески':['Краткосрочные всплески активности зафиксированы.','Доступны ключевые выводы'],
     'История индексов':['Помесячная история индексов сформирована.','Доступна полная динамика'],
     'Статистика обработки сигналов':['Входящие сигналы обработаны.','Доступен полный разбор'],
@@ -7973,20 +7973,21 @@ function _grdfFreeMirror(c){ try{
     +'<div id="grdf-fm-arch-num" style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:#e2e8f0;line-height:1;min-height:34px"></div>'
     +'<div style="filter:blur(4px);opacity:.6;font-size:10px;color:rgba(148,163,184,.6);margin-top:4px;user-select:none">Последнее обновление: ···········</div>'
     +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div>'
-    +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Архив содержит исследования, прогнозы, исторические параллели и сценарные модели, используемые системой при расчёте стратегических выводов по '+gname+'.</div>'
-    +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Архив — часть аналитического контура системы: участвует в построении сценариев и прогнозов.</div></div>'; }
-  function HIDDEN(){ var its=['Главная причина текущего риска','Доминирующий стратегический контур','Наиболее вероятный сценарий развития','Следующая зона распространения давления','Критические регионы наблюдения','Горизонт стратегического прогноза','Скрытые связи между доменами','Ключевые точки передачи риска','Полный аналитический архив'];
+    +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Архив содержит исследования, прогнозы и аналитические материалы по '+gname+'.</div>'
+    +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Профиль дополнен архивом исследований для углублённого изучения контекста и долгосрочных факторов.</div></div>'; }
+  function HIDDEN(){ var its=['Что сейчас является главным источником давления на страну','Какой риск будет усиливаться дальше','По какому сценарию вероятнее всего будет развиваться ситуация','Куда риск распространится следующим','Какие регионы требуют особого наблюдения','Какие скрытые связи усиливают давление','Что система прогнозирует на горизонте наблюдения','Где находятся ключевые точки передачи риска'];
     return '<div style="margin:24px 14px 12px;padding:16px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:rgba(184,151,58,.04)">'
       +'<div style="font-size:11px;font-weight:700;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:11px">Что остаётся скрытым</div>'
       +its.map(function(t){ return '<div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:rgba(203,213,225,.82);padding:6px 0;border-top:0.5px solid rgba(255,255,255,.04)">🔒 '+esc(t)+'</div>'; }).join('')
       +'</div>'; }
-  function FINAL(){ var calc=['каскадные сценарии','скрытые связи между доменами','вероятные переходы давления','стратегические прогнозы','архивные параллели','долгосрочные сценарии'];
+  function FINAL(){ var calc=['каскадные сценарии','скрытые связи между сферами риска','вероятные переходы давления','стратегические прогнозы','архивные параллели','долгосрочные сценарии'];
     return '<div style="margin:8px 14px 6px;padding:22px 16px;border:1px solid rgba(227,178,60,.38);border-radius:14px;background:linear-gradient(180deg,rgba(227,178,60,.10),rgba(255,255,255,.012));text-align:center">'
       +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:23px;font-weight:600;color:#f1f5f9;line-height:1.22">Система завершила полный анализ страны</div>'
       +'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:10px">На основе многодоменного анализа, сценарного моделирования, каскадных связей и архивных исследований.</div>'
       +'<div style="font-size:9.5px;color:rgba(184,151,58,.85);letter-spacing:.06em;margin-top:9px;font-weight:600;font-family:Montserrat,sans-serif">Cascade Engine · Sovereign Intelligence Engine · Signal Fusion</div>'
       +'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.1em;margin-top:14px;font-weight:700;font-family:Montserrat,sans-serif">Рассчитаны</div>'
       +'<div style="display:inline-block;text-align:left;margin-top:9px">'+calc.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:3px 0;line-height:1.4"><span style="color:'+GOLD+';font-weight:700">•</span> '+esc(t)+'</div>';}).join('')+'</div>'
+      +'<div style="margin-top:16px;padding-top:14px;border-top:0.5px solid rgba(184,151,58,.18)">'+'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-family:Montserrat,sans-serif;margin-bottom:10px">Система определила</div>'+'<div style="display:inline-block;text-align:left">'+['ведущий источник давления','ключевые драйверы риска','вероятные направления распространения риска','критические точки наблюдения','стратегический фокус давления','вероятные сценарии развития','долгосрочные факторы риска'].map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:3px 0;line-height:1.35;display:flex;align-items:center">'+CHK+esc(t)+'</div>';}).join('')+'</div>'+'</div>'
       +'<div style="font-size:11px;color:rgba(203,213,225,.80);line-height:1.5;margin-top:13px">Полный профиль содержит аналитические выводы, сценарии развития и стратегические оценки системы.</div>'
       +'<div style="margin-top:15px;padding-top:14px;border-top:0.5px solid rgba(184,151,58,.18)"><div style="font-size:12.5px;color:#f1f5f9;font-weight:600">🔒 Выводы системы скрыты</div>'
       +'<div style="font-size:11px;color:rgba(203,213,225,.72);line-height:1.5;margin-top:6px">Для доступа к полному профилю необходимо разблокировать результаты анализа.</div></div>'
@@ -7996,15 +7997,16 @@ function _grdfFreeMirror(c){ try{
     return '<div style="margin:20px 14px 10px;padding:16px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)">'
       +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Аналитические движки платформы</div>'
       +rows.map(function(r){ return '<div style="padding:8px 0;border-top:0.5px solid rgba(255,255,255,.04)"><div style="font-size:11.5px;color:#E3B23C;font-weight:600">'+r[0]+'</div><div style="font-size:11px;color:rgba(203,213,225,.7);line-height:1.45;margin-top:2px">'+r[1]+'</div></div>'; }).join('')
-      +'<div style="font-size:10.5px;color:rgba(184,151,58,.85);line-height:1.5;margin-top:11px;padding-top:11px;border-top:0.5px solid rgba(184,151,58,.15)">Более 3 200 аналитических материалов и архивных исследований участвуют в построении прогнозов, сценариев и стратегических оценок страны.</div>'
-      +'<div style="font-size:10.5px;color:rgba(148,163,184,.72);line-height:1.5;margin-top:10px">Полный профиль страны — результат совместной работы движков и архивной базы исследований.</div>'
+      +'<div style="font-size:10.5px;color:rgba(184,151,58,.85);line-height:1.5;margin-top:11px;padding-top:11px;border-top:0.5px solid rgba(184,151,58,.15)">Более 3 200 аналитических материалов и профильных исследований дополняют анализ страны.</div>'
+      +'<div style="font-size:10.5px;color:rgba(148,163,184,.72);line-height:1.5;margin-top:10px">Полный профиль страны формируется на основе совместной работы аналитических движков платформы и профильной базы исследований.</div>'
+      +'<div style="font-size:10.5px;color:rgba(148,163,184,.62);line-height:1.5;margin-top:8px">Каждый движок отвечает за отдельный слой анализа: выявление сигналов, моделирование сценариев, построение прогнозов и формирование стратегических выводов.</div>'
     +'</div>'; }
   var out='';
   out+=SH('Картина давления')+grp(['Источники давления','Главные драйверы риска','Каскадный риск (CRI)','Каскадное распространение давления','Горячие регионы']);
   out+=SH('Прогноз и траектория')+grp(['Горизонт прогноза','Динамика изменений']);
   out+=SH('Стратегическая интерпретация')+grp(['Практическая интерпретация','На что обратить внимание','Ключевой локальный вывод']);
   out+=SH('Стратегический прогноз')+grp(['Стратегический фокус','Траектория стратегического давления','Каскадное распространение давления','Следующая зона распространения риска','Почему система считает этот домен стратегическим','Что изменилось за 7 дней','Рейтинг стратегического влияния (0–100)','Баланс факторов давления']);
-  out+=SH('Стратегический контекст')+SUB('Долгосрочные факторы и структурные причины давления')+grp(['Структурные уязвимости','Исторически устойчивые драйверы','Текущие риски (доменное давление)','Временные всплески']);
+  out+=SH('Стратегический контекст')+SUB('Долгосрочные факторы и структурные причины давления')+grp(['Структурные уязвимости','Исторически устойчивые драйверы','Текущие риски','Временные всплески']);
   out+=SH('Архив исследований')+ARCHCARD()+grp(['Ключевые исследования','Исторические параллели','Стратегические активы'])+CTA();
   out+=SH('Методология и аналитика')+grp(['История индексов','Статистика обработки сигналов','Уверенность оценки','Методология оценки']);
   out+=ENGINES();
