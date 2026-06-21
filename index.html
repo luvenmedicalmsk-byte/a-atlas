@@ -7907,83 +7907,63 @@ function _fmLoadArch(cc){ try{
     .catch(_cov);
 }catch(_e){} }
 
-/* ── Free-зеркало: реальные данные страны, частичное раскрытие (15–30% читаемо → блюр), одна CTA на группу ── */
+/* ── Free-зеркало: наличие аналитики без самой аналитики (описание ценности + нейтральный скелет + CTA на группу) ── */
 function _grdfFreeMirror(c){ try{
   var cc=String(c.country||'').toUpperCase();
   var GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'};
   var gname=GEN[cc]||(c.country_name||cc);
   var CTA='<a href="https://t.me/anirisao" target="_blank" rel="noopener" style="display:inline-block;font-size:11px;font-weight:600;color:#06050A;background:#D4AF5A;border-radius:18px;padding:7px 16px;font-family:Montserrat,sans-serif;text-decoration:none">Узнать стоимость контракта →</a>';
   function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  // ── реальные данные страны ──
-  var ds=c.domain_scores||{};
-  var domSorted=Object.keys(ds).map(function(k){return {k:k,label:(DOM_LABELS[k]||k),v:(+ds[k]||0)};}).sort(function(a,b){return b.v-a.v;});
-  var drivers=(c.drivers||[]).map(function(d){var t=String(d.name||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim(); return t.length>48?t.slice(0,48)+'…':t;}).filter(Boolean);
-  var gd=Math.round(+c.gri_delta_7d||0);
-  var cri=c.cri_score, dom=c.dominant_domain;
-  var active=domSorted.filter(function(d){return d.v>0;}).length;
-  var ch=(typeof _cascadeProf==='function')?_cascadeProf(c):{source:dom,prof:[]};
-  var recv=(ch.prof||[]).filter(function(x){return x.d!==dom;}).slice(0,2).map(function(x){return DOM_LABELS[x.d]||x.d;});
-  var chain=[(DOM_LABELS[dom]||dom)].concat(recv).join(' → ');
-  var f7=c.forecast_7d||{};
-  var summary=String(c.summary||'').replace(/\s+/g,' ').trim();
-  // горячие регионы из событий
-  var regs=[];
-  try{ var cnLc=String(c.country_name||'').toLowerCase();
-    var evs=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS?ALL_EVENTS:[]).filter(function(e){ var ccs=(e.country_codes||[]).map(function(x){return String(x||'').toUpperCase();}); if(ccs.indexOf(cc)>=0)return true; return cnLc&&((String(e.title||'')+' '+String(e.region||'')).toLowerCase().indexOf(cnLc)>=0); });
-    var rc={}; evs.forEach(function(e){ var r=String(e.region||'').replace(/,?\s*(Россия|Russia)\s*$/i,'').trim(); if(r)rc[r]=(rc[r]||0)+1; });
-    regs=Object.keys(rc).sort(function(a,b){return rc[b]-rc[a];}).slice(0,6);
-  }catch(e){}
-  // ── строители ──
-  function row(t,v){ return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#cbd5e1;padding:3px 0;line-height:1.4"><span><span style="color:#b8973a">•</span> '+esc(t)+'</span>'+(v!=null?'<span style="color:#94a3b8;font-weight:600">'+esc(v)+'</span>':'')+'</div>'; }
-  function line(t){ return '<div style="font-size:12px;color:#cbd5e1;line-height:1.5;padding:2px 0"><span style="color:#b8973a">•</span> '+esc(t)+'</div>'; }
-  function txt(t){ return '<div style="font-size:12px;color:rgba(203,213,225,.85);line-height:1.55;padding:2px 0">'+esc(t)+'</div>'; }
-  function bars(items){ return '<div style="margin-top:2px">'+(items||[]).map(function(d){ var col=(typeof DOM_COLORS!=='undefined'&&DOM_COLORS[d.k])||'#B8973A'; return '<div style="display:flex;align-items:center;gap:8px;margin:6px 0">'+'<span style="width:74px;font-size:11px;color:#cbd5e1">'+esc(d.label)+'</span>'+'<span style="flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+Math.max(2,d.v)+'%;background:'+col+'"></span></span>'+'<span style="width:28px;text-align:right;font-size:11px;color:#94a3b8;font-weight:600">'+d.v+'</span></div>'; }).join('')+'</div>'; }
-  function blur(html){ return html?('<div style="filter:blur(4.5px);opacity:.5;pointer-events:none;user-select:none;margin-top:5px">'+html+'</div>'):''; }
-  function ACC(title,head,more){ return '<details class="grdf-acc" style="margin:0 14px 9px;padding:10px 12px;background:rgba(255,255,255,.02);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">'
-    +'<summary class="grdf-acc-h" style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+esc(title)+'<span class="grdf-acc-cv">›</span></summary>'
-    +'<div style="margin-top:9px">'+head+blur(more)+'</div></details>'; }
+  // описание ценности раздела — БЕЗ данных, цифр, доменов, направлений
+  var DESC={
+    'Источники давления':'Числовые оценки давления по пяти доменам и их распределение.',
+    'Главные драйверы риска':'События и факторы, формирующие текущий уровень риска.',
+    'Каскадный риск (CRI)':'Структура индекса охвата давления по доменам.',
+    'Каскадное распространение давления':'Цепочка перетекания давления между доменами.',
+    'Горячие регионы':'Региональная концентрация сигналов внутри страны.',
+    'Горизонт прогноза':'Направление и диапазон риска на ближайшие 7 дней.',
+    'Динамика изменений':'Динамика индексов за 7 дней и причины сдвигов.',
+    'Практическая интерпретация':'Что текущие сигналы означают на практике.',
+    'На что обратить внимание':'Точки, ближайшие к порогам риска.',
+    'Ключевой локальный вывод':'Главный вывод по стране и его обоснование.',
+    'Стратегический фокус':'Куда смещается давление в стратегической перспективе.',
+    'Траектория стратегического давления':'Помесячная динамика давления и точки разворота.',
+    'Вероятные переходы давления':'Матрица вероятных переходов между доменами.',
+    'Почему система считает этот домен стратегическим':'Обоснование стратегической значимости.',
+    'Что изменилось за 7 дней':'Изменения индексов и драйверы за неделю.',
+    'Рейтинг стратегического влияния (0–100)':'Оценки стратегического влияния по доменам.',
+    'Баланс факторов давления':'Соотношение фактического, стратегического и прогнозного давления.',
+    'Структурные уязвимости':'Долгосрочные структурные слабые места страны.',
+    'Исторически устойчивые драйверы':'Устойчивые причины давления в исторической перспективе.',
+    'Текущие риски (доменное давление)':'Доменное давление в текущем периоде.',
+    'Временные всплески':'Краткосрочные всплески активности и их хронология.',
+    'История индексов':'Помесячная история GRI / EWS / CRI.',
+    'Статистика обработки сигналов':'Объём и фильтрация обработанных сигналов.',
+    'Уверенность оценки':'Доверие к оценке и её компонентам.',
+    'Методология оценки':'Как рассчитываются индексы и оценки.',
+    'Ключевые исследования':'Профильные исследования Архива по стране.',
+    'Исторические параллели':'Сопоставимые исторические эпизоды и их исходы.',
+    'Стратегические активы':'Ключевые активы и узлы, влияющие на устойчивость.'
+  };
+  function desc(t){ return '<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.5">'+esc(DESC[t]||'Аналитический раздел по стране.')+'</div>'; }
+  // нейтральный скелет: равные длины, один нейтральный цвет, без подписей/цветов доменов → лидера не определить
+  function skel(){ return '<div style="filter:blur(4px);opacity:.4;pointer-events:none;user-select:none;margin-top:9px">'
+    +'<div style="height:8px;border-radius:3px;background:rgba(255,255,255,.09);width:88%;margin-bottom:7px"></div>'
+    +'<div style="height:8px;border-radius:3px;background:rgba(255,255,255,.09);width:88%;margin-bottom:7px"></div>'
+    +'<div style="height:8px;border-radius:3px;background:rgba(255,255,255,.09);width:88%"></div></div>'; }
+  function ACC(t){ return '<details class="grdf-acc" style="margin:0 14px 9px;padding:10px 12px;background:rgba(255,255,255,.02);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">'
+    +'<summary class="grdf-acc-h" style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+esc(t)+'<span class="grdf-acc-cv">›</span></summary>'
+    +'<div style="margin-top:9px">'+desc(t)+skel()+'</div></details>'; }
   function SH(t){ return '<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">'+t+'</div>'; }
   function SUB(t){ return '<div style="font-size:11px;color:rgba(203,213,225,.62);margin:-4px 14px 9px">'+t+'</div>'; }
   function GCTA(){ return '<div style="margin:4px 14px 14px;text-align:center">'+CTA+'</div>'; }
-  function sumPart(frac){ if(!summary)return ['','']; var n=Math.max(60,Math.round(summary.length*frac)); var cut=summary.slice(0,n); var sp=cut.lastIndexOf(' '); if(sp>50)cut=cut.slice(0,sp); return [cut+'…', summary.slice(cut.length)]; }
-  // ── контент по секциям (реальные данные) ──
-  function content(title){
-    switch(title){
-      case 'Источники давления': return [domSorted.slice(0,2).map(function(d){return row(d.label,d.v);}).join(''), bars(domSorted)];
-      case 'Главные драйверы риска': return [drivers.slice(0,2).map(line).join('')||line('—'), drivers.slice(2,6).map(line).join('')];
-      case 'Каскадный риск (CRI)': return [line('CRI '+cri+' · давление охватывает '+active+' из 5 доменов'), bars(domSorted)];
-      case 'Каскадное распространение давления': return [line(chain), (ch.prof||[]).slice(0,3).map(function(x){return row(DOM_LABELS[x.d]||x.d, Math.round((x.p||0)*100)+'%');}).join('')];
-      case 'Горячие регионы': return [regs.slice(0,2).map(line).join('')||line('—'), regs.slice(2).map(line).join('')];
-      case 'Горизонт прогноза': { var dir=f7.direction; var hl=line(dir==='up'?'Давление продолжает расти в ближайшие 7 дней':(dir==='down'?'Давление снижается в ближайшие 7 дней':'Давление сохраняется в ближайшие 7 дней')); if(f7.score_min!=null)hl+=line('Диапазон: '+f7.score_min+'–'+f7.score_max); return [hl, line('Доверие модели: '+(f7.confidence||'—')+'%')+line('Сценарии: базовый / худший / лучший')]; }
-      case 'Динамика изменений':
-      case 'Что изменилось за 7 дней': return [line('Риск '+(gd>=0?'вырос на +'+gd:'снизился на '+Math.abs(gd))+' пунктов за 7 дней'), (c.change_drivers||[]).slice(0,4).map(function(d){return line(String(d.name||'').replace(/<[^>]*>/g,'').slice(0,46));}).join('')]; 
-      case 'Практическая интерпретация': { var sp=sumPart(0.28); return [txt(sp[0]), txt(sp[1])]; }
-      case 'На что обратить внимание': { var near=domSorted.filter(function(d){return d.v>0&&d.v<60;}).sort(function(a,b){return b.v-a.v;})[0]; return [line(near?('Ближе всего к порогу риска — '+near.label+' ('+near.v+')'):('Доминирующий контур — '+(DOM_LABELS[dom]||dom))), line('Полный перечень точек внимания')]; }
-      case 'Ключевой локальный вывод': return [line('Доминирующий контур: '+(DOM_LABELS[dom]||dom)+' · уровень: '+(c.escalation_level||'—')), txt('Полная локальная интерпретация и обоснование оценки')];
-      case 'Стратегический фокус': return [line('Главный стратегический контур — '+(DOM_LABELS[dom]||dom)), line('Куда смещается давление в перспективе')];
-      case 'Траектория стратегического давления': { var dir2=f7.direction; return [line('Траектория: '+(dir2==='up'?'нарастание':(dir2==='down'?'ослабление':'удержание'))+' давления'), line('Помесячная динамика и точки разворота')]; }
-      case 'Вероятные переходы давления': return [line('Основной переход: '+chain), line('Матрица переходов между всеми доменами')];
-      case 'Почему система считает этот домен стратегическим': return [line((DOM_LABELS[dom]||dom)+' — наибольший вклад и связность с другими контурами'), txt('Обоснование стратегической значимости домена')];
-      case 'Рейтинг стратегического влияния (0–100)': return [domSorted.slice(0,2).map(function(d){return row(d.label,d.v);}).join(''), bars(domSorted)];
-      case 'Баланс факторов давления': return [line('Фактическое / стратегическое / прогнозное давление'), bars(domSorted)];
-      case 'Структурные уязвимости': return [line('Доминирующий структурный контур — '+(DOM_LABELS[dom]||dom)), line('Перечень структурных уязвимостей страны')];
-      case 'Исторически устойчивые драйверы': return [line('Устойчивые драйверы по '+gname), line('Долгосрочные структурные причины давления')];
-      case 'Текущие риски (доменное давление)': return [domSorted.slice(0,2).map(function(d){return row(d.label,d.v);}).join(''), bars(domSorted)];
-      case 'Временные всплески': return [line('Краткосрочные всплески активности'), line('Хронология всплесков за период')];
-      case 'История индексов': return [line('GRI '+c.risk_score+' · EWS '+c.ews_score+' · CRI '+cri), line('Помесячная история всех индексов')];
-      case 'Статистика обработки сигналов': return [line('Учтено сигналов: '+(c.event_count||'—')), line('Полная статистика обработки и фильтрации')];
-      case 'Уверенность оценки': return [line('Доверие прогноза: '+(f7.confidence||'—')+'%'), line('Разбивка уверенности по компонентам')];
-      case 'Методология оценки': return [txt('Индексы пересчитываются каждые 2 часа из 500+ источников'), txt('Полное описание методологии расчёта')];
-      default: return [line('Данные по разделу'), line('Полный разбор доступен в Архиве')];
-    }
-  }
+  function grp(items){ return items.map(ACC).join(''); }
   function ARCHCARD(){ return '<div style="border:0.5px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:0 14px 10px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012))">'
     +'<div id="grdf-fm-arch-num" style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:#e2e8f0;line-height:1;min-height:34px"></div>'
     +'<div style="filter:blur(4px);opacity:.6;font-size:10px;color:rgba(148,163,184,.6);margin-top:4px;user-select:none">Последнее обновление: ···········</div>'
     +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div>'
     +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Собрание исследований, сценариев, исторических параллелей и аналитических материалов по '+gname+'.</div>'
     +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Исследования Архива учитываются в сценариях и прогнозах для данной страны.</div></div>'; }
-  function grp(items){ return items.map(function(t){ var cn=content(t); return ACC(t,cn[0],cn[1]); }).join(''); }
   var out='';
   out+=SH('Картина давления')+grp(['Источники давления','Главные драйверы риска','Каскадный риск (CRI)','Каскадное распространение давления','Горячие регионы'])+GCTA();
   out+=SH('Прогноз и траектория')+grp(['Горизонт прогноза','Динамика изменений']);
