@@ -9396,7 +9396,7 @@ window._radarLevel = function(lvl){
 };
 window._rDC = function(){ return (typeof DC!=='undefined'&&DC)?DC:{climate:'#22c55e',geopolitics:'#ff7a00',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'}; };
 window._rDL = function(){ return (typeof DL!=='undefined'&&DL)?DL:{climate:'Климат',geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум'}; };
-window.window._radarSell = function(){
+window._radarSell = function(){
   var GOLD='#E3B23C';
   var CHK='<svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:6px;flex-shrink:0"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#4ade80" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function e(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -9410,7 +9410,7 @@ window.window._radarSell = function(){
   h+='<div style="margin:14px 2px 4px;padding:18px 16px;border:1px solid rgba(227,178,60,.40);border-radius:14px;background:linear-gradient(180deg,rgba(227,178,60,.10),rgba(255,255,255,.012))"><div style="font-size:11px;color:'+GOLD+';text-transform:uppercase;letter-spacing:.1em;font-weight:700">Signal Pro</div><div style="font-size:13px;font-weight:600;color:#f1f5f9;margin-top:6px">Система завершила расширенный анализ сигналов</div><div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:12px;margin-bottom:9px">Доступны</div>'+pro.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:3px 0;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:13px">Сигналы показывают, что происходит сейчас. Signal Pro показывает, почему это происходит и к чему может привести.</div><button onclick="grdfOpenUpgrade(\'signal_pro\')" style="margin-top:15px;width:100%;font-size:13px;font-weight:700;color:#06050A;background:'+GOLD+';border:none;border-radius:24px;padding:14px;cursor:pointer;font-family:Montserrat,sans-serif">Разблокировать Signal Pro →</button></div>';
   return h;
 };
-_radarRenderPanels = function(M){
+window._radarRenderPanels = function(M){
   var DOMS=['climate','geopolitics','economy','technology','social'];
   var DC2=window._rDC(), DL2=window._rDL(); window._radarM=M;
   var lk=window._radarLvlKey||'all';
