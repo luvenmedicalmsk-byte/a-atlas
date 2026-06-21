@@ -8124,7 +8124,7 @@ function _grdfScenHtml(d){
 
 (function(){try{var u=new URLSearchParams(location.search);var f=u.get('v2c');if(f==='1')localStorage.setItem('v2c_preview','1');else if(f==='0')localStorage.removeItem('v2c_preview');window._v2cOn=(localStorage.getItem('v2c_preview')==='1');}catch(e){window._v2cOn=false;}})();
 window._v2cToggle=function(id){var e=document.getElementById(id);if(e)e.style.display=(e.style.display==='none'?'block':'none');};
-function _cascadeV2C(c,compact){
+function _cascadeV2C(c){
   try{
   var DOMS=['climate','geopolitics','economy','technology','social'];
   var SPW={RU:{geopolitics:1.8,economy:1.4},UA:{geopolitics:2.0,economy:1.3},IL:{geopolitics:2.0,technology:1.4,economy:1.2},IR:{geopolitics:1.9,economy:1.3},US:{geopolitics:1.4,economy:1.3,technology:1.2},CN:{geopolitics:1.5,economy:1.4,technology:1.2}};
@@ -8164,10 +8164,10 @@ function _cascadeV2C(c,compact){
   if(lead.d==='social'){typ='Социально-канализированный';tc='#c98bd9';interp='Давление смещается в социальный контур.';}
   else if(lead.p>40){typ='Концентрированный';tc='#1faacc';interp='Давление концентрируется в одном контуре.';}
   else if(lead.p>=30){typ='Сбалансированный';tc='#5fae7a';interp='Давление распределяется между контурами.';}
-  else{typ='Диффузный';tc='#D4AF5A';interp='Давление расходится сразу по нескольким контурам.';}if(compact){var _lead=prof[0]||{p:1};var _rows=prof.slice(0,3).map(function(x){var _bw=Math.max(8,Math.round(x.p/(_lead.p||1)*100));var _mk=(x.d===dom)?' <span style="font-size:9px;color:rgba(255,255,255,.45)">\u00b7источник</span>':'';return '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">'+'<span style="color:rgba(184,151,58,.5)">\u2192</span>'+'<span style="width:104px;font-size:12px;color:#d7d0c0">'+(DOM_LABELS[x.d]||x.d)+_mk+'</span>'+'<span style="flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;border-radius:3px;width:'+_bw+'%;background:'+(DOM_COLORS[x.d]||'#B8973A')+'"></span></span>'+'<span style="width:34px;text-align:right;font-size:12px;font-weight:600;color:#e8e3d8">'+x.p+'%</span></div>';}).join('');return '<div style="margin:1px 14px 12px;padding:11px 12px;background:rgba(184,151,58,.045);border:0.5px solid rgba(184,151,58,.15);border-radius:9px">'+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">'+'<span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.5);font-family:Montserrat,sans-serif">Происхождение риска</span>'+'<span style="font-size:10px;font-weight:600;color:'+tc+';border:0.5px solid '+tc+'55;border-radius:20px;padding:2px 9px;font-family:Montserrat,sans-serif">'+typ+'</span></div>'+'<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.5);font-family:Montserrat,sans-serif;margin-bottom:3px">Источник давления</div>'+'<div style="font-size:15px;font-weight:600;color:'+(DOM_COLORS[dom]||'#B8973A')+';margin-bottom:10px">'+(DOM_LABELS[dom]||dom)+'</div>'+'<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.5);font-family:Montserrat,sans-serif">Распространяется в</div>'+_rows+'<div style="font-size:11px;color:rgba(203,213,225,.65);line-height:1.5;margin-top:10px;font-family:Montserrat,sans-serif">'+interp+'</div></div>';}
+  else{typ='Диффузный';tc='#D4AF5A';interp='Давление расходится сразу по нескольким контурам.';}
   var id='v2cx_'+cc;var H='';
-  H+='<div style="margin:16px 14px 0;border-top:0.5px solid rgba(184,151,58,.18);padding-top:13px">';
-  H+='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:10px">Каскадное распространение давления · V2-C (Preview)</div>';
+  H+='<div>';
+  
   H+='<div style="font-size:11px;font-weight:600;color:'+tc+';border:0.5px solid '+tc+'55;border-radius:20px;padding:3px 11px;display:inline-block;margin-bottom:10px;font-family:Montserrat,sans-serif">'+typ+' каскад</div>';
   H+='<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.52);font-family:Montserrat,sans-serif;margin-bottom:3px">Источник давления</div>';H+='<div style="font-size:15px;font-weight:600;color:'+(DOM_COLORS[dom]||'#B8973A')+';margin-bottom:11px;padding-bottom:11px;border-bottom:0.5px solid rgba(255,255,255,.09)">'+(DOM_LABELS[dom]||dom)+'</div>';H+='<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.52);font-family:Montserrat,sans-serif;margin-bottom:5px">Распространяется в</div>';
   prof.slice(0,3).forEach(function(x){
@@ -8211,7 +8211,7 @@ function _grdfContextHtml(c){
   function cardS(label, inner){ if(label==='Обновлено'){ return '<div style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><div style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+label+'</div>'+inner+'</div>'; } return '<details class="grdf-acc" style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><summary class="grdf-acc-h" style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>'; }
   var H='';
 
-  H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';try{H+=_cascadeV2C(c,true);}catch(_e){}
+  H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
   // ── 3. Структура GRI · рейтинг доменов (полосы вместо радиала) ──
   (function(){
     function dlvl(v){ if(v>=75)return['критический','#ef4444']; if(v>=60)return['высокий','#f97316']; if(v>=40)return['повышенный','#eab308']; if(v>=20)return['низкий','#10b981']; return['минимальный','#6f88ab']; }
@@ -8356,6 +8356,7 @@ function _grdfContextHtml(c){
     +_mc('#a855f7','Технологии','киберинциденты, сбои связи и инфраструктуры, дефицит электроники и чипов, технологические и санкционные ограничения.','CISA, Krebs on Security, BleepingComputer, The Hacker News, CyberScoop')
     +_mc('#ef4444','Социум','здравоохранение, труд, демография — вспышки и эпидемии, забастовки и протесты, отток и нехватка медкадров, задержки и невыплаты зарплат, падение рождаемости и убыль населения.','WHO, ReliefWeb, Amnesty International + отраслевые каналы (здравоохранение, труд, демография)')
     +'</div></details>');
+  try{var _v2cH=_cascadeV2C(c);if(_v2cH)H+=card('Каскадное распространение давления',_v2cH);}catch(_e){}
   return H;
 }
 window._spRenderCountryLocal = function(el, d, cname){
@@ -8746,7 +8747,7 @@ function grdfRenderCountryPanel(cc) {
   // ── Actionable Intelligence Layer ─────────────────────────────
   html += _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, 'rest');
   if(isSig){ html += _grdfContextHtml(c); }
-        /* V2-C: встроено в «Картину давления» (вариант B) */
+        /* V2-C: вынесен в аккордеон внутри панели страны */
   // Bottom padding: 56px nav + 24px safe area + 20px buffer = 100px
   if(!isSig){ html += '<div id="grdf-cc-local"></div>'; }
   html += '<div style="height:100px"></div>';
