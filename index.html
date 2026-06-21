@@ -7849,7 +7849,7 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
     if(cnLc){ var t=((e.title||'')+' '+(e.region||'')).toLowerCase(); return t.indexOf(cnLc)>=0; }
     return false;
   });
-  var n=evs.length; if(!n) return ''; if(!isSig){ return '<div style="margin:12px 14px 4px;padding:13px 13px;background:rgba(184,151,58,.05);border:0.5px solid rgba(184,151,58,.18);border-radius:10px">'+'<div style="font-size:12.5px;color:#f1f5f9;font-weight:600;line-height:1.45"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Анализ страны завершён</div>'+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">Система выявила доминирующий контур давления, рассчитала вероятные сценарии развития и определила направления дальнейшего распространения риска.</div>'+'<button onclick="openAccess()" style="margin-top:13px;font-size:11.5px;font-weight:700;color:#06050A;background:#E3B23C;border:none;border-radius:20px;padding:8px 18px;cursor:pointer;font-family:Montserrat,sans-serif">Разблокировать полный профиль страны \u2192</button>'+'</div>'; } var _plu_nom=_plu(n,'сигнал','сигнала','сигналов'), _plu_prep=_plu(n,'сигнале','сигналах','сигналах');
+  var n=evs.length; if(!n) return ''; if(!isSig){ return '<div style="margin:12px 14px 4px;padding:13px 13px;background:rgba(184,151,58,.05);border:0.5px solid rgba(184,151,58,.18);border-radius:10px">'+'<div style="font-size:12.5px;color:#f1f5f9;font-weight:600;line-height:1.45"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Анализ страны завершён</div>'+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">Система выявила ведущий источник формирования риска, рассчитала вероятные сценарии развития ситуации и определила наиболее вероятные направления дальнейшего распространения давления.</div>'+'<button onclick="openAccess()" style="margin-top:13px;font-size:11.5px;font-weight:700;color:#06050A;background:#E3B23C;border:none;border-radius:20px;padding:8px 18px;cursor:pointer;font-family:Montserrat,sans-serif">Разблокировать полный профиль страны \u2192</button>'+'</div>'; } var _plu_nom=_plu(n,'сигнал','сигнала','сигналов'), _plu_prep=_plu(n,'сигнале','сигналах','сигналах');
   var sev=evs.map(function(e){return +e.severity||0;});
   var avg=Math.round(sev.reduce(function(a,b){return a+b;},0)/n);
   var dsum={}; evs.forEach(function(e){var d=e.domain||'other';dsum[d]=(dsum[d]||0)+(+e.severity||0);});
@@ -7895,8 +7895,10 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
 /* ── Free: реальные числа архива (приоритет — воркер, fallback — coverage) ── */
 function _fmLoadArch(cc){ try{
   var el=document.getElementById('grdf-fm-arch-num'); if(!el) return;
-  function _pl(n){ var m=n%100; if(m>=11&&m<=14)return 'материалов'; var d=n%10; return d===1?'материал':((d>=2&&d<=4)?'материала':'материалов'); }
-  function paint(total,ct){ if(!total) return; el.innerHTML='<span style="font-weight:600;color:#e2e8f0">'+total+'</span> <span style="font-size:13px;font-family:inherit;color:rgba(148,163,184,.8);font-weight:400">'+_pl(total)+'</span>'+(ct?('<div style="font-size:11px;color:rgba(184,151,58,.9);margin-top:3px;font-weight:500">из них '+ct+' '+_pl(ct)+' по стране</div>'):''); }
+  var _GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'}; var _gn=_GEN[String(cc).toUpperCase()]||'стране';
+  function plM(n){ var m=n%100,x=n%10; if(m>=11&&m<=14)return 'материалов'; if(x===1)return 'материал'; if(x>=2&&x<=4)return 'материала'; return 'материалов'; }
+  function plR(n){ var m=n%100,x=n%10; if(m>=11&&m<=14)return 'исследований'; if(x===1)return 'исследование'; if(x>=2&&x<=4)return 'исследования'; return 'исследований'; }
+  function paint(total,ct){ if(!total) return; el.innerHTML='<span style="font-weight:600;color:#e2e8f0">'+total+'</span> <span style="font-size:13px;font-family:inherit;color:rgba(148,163,184,.8);font-weight:400">аналитических '+plM(total)+'</span>'+(ct?('<div style="font-size:11px;color:rgba(184,151,58,.9);margin-top:3px;font-weight:500">'+ct+' профильных '+plR(ct)+' по '+_gn+'</div>'):''); }
   function _cov(){ try{ var T=window._COV_TOTALS; if(T){ var tot=T.total||0; var cs=(T.countries&&T.countries[cc])||null; var ct=0; if(cs){ if(typeof cs==='number')ct=cs; else for(var k in cs)ct+=(cs[k]||0); } paint(tot,ct); } }catch(e){} }
   var base=(typeof API_BASE!=='undefined'&&API_BASE)?API_BASE:'https://api.a-atlas.com';
   var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
@@ -7971,8 +7973,8 @@ function _grdfFreeMirror(c){ try{
     +'<div id="grdf-fm-arch-num" style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:#e2e8f0;line-height:1;min-height:34px"></div>'
     +'<div style="filter:blur(4px);opacity:.6;font-size:10px;color:rgba(148,163,184,.6);margin-top:4px;user-select:none">Последнее обновление: ···········</div>'
     +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div>'
-    +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Собрание исследований, сценариев, исторических параллелей и аналитических материалов по '+gname+'.</div>'
-    +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Исследования Архива учитываются в сценариях и прогнозах для данной страны.</div></div>'; }
+    +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Собрание исследований, прогнозов, исторических параллелей и аналитических материалов по '+gname+'.</div>'
+    +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Архив используется системой при построении сценариев, прогнозов и оценке стратегического давления.</div></div>'; }
   function HIDDEN(){ var its=['Главный источник формирования риска','Доминирующий стратегический контур','Наиболее вероятный сценарий развития','Следующая зона распространения давления','Критические регионы наблюдения','Горизонт стратегического прогноза','Скрытые связи между доменами','Ключевые точки передачи риска','Полный аналитический архив'];
     return '<div style="margin:24px 14px 12px;padding:16px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:rgba(184,151,58,.04)">'
       +'<div style="font-size:11px;font-weight:700;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:11px">Что остаётся скрытым</div>'
@@ -7985,10 +7987,17 @@ function _grdfFreeMirror(c){ try{
       +'<div style="font-size:9.5px;color:rgba(184,151,58,.85);letter-spacing:.06em;margin-top:9px;font-weight:600;font-family:Montserrat,sans-serif">Cascade Engine · Sovereign Intelligence Engine · Signal Fusion</div>'
       +'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.1em;margin-top:14px;font-weight:700;font-family:Montserrat,sans-serif">Рассчитаны</div>'
       +'<div style="display:inline-block;text-align:left;margin-top:9px">'+calc.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:3px 0;line-height:1.4"><span style="color:'+GOLD+';font-weight:700">•</span> '+esc(t)+'</div>';}).join('')+'</div>'
+      +'<div style="font-size:11px;color:rgba(203,213,225,.80);line-height:1.5;margin-top:13px">Полный профиль содержит аналитические выводы, сценарии развития и стратегические оценки системы.</div>'
       +'<div style="margin-top:15px;padding-top:14px;border-top:0.5px solid rgba(184,151,58,.18)"><div style="font-size:12.5px;color:#f1f5f9;font-weight:600">🔒 Выводы системы скрыты</div>'
       +'<div style="font-size:11px;color:rgba(203,213,225,.72);line-height:1.5;margin-top:6px">Для доступа к полному профилю необходимо разблокировать результаты анализа.</div></div>'
       +'<div style="margin-top:16px"><a href="https://t.me/anirisao" target="_blank" rel="noopener" style="display:inline-block;font-size:13px;font-weight:700;color:#06050A;background:'+GOLD+';border-radius:24px;padding:13px 28px;font-family:Montserrat,sans-serif;text-decoration:none;box-shadow:0 4px 18px rgba(227,178,60,.28)">'+CTA_TXT+' →</a></div>'
       +'</div>'; }
+  function ENGINES(){ var rows=[['Signal Fusion','собирает и объединяет сигналы'],['Cascade Engine','строит каскадные сценарии'],['Sovereign Intelligence Engine','формирует стратегические выводы'],['Архив исследований','исторические параллели и прогнозные модели']];
+    return '<div style="margin:20px 14px 10px;padding:16px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)">'
+      +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Аналитические движки платформы</div>'
+      +rows.map(function(r){ return '<div style="padding:8px 0;border-top:0.5px solid rgba(255,255,255,.04)"><div style="font-size:11.5px;color:#E3B23C;font-weight:600">'+r[0]+'</div><div style="font-size:11px;color:rgba(203,213,225,.7);line-height:1.45;margin-top:2px">'+r[1]+'</div></div>'; }).join('')
+      +'<div style="font-size:10.5px;color:rgba(148,163,184,.72);line-height:1.5;margin-top:11px;padding-top:11px;border-top:0.5px solid rgba(184,151,58,.15)">Полный профиль страны — результат совместной работы движков и архивной базы исследований.</div>'
+    +'</div>'; }
   var out='';
   out+=SH('Картина давления')+grp(['Источники давления','Главные драйверы риска','Каскадный риск (CRI)','Каскадное распространение давления','Горячие регионы'])+CTA();
   out+=SH('Прогноз и траектория')+grp(['Горизонт прогноза','Динамика изменений']);
@@ -7997,6 +8006,7 @@ function _grdfFreeMirror(c){ try{
   out+=SH('Стратегический контекст')+SUB('Долгосрочные факторы и структурные причины давления')+grp(['Структурные уязвимости','Исторически устойчивые драйверы','Текущие риски (доменное давление)','Временные всплески']);
   out+=SH('Архив исследований')+ARCHCARD()+grp(['Ключевые исследования','Исторические параллели','Стратегические активы'])+CTA();
   out+=SH('Методология и аналитика')+grp(['История индексов','Статистика обработки сигналов','Уверенность оценки','Методология оценки']);
+  out+=ENGINES();
   out+=HIDDEN();
   out+=FINAL();
   return out;
@@ -8925,7 +8935,7 @@ function grdfRenderCountryPanel(cc) {
   // Key conclusion + reasoning raised above the forecast (Variant B order)
   html += _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, 'top');
   } else {
-  html += '<div style="margin:0 14px 14px;padding:13px 14px;background:rgba(227,178,60,.06);border-left:2px solid #E3B23C;border-radius:0 8px 8px 0">'+'<div style="font-size:12.5px;line-height:1.55;color:#e2e8f0;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Анализ страны завершён</div>'+'<div style="font-size:11.5px;line-height:1.55;color:rgba(203,213,225,.75);margin-top:7px">Система выявила доминирующий контур давления, рассчитала вероятные сценарии развития и определила направления дальнейшего распространения риска.</div>'+'</div>';
+  html += '<div style="margin:0 14px 14px;padding:13px 14px;background:rgba(227,178,60,.06);border-left:2px solid #E3B23C;border-radius:0 8px 8px 0">'+'<div style="font-size:12.5px;line-height:1.55;color:#e2e8f0;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Анализ страны завершён</div>'+'<div style="font-size:11.5px;line-height:1.55;color:rgba(203,213,225,.75);margin-top:7px">Система выявила ведущий источник формирования риска, рассчитала вероятные сценарии развития ситуации и определила наиболее вероятные направления дальнейшего распространения давления.</div>'+'</div>';
   }
 
   if(_GRDF_SHOW_MATRIX_RELOC){
