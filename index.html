@@ -8124,7 +8124,7 @@ function _grdfScenHtml(d){
 
 (function(){try{var u=new URLSearchParams(location.search);var f=u.get('v2c');if(f==='1')localStorage.setItem('v2c_preview','1');else if(f==='0')localStorage.removeItem('v2c_preview');window._v2cOn=(localStorage.getItem('v2c_preview')==='1');}catch(e){window._v2cOn=false;}})();
 window._v2cToggle=function(id){var e=document.getElementById(id);if(e)e.style.display=(e.style.display==='none'?'block':'none');};
-function _cascadeV2C(c){
+function _cascadeV2C(c,compact){
   try{
   var DOMS=['climate','geopolitics','economy','technology','social'];
   var SPW={RU:{geopolitics:1.8,economy:1.4},UA:{geopolitics:2.0,economy:1.3},IL:{geopolitics:2.0,technology:1.4,economy:1.2},IR:{geopolitics:1.9,economy:1.3},US:{geopolitics:1.4,economy:1.3,technology:1.2},CN:{geopolitics:1.5,economy:1.4,technology:1.2}};
@@ -8164,7 +8164,7 @@ function _cascadeV2C(c){
   if(lead.d==='social'){typ='Социально-канализированный';tc='#c98bd9';interp='Давление смещается в социальный контур.';}
   else if(lead.p>40){typ='Концентрированный';tc='#1faacc';interp='Давление концентрируется в одном контуре.';}
   else if(lead.p>=30){typ='Сбалансированный';tc='#5fae7a';interp='Давление распределяется между контурами.';}
-  else{typ='Диффузный';tc='#D4AF5A';interp='Давление расходится сразу по нескольким контурам.';}
+  else{typ='Диффузный';tc='#D4AF5A';interp='Давление расходится сразу по нескольким контурам.';}if(compact){var _ar='<span style="color:rgba(184,151,58,.5);margin:0 6px">&#8594;</span>';var _ch='<span style="color:'+(DOM_COLORS[dom]||'#B8973A')+';font-weight:700">'+(DOM_LABELS[dom]||dom)+'</span>';prof.slice(0,2).forEach(function(x){_ch+=_ar+'<span style="color:'+(DOM_COLORS[x.d]||'#B8973A')+';font-weight:600">'+(DOM_LABELS[x.d]||x.d)+'</span>';});return '<div style="margin:1px 14px 12px;padding:9px 11px;background:rgba(184,151,58,.045);border:0.5px solid rgba(184,151,58,.15);border-radius:8px">'+'<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.5);font-family:Montserrat,sans-serif;margin-bottom:6px">Происхождение риска</div>'+'<div style="font-size:14px;line-height:1.35">'+_ch+'</div>'+'<div style="font-size:10px;color:rgba(203,213,225,.6);margin-top:5px;font-family:Montserrat,sans-serif;line-height:1.5">'+interp+'</div></div>';}
   var id='v2cx_'+cc;var H='';
   H+='<div style="margin:16px 14px 0;border-top:0.5px solid rgba(184,151,58,.18);padding-top:13px">';
   H+='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:10px">Каскадное распространение давления · V2-C (Preview)</div>';
@@ -8211,7 +8211,7 @@ function _grdfContextHtml(c){
   function cardS(label, inner){ if(label==='Обновлено'){ return '<div style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><div style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+label+'</div>'+inner+'</div>'; } return '<details class="grdf-acc" style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><summary class="grdf-acc-h" style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>'; }
   var H='';
 
-  H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
+  H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';try{H+=_cascadeV2C(c,true);}catch(_e){}
   // ── 3. Структура GRI · рейтинг доменов (полосы вместо радиала) ──
   (function(){
     function dlvl(v){ if(v>=75)return['критический','#ef4444']; if(v>=60)return['высокий','#f97316']; if(v>=40)return['повышенный','#eab308']; if(v>=20)return['низкий','#10b981']; return['минимальный','#6f88ab']; }
@@ -8746,7 +8746,7 @@ function grdfRenderCountryPanel(cc) {
   // ── Actionable Intelligence Layer ─────────────────────────────
   html += _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, 'rest');
   if(isSig){ html += _grdfContextHtml(c); }
-        if(window._v2cOn){ try{ html += _cascadeV2C(c); }catch(_e){} }
+        /* V2-C: встроено в «Картину давления» (вариант B) */
   // Bottom padding: 56px nav + 24px safe area + 20px buffer = 100px
   if(!isSig){ html += '<div id="grdf-cc-local"></div>'; }
   html += '<div style="height:100px"></div>';
