@@ -7958,7 +7958,7 @@ function _grdfFreeMirror(c){ try{
             +'<div style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;line-height:1.3">'+esc(t)+'</div>'
             +'<div style="font-size:11.5px;color:rgba(203,213,225,.80);line-height:1.5;margin-top:6px">'+esc(m[0])+'</div>'
             +'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:9px">'
-              +'<span style="font-size:10px;color:#4ade80;font-weight:600">✔ Анализ завершён</span>'
+              +'<span style="font-size:10px;color:#4ade80;font-weight:600"><svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:4px"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#4ade80" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Анализ завершён</span>'
               +'<span style="font-size:10px;color:rgba(184,151,58,.95);font-weight:600">🔒 Результаты в полном профиле</span>'
             +'</div>'
           +'</div>'
@@ -8926,7 +8926,7 @@ function grdfRenderCountryPanel(cc) {
   // Key conclusion + reasoning raised above the forecast (Variant B order)
   html += _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, 'top');
   } else {
-  html += '<div style="margin:0 14px 14px;padding:13px 14px;background:rgba(227,178,60,.06);border-left:2px solid #E3B23C;border-radius:0 8px 8px 0">'+'<div style="font-size:12.5px;line-height:1.55;color:#e2e8f0;font-weight:600">\u26A0\uFE0F Система зафиксировала значимое давление в одном из стратегических контуров.</div>'+'<div style="font-size:11.5px;line-height:1.55;color:rgba(203,213,225,.75);margin-top:7px">Полный анализ причин, каскадных связей, сценариев развития и прогнозов доступен в полном профиле страны.</div>'+'</div>';
+  html += '<div style="margin:0 14px 14px;padding:13px 14px;background:rgba(227,178,60,.06);border-left:2px solid #E3B23C;border-radius:0 8px 8px 0">'+'<div style="font-size:12.5px;line-height:1.55;color:#e2e8f0;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Система зафиксировала значимое давление в одном из стратегических контуров.</div>'+'<div style="font-size:11.5px;line-height:1.55;color:rgba(203,213,225,.75);margin-top:7px">Полный анализ причин, каскадных связей, сценариев развития и прогнозов доступен в полном профиле страны.</div>'+'</div>';
   }
 
   if(_GRDF_SHOW_MATRIX_RELOC){
