@@ -7800,6 +7800,97 @@ window.grdfCycleSheet = function() {
 // ── GRDF Actionable Intelligence Layer V1 ───────────────────────
 // Builds analytical text from existing data — no fabrication.
 // Sources: GRI/EWS/CRI, delta, dominant_domain, domain_scores.
+
+/* ── S56: слой объяснения индексов (детерминированно из снапшота, без LLM) ── */
+function _cascadeProf(c){ try{
+var DOMS=['climate','geopolitics','economy','technology','social'];
+  var SPW={RU:{geopolitics:1.8,economy:1.4},UA:{geopolitics:2.0,economy:1.3},IL:{geopolitics:2.0,technology:1.4,economy:1.2},IR:{geopolitics:1.9,economy:1.3},US:{geopolitics:1.4,economy:1.3,technology:1.2},CN:{geopolitics:1.5,economy:1.4,technology:1.2}};
+  var CASC={geopolitics:1.0,economy:0.8,climate:0.6,social:0.5,technology:0.5};
+  var COUP={climate:{economy:0.9,social:0.7,geopolitics:0.4,technology:0.3},geopolitics:{economy:0.9,technology:0.6,social:0.6,climate:0.2},economy:{social:0.85,technology:0.6,geopolitics:0.5,climate:0.2},technology:{economy:0.6,social:0.5,geopolitics:0.5,climate:0.1},social:{geopolitics:0.6,economy:0.5,technology:0.3,climate:0.1}};
+  var WF={levelN:0.22,baseWN:0.10,thresholdN:0.12,concN:0.10,cascadeN:0.16,velocityN:0.10,forecastN:0.04,crossN:0.04,ascentN:0.12};
+  var GAP_LO=12,GAP_HI=30,DAMP_MIN=0.4;
+  function cl(x){return Math.max(0,Math.min(1,x));}
+  var cc=c.country||'';var ds=c.domain_scores||{};
+  var gri=parseFloat(c.risk_score);if(isNaN(gri))gri=null;
+  var cri=parseFloat(c.cri_score);if(isNaN(cri))cri=null;
+  var g7=parseFloat(c.gri_delta_7d);if(isNaN(g7))g7=null;
+  var fc=c.forecast_7d||{};var dom=c.dominant_domain||'';
+  var fcUp=(fc&&fc.score_max!=null&&gri!=null&&fc.score_max>gri)?1:0;
+  var levels={};DOMS.forEach(function(d){levels[d]=(ds[d]||0);});
+  function baseW(d){var W=SPW[cc]||{};return W[d]!=null?W[d]:1.0;}
+  function factors(d,lv,dL){
+    var gap=Math.max(0,dL-lv[d]);var dFv=gap<=GAP_LO?1.0:(gap>=GAP_HI?DAMP_MIN:1-(gap-GAP_LO)/(GAP_HI-GAP_LO)*(1-DAMP_MIN));
+    var dWv=1+(baseW(d)-1)*dFv;var tl=0;DOMS.forEach(function(x){tl+=lv[x];});if(!tl)tl=1;
+    var momF=(d===dom)?1:0.5;var ac=0;DOMS.forEach(function(x){if(lv[x]>0)ac++;});if(!ac)ac=1;
+    return {levelN:cl(lv[d]/100),baseWN:cl((dWv-1)/1.0),thresholdN:cl((lv[d]-40)/20),concN:cl(lv[d]/tl),cascadeN:(CASC[d]||0.5)*cl((cri||0)/100),velocityN:cl((g7||0)/10)*momF,forecastN:fcUp*momF,crossN:(CASC[d]||0.5)*cl(ac/5),ascentN:cl((lv[d]-50)/10)*(0.5+0.5*(fcUp?1:((g7||0)>0?0.5:0)))};
+  }
+  function sisOf(f){var s=0;for(var k in WF)s+=WF[k]*f[k];return Math.round(100*cl(s));}
+  var dLnow=0;DOMS.forEach(function(d){if(levels[d]>dLnow)dLnow=levels[d];});
+  var sisNow={};DOMS.forEach(function(d){sisNow[d]=sisOf(factors(d,levels,dLnow));});
+  function projLevels(w){var lv={};DOMS.forEach(function(d){var ap=cl((levels[d]-45)/20);var sl=(g7||0)*(0.35+0.5*ap+0.15*(d===dom?1:0));var sat=0.5+0.5*cl((100-levels[d])/55);lv[d]=Math.max(0,Math.min(100,levels[d]+sl*w*sat));});return lv;}
+  var pl=projLevels(4.3);var dLp=0;DOMS.forEach(function(d){if(pl[d]>dLp)dLp=pl[d];});
+  var sfi30={};DOMS.forEach(function(d){sfi30[d]=sisOf(factors(d,pl,dLp));});
+  var mom={};DOMS.forEach(function(d){mom[d]=(sfi30[d]-sisNow[d])/100.0;});
+  function ptsOf(s,t){var cf=(COUP[s]||{})[t];if(cf==null)return null;return Math.round(100*cl(cf*(levels[s]/100)*(levels[t]/100)*Math.max(0.2,1+mom[s])));}
+  var inc={};DOMS.forEach(function(s){if(levels[s]<=0)return;DOMS.forEach(function(t){if(t===s)return;var p=ptsOf(s,t);if(p==null||p<=0)return;if(inc[t]==null||p>inc[t])inc[t]=p;});});
+  var tot=0;for(var k in inc)tot+=inc[k];if(!tot)tot=1;
+  var prof=DOMS.filter(function(d){return inc[d]!=null;}).map(function(d){return {d:d,p:Math.round(inc[d]/tot*100)};});
+  prof.sort(function(a,b){return (b.p-a.p)||(levels[b.d]-levels[a.d])||(DOM_LABELS[a.d]<DOM_LABELS[b.d]?-1:1);});
+  return {source:dom, prof:prof};
+}catch(_e){ return {source:'', prof:[]}; } }
+
+function _plu(n,a,b,c){var m=n%100;if(m>=11&&m<=14)return c;var d=n%10;return d===1?a:((d>=2&&d<=4)?b:c);}
+function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
+  var cc=String(c.country||'').toUpperCase(), cnLc=String(c.country_name||'').toLowerCase();
+  var evs=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS?ALL_EVENTS:[]).filter(function(e){
+    var ccs=(e.country_codes||[]).map(function(x){return String(x||'').toUpperCase();});
+    if(ccs.indexOf(cc)>=0) return true;
+    if(String(e.country_code||'').toUpperCase()===cc||String(e.iso||'').toUpperCase()===cc) return true;
+    if(cnLc){ var t=((e.title||'')+' '+(e.region||'')).toLowerCase(); return t.indexOf(cnLc)>=0; }
+    return false;
+  });
+  var n=evs.length; if(!n) return ''; var _plu_nom=_plu(n,'сигнал','сигнала','сигналов'), _plu_prep=_plu(n,'сигнале','сигналах','сигналах');
+  var sev=evs.map(function(e){return +e.severity||0;});
+  var avg=Math.round(sev.reduce(function(a,b){return a+b;},0)/n);
+  var dsum={}; evs.forEach(function(e){var d=e.domain||'other';dsum[d]=(dsum[d]||0)+(+e.severity||0);});
+  var active=Object.keys(dsum).filter(function(d){return dsum[d]>0;}).length;
+  var accel=evs.filter(function(e){var t=String(e.forecast_trend||'').toLowerCase();return t==='accelerating'||t==='rising'||t==='escalating'||t==='up';}).length;
+  var accelPct=Math.round(accel/n*100);
+  var drv=evs.slice().sort(function(a,b){return (+b.severity||0)-(+a.severity||0);}).slice(0,3)
+    .map(function(e){var t=String(e.title||'').replace(/\s+/g,' ').trim(); return t.length>44?t.slice(0,44)+'…':t;});
+  var dl=function(d){return DOM_LABELS[d]||d;};
+  var srcDom=dl(dom);
+  var ch=_cascadeProf(c); var recv=(ch.prof||[]).filter(function(x){return x.d!==dom;}).slice(0,2).map(function(x){return dl(x.d);});
+  var chain=[srcDom].concat(recv).join(' → ');
+  var tempo=ews>=60?'быстро нарастает':ews>=35?'умеренный':'низкий';
+  var criw=cri>=70?'высокая':cri>=45?'умеренная':'низкая';
+  // ── микро-строки под индексами ──
+  var micro='<div style="margin:2px 14px 0;display:flex;flex-direction:column;gap:3px">'
+    +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#cbd5e1">GRI '+gri+'</b> — '+n+' '+_plu_nom+' средней остроты '+avg+'/100.</div>'
+    +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#1faacc">EWS '+ews+'</b> — большинство сигналов растут, темп '+tempo+'.</div>'
+    +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#f59e0b">CRI '+cri+'</b> — давление охватывает '+active+' из 5 основных доменов.</div></div>';
+  // ── нарратив ──
+  var l1='Риск (GRI '+gri+') держится на '+n+' сигналах средней остроты '+avg+'/100. Главный источник — '+srcDom+': '+drv.slice(0,2).join('; ')+'.';
+  var l2='Темп нарастания '+tempo+' (EWS '+ews+'): '+accelPct+'% сигналов растут.';
+  var l3='Системная связность '+criw+' (CRI '+cri+'): давление охватывает '+active+' из 5 доменов. Основная цепочка: '+chain+'.';
+  var lineStyle='font-size:12px;color:rgba(232,227,216,.82);line-height:1.55;margin-top:7px';
+  var hdr='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:4px">Почему такой риск</div>';
+  var body;
+  if(isSig){
+    body='<div style="'+lineStyle+'">'+l1+'</div><div style="'+lineStyle+'">'+l2+'</div><div style="'+lineStyle+'">'+l3+'</div>';
+  } else {
+    body='<div style="'+lineStyle+'">'+l1+'</div>'
+      +'<div style="position:relative;margin-top:7px">'
+      +'<div style="'+lineStyle+';margin-top:0;filter:blur(4px);opacity:.6;pointer-events:none">'+l2+'</div>'
+      +'<div style="'+lineStyle+';filter:blur(4px);opacity:.6;pointer-events:none">'+l3+'</div>'
+      +'<button onclick="openAccess()" style="margin-top:9px;font-size:11px;font-weight:600;color:#06050A;background:#D4AF5A;border:none;border-radius:20px;padding:6px 14px;cursor:pointer;font-family:Montserrat,sans-serif">Полное объяснение в Архиве →</button>'
+      +'</div>';
+  }
+  return micro
+    +'<div style="margin:12px 14px 4px;padding:11px 12px;background:rgba(184,151,58,.045);border:0.5px solid rgba(184,151,58,.15);border-radius:9px">'
+    +hdr+body+'</div>';
+}catch(_e){ return ''; } }
+
 function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
   var out = '';
   var absDelta = Math.abs(delta);
@@ -8714,6 +8805,7 @@ function grdfRenderCountryPanel(cc) {
   html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div>'+_miniCri+'</div>';
   html += '</div>';
   html += '<div id="grdf-idx-info" class="grdf-idx-info"></div>';
+  try{ html += _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig); }catch(_e){}
   html += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Ближе всего к порогу риска — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:#cbd5e1">'+s+'</div>';})();
 
 
