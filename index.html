@@ -8259,6 +8259,7 @@ function _grdfContextHtml(c){
     +(_cri!=null?'<div>Каскадный риск (CRI): <b style="color:#cbd5e1">'+_cri+'</b> <span style="color:#6f88ab">'+_cband(_cri)+'</span></div>':'')
     +'<div>Активны домены: '+_dots+' <span style="color:#cbd5e1">'+_act.length+'/5</span> <span style="color:#6f88ab">· '+_casc+'</span></div>'
     +'<div>Траектория: '+_traj+'</div></div>');
+  try{var _v2cH=_cascadeV2C(c);if(_v2cH)H+=card('Каскадное распространение давления',_v2cH);}catch(_e){}
   // ── 7. Горячие регионы ──
   var rc={};
   evs.forEach(function(e){ var _raw=String(e.region||''); if(cnLc && _raw.toLowerCase().indexOf(cnLc)<0) return; var r=_raw.replace(/,?\s*(Россия|Russia|Турция|Turkey)\s*$/i,'').trim(); if(r && r.toLowerCase()!==cnLc) rc[r]=(rc[r]||0)+1; });
@@ -8356,7 +8357,6 @@ function _grdfContextHtml(c){
     +_mc('#a855f7','Технологии','киберинциденты, сбои связи и инфраструктуры, дефицит электроники и чипов, технологические и санкционные ограничения.','CISA, Krebs on Security, BleepingComputer, The Hacker News, CyberScoop')
     +_mc('#ef4444','Социум','здравоохранение, труд, демография — вспышки и эпидемии, забастовки и протесты, отток и нехватка медкадров, задержки и невыплаты зарплат, падение рождаемости и убыль населения.','WHO, ReliefWeb, Amnesty International + отраслевые каналы (здравоохранение, труд, демография)')
     +'</div></details>');
-  try{var _v2cH=_cascadeV2C(c);if(_v2cH)H+=card('Каскадное распространение давления',_v2cH);}catch(_e){}
   return H;
 }
 window._spRenderCountryLocal = function(el, d, cname){
