@@ -7975,7 +7975,7 @@ function _grdfFreeMirror(c){ try{
     +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div>'
     +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Собрание исследований, прогнозов, исторических параллелей и аналитических материалов по '+gname+'.</div>'
     +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Архив используется системой при построении сценариев, прогнозов и оценке стратегического давления.</div></div>'; }
-  function HIDDEN(){ var its=['Главный источник формирования риска','Доминирующий стратегический контур','Наиболее вероятный сценарий развития','Следующая зона распространения давления','Критические регионы наблюдения','Горизонт стратегического прогноза','Скрытые связи между доменами','Ключевые точки передачи риска','Полный аналитический архив'];
+  function HIDDEN(){ var its=['Главная причина текущего риска','Доминирующий стратегический контур','Наиболее вероятный сценарий развития','Следующая зона распространения давления','Критические регионы наблюдения','Горизонт стратегического прогноза','Скрытые связи между доменами','Ключевые точки передачи риска','Полный аналитический архив'];
     return '<div style="margin:24px 14px 12px;padding:16px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:rgba(184,151,58,.04)">'
       +'<div style="font-size:11px;font-weight:700;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:11px">Что остаётся скрытым</div>'
       +its.map(function(t){ return '<div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:rgba(203,213,225,.82);padding:6px 0;border-top:0.5px solid rgba(255,255,255,.04)">🔒 '+esc(t)+'</div>'; }).join('')
@@ -7996,7 +7996,8 @@ function _grdfFreeMirror(c){ try{
     return '<div style="margin:20px 14px 10px;padding:16px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)">'
       +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Аналитические движки платформы</div>'
       +rows.map(function(r){ return '<div style="padding:8px 0;border-top:0.5px solid rgba(255,255,255,.04)"><div style="font-size:11.5px;color:#E3B23C;font-weight:600">'+r[0]+'</div><div style="font-size:11px;color:rgba(203,213,225,.7);line-height:1.45;margin-top:2px">'+r[1]+'</div></div>'; }).join('')
-      +'<div style="font-size:10.5px;color:rgba(148,163,184,.72);line-height:1.5;margin-top:11px;padding-top:11px;border-top:0.5px solid rgba(184,151,58,.15)">Полный профиль страны — результат совместной работы движков и архивной базы исследований.</div>'
+      +'<div style="font-size:10.5px;color:rgba(184,151,58,.85);line-height:1.5;margin-top:11px;padding-top:11px;border-top:0.5px solid rgba(184,151,58,.15)">Более 3 200 аналитических материалов и архивных исследований участвуют в построении прогнозов, сценариев и стратегических оценок страны.</div>'
+      +'<div style="font-size:10.5px;color:rgba(148,163,184,.72);line-height:1.5;margin-top:10px">Полный профиль страны — результат совместной работы движков и архивной базы исследований.</div>'
     +'</div>'; }
   var out='';
   out+=SH('Картина давления')+grp(['Источники давления','Главные драйверы риска','Каскадный риск (CRI)','Каскадное распространение давления','Горячие регионы'])+CTA();
@@ -8920,10 +8921,11 @@ function grdfRenderCountryPanel(cc) {
   var _adN=['climate','geopolitics','economy','technology','social'].filter(function(d){return ((c.domain_scores||{})[d]||0)>=60;}).length;
   var _miniCri='<div style="font-size:9px;color:#6f88ab;margin-top:3px">'+_adN+'/5 доменов</div>';
   html += '<div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#f1f5f9;padding:0 14px 0 26px;margin:0 0 7px">Текущая оценка риска</div>';
+  var _lvl=function(v){ v=+v||0; if(v>=75)return 'Критическое давление'; if(v>=60)return 'Повышенное давление'; if(v>=40)return 'Среднее давление'; return 'Низкое давление'; };
   html += '<div class="grdf-metrics">';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'GRI\')"><div class="grdf-metric-val" style="color:'+statusCol+'">'+gri+'</div><div class="grdf-metric-lbl">GRI <span class="grdf-idx-i">i</span></div>'+_miniDelta(c.gri_delta_7d)+'</div>';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'EWS\')"><div class="grdf-metric-val" style="color:'+(ews>=80?'#ef4444':ews>=65?'#f97316':'#eab308')+'">'+ews+'</div><div class="grdf-metric-lbl">EWS <span class="grdf-idx-i">i</span></div>'+_miniDelta(c.ews_delta_7d)+'</div>';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div>'+_miniCri+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'GRI\')"><div class="grdf-metric-val" style="color:'+statusCol+'">'+gri+'</div><div class="grdf-metric-lbl">GRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(203,213,225,.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(gri)+'</div>'+_miniDelta(c.gri_delta_7d)+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'EWS\')"><div class="grdf-metric-val" style="color:'+(ews>=80?'#ef4444':ews>=65?'#f97316':'#eab308')+'">'+ews+'</div><div class="grdf-metric-lbl">EWS <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(203,213,225,.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(ews)+'</div>'+_miniDelta(c.ews_delta_7d)+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(203,213,225,.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(cri)+'</div>'+_miniCri+'</div>';
   html += '</div>';
   html += '<div id="grdf-idx-info" class="grdf-idx-info"></div>';
   try{ html += _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig); }catch(_e){}
@@ -8935,7 +8937,7 @@ function grdfRenderCountryPanel(cc) {
   // Key conclusion + reasoning raised above the forecast (Variant B order)
   html += _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, 'top');
   } else {
-  html += '<div style="margin:0 14px 14px;padding:13px 14px;background:rgba(227,178,60,.06);border-left:2px solid #E3B23C;border-radius:0 8px 8px 0">'+'<div style="font-size:12.5px;line-height:1.55;color:#e2e8f0;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>Анализ страны завершён</div>'+'<div style="font-size:11.5px;line-height:1.55;color:rgba(203,213,225,.75);margin-top:7px">Система выявила ведущий источник формирования риска, рассчитала вероятные сценарии развития ситуации и определила наиболее вероятные направления дальнейшего распространения давления.</div>'+'</div>';
+  /* дубль верхнего блока удалён */
   }
 
   if(_GRDF_SHOW_MATRIX_RELOC){
