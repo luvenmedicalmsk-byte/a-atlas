@@ -8164,7 +8164,7 @@ function _cascadeV2C(c){
   else if(lead.p>=30){typ='Сбалансированный';tc='#5fae7a';interp='Давление распределяется между контурами.';}
   else{typ='Диффузный';tc='#D4AF5A';interp='Давление расходится сразу по нескольким контурам.';}
   var id='v2cx_'+cc;var H='';
-  H+='<div style="margin:16px 0 0;border-top:0.5px solid rgba(184,151,58,.18);padding-top:13px">';
+  H+='<div style="margin:16px 14px 0;border-top:0.5px solid rgba(184,151,58,.18);padding-top:13px">';
   H+='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:10px">Каскадное распространение давления · V2-C (Preview)</div>';
   H+='<div style="font-size:11px;font-weight:600;color:'+tc+';border:0.5px solid '+tc+'55;border-radius:20px;padding:3px 11px;display:inline-block;margin-bottom:10px;font-family:Montserrat,sans-serif">'+typ+' каскад</div>';
   H+='<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.52);font-family:Montserrat,sans-serif;margin-bottom:3px">Источник давления</div>';H+='<div style="font-size:15px;font-weight:600;color:'+(DOM_COLORS[dom]||'#B8973A')+';margin-bottom:11px;padding-bottom:11px;border-bottom:0.5px solid rgba(255,255,255,.09)">'+(DOM_LABELS[dom]||dom)+'</div>';H+='<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,227,216,.52);font-family:Montserrat,sans-serif;margin-bottom:5px">Распространяется в</div>';
