@@ -7892,8 +7892,27 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
 }catch(_e){ return ''; } }
 
 
+/* ── Free: дозагрузка реальных чисел архива (тот же эндпоинт, что у Pro; контент остаётся закрыт) ── */
+function _fmLoadArch(cc){ try{
+  var base=(typeof API_BASE!=='undefined'&&API_BASE)?API_BASE:'https://api.a-atlas.com';
+  var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
+  var h={'Content-Type':'application/json'}; if(tok) h['X-Snapshot-Token']=tok;
+  fetch(base+'/api/archive-context',{method:'POST',headers:h,body:JSON.stringify({country:cc})})
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(a){ if(!a) return;
+      var total=a.archive_total||0, ct=a.country_total||0;
+      function _pl(n){ var m=n%100; if(m>=11&&m<=14)return 'материалов'; var d=n%10; return d===1?'материал':((d>=2&&d<=4)?'материала':'материалов'); }
+      var el=document.getElementById('grdf-fm-arch-num');
+      if(el && total){ el.innerHTML='<span style="font-weight:600;color:#e2e8f0">'+total+'</span> <span style="font-size:13px;font-family:inherit;color:rgba(148,163,184,.8);font-weight:400">'+_pl(total)+'</span>'
+        +(ct?('<div style="font-size:11px;color:rgba(184,151,58,.9);margin-top:3px;font-weight:500">из них '+ct+' '+_pl(ct)+' по стране</div>'):''); }
+    }).catch(function(){});
+}catch(_e){} }
+
 /* ── Free-зеркало pro-каркаса: все секции как блюр-аккордеоны + CTA (без реальных данных) ── */
 function _grdfFreeMirror(c){ try{
+  var cc=String(c.country||'').toUpperCase();
+  var GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'};
+  var gname=GEN[cc]||(c.country_name||cc);
   var CTA='<a href="https://t.me/anirisao" target="_blank" rel="noopener" style="display:inline-block;font-size:11px;font-weight:600;color:#06050A;background:#D4AF5A;border-radius:18px;padding:6px 14px;font-family:Montserrat,sans-serif;text-decoration:none">Узнать стоимость контракта →</a>';
   var PH='<div style="filter:blur(5px);opacity:.5;pointer-events:none;user-select:none">'
     +'<div style="height:7px;border-radius:4px;background:linear-gradient(90deg,#b8973a,rgba(184,151,58,.18));width:74%;margin-bottom:7px"></div>'
@@ -7901,31 +7920,34 @@ function _grdfFreeMirror(c){ try{
     +'<div style="height:9px;border-radius:3px;background:rgba(255,255,255,.07);width:92%;margin-bottom:5px"></div>'
     +'<div style="height:9px;border-radius:3px;background:rgba(255,255,255,.07);width:80%"></div></div>';
   function SH(t){ return '<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">'+t+'</div>'; }
-  function LH(t){ return '<div style="font-size:11.5px;color:#b8973a;font-weight:500;letter-spacing:.04em;margin:18px 14px 11px;font-family:Montserrat,sans-serif">'+t+'</div>'; }
   function SUB(t){ return '<div style="font-size:11px;color:rgba(203,213,225,.62);margin:-4px 14px 9px">'+t+'</div>'; }
   function ACC(t){ return '<details class="grdf-acc" style="margin:0 14px 9px;padding:10px 12px;background:rgba(255,255,255,.02);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">'
     +'<summary class="grdf-acc-h" style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+t+'<span class="grdf-acc-cv">›</span></summary>'
     +'<div style="margin-top:10px">'+PH+'<div style="margin-top:10px">'+CTA+'</div></div></details>'; }
   function CARD(t){ return '<div style="margin:0 14px 11px;padding:12px 13px;background:rgba(255,255,255,.02);border:0.5px solid rgba(255,255,255,.08);border-radius:11px">'
     +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px">'+t+'</div>'+PH+'<div style="margin-top:10px">'+CTA+'</div></div>'; }
+  function ARCHCARD(){ return '<div style="border:0.5px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:0 14px 10px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012))">'
+    +'<div id="grdf-fm-arch-num" style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:#e2e8f0;line-height:1"><span style="filter:blur(7px);opacity:.6">3262 материала</span><div style="filter:blur(6px);opacity:.6;font-size:11px;margin-top:3px">из них 334 материала по стране</div></div>'
+    +'<div id="grdf-fm-arch-date" style="filter:blur(4px);opacity:.6;font-size:10px;color:rgba(148,163,184,.6);margin-top:4px;user-select:none">Последнее обновление: ···········</div>'
+    +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div>'
+    +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Собрание исследований, сценариев, исторических параллелей и аналитических материалов по '+gname+'.</div>'
+    +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Исследования Архива учитываются в сценариях и прогнозах для данной страны.</div></div>'; }
   var STRUCT=[
     {h:'Картина давления', items:['Источники давления','Главные драйверы риска','Каскадный риск (CRI)','Каскадное распространение давления','Горячие регионы']},
     {h:'Прогноз и траектория', items:['Горизонт прогноза','Динамика изменений']},
-    {light:'Интерпретация текущих сигналов'},
     {h:'Стратегическая интерпретация', items:['Практическая интерпретация','На что обратить внимание','Ключевой локальный вывод']},
     {h:'Стратегический прогноз', items:['Стратегический фокус','Траектория стратегического давления','Каскадное распространение давления','Вероятные переходы давления','Почему система считает этот домен стратегическим','Что изменилось за 7 дней','Рейтинг стратегического влияния (0–100)','Баланс факторов давления']},
     {h:'Стратегический контекст', sub:'Долгосрочные факторы и структурные причины давления', items:['Структурные уязвимости','Исторически устойчивые драйверы','Текущие риски (доменное давление)','Временные всплески']},
     {cardOnly:'Сводка системы'},
-    {h:'Архив исследований', card:'Архив исследований', items:['Ключевые исследования','Исторические параллели','Стратегические активы']},
+    {h:'Архив исследований', arch:true, items:['Ключевые исследования','Исторические параллели','Стратегические активы']},
     {h:'Методология и аналитика', items:['История индексов','Статистика обработки сигналов','Уверенность оценки','Методология оценки']}
   ];
   var out='';
   STRUCT.forEach(function(g){
-    if(g.light){ out+=LH(g.light); return; }
     if(g.cardOnly){ out+=CARD(g.cardOnly); return; }
     if(g.h){ out+=SH(g.h); }
     if(g.sub){ out+=SUB(g.sub); }
-    if(g.card){ out+=CARD(g.card); }
+    if(g.arch){ out+=ARCHCARD(); }
     (g.items||[]).forEach(function(t){ out+=ACC(t); });
   });
   return out;
@@ -8864,7 +8886,7 @@ function grdfRenderCountryPanel(cc) {
 
   // ── Actionable Intelligence Layer ─────────────────────────────
   html += _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, 'rest');
-  if(isSig){ html += _grdfContextHtml(c); } else { try{ html += _grdfFreeMirror(c); }catch(_e){} }
+  if(isSig){ html += _grdfContextHtml(c); } else { try{ html += _grdfFreeMirror(c); setTimeout(function(){ try{ _fmLoadArch(c.country); }catch(_e){} }, 60); }catch(_e){} }
         /* V2-C: вынесен в аккордеон внутри панели страны */
   // Bottom padding: 56px nav + 24px safe area + 20px buffer = 100px
   if(!isSig){ html += '<div id="grdf-cc-local"></div>'; }
