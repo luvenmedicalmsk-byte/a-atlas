@@ -57,6 +57,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 .tab:hover{border-color:var(--gold);color:var(--text)}
 .tab.active{border-color:var(--gold);color:var(--gold-light);background:rgba(184,151,58,0.08)}
 #mode-toggle{display:flex;gap:6px;margin:2px 0 10px}
+#graph-guide{display:none;margin:0 0 12px;padding:11px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
+#graph-guide .gg-title{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+#graph-guide .gg-row{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.65}
+#graph-guide .gg-row b{color:var(--text);font-weight:600}
 .mode-btn{padding:7px 16px;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;border:1px solid var(--gold-dim);border-radius:2px;cursor:pointer;color:var(--text2);background:transparent;transition:all .2s;font-family:'Montserrat',sans-serif}
 .mode-btn:hover{border-color:var(--gold);color:var(--text)}
 .mode-btn.active{border-color:var(--gold);color:var(--gold-light);background:rgba(184,151,58,0.08)}
@@ -229,6 +233,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
     <div class="leg" data-d="climate"><div class="leg-dot" style="background:#22c55e"></div>Климат</div>
     <div class="leg" data-d="technology"><div class="leg-dot" style="background:#a855f7"></div>Технологии</div>
     <div class="leg" data-d="social"><div class="leg-dot" style="background:#ef4444"></div>Социум</div>
+  </div>
+
+  <div id="graph-guide">
+    <div class="gg-title">Как читать граф связей</div>
+    <div class="gg-row"><b>Размер точки</b> — системное влияние риска</div>
+    <div class="gg-row"><b>Число связей</b> — вовлечённость в сеть</div>
+    <div class="gg-row"><b>Цвет</b> — домен риска</div>
+    <div class="gg-row"><b>Линии</b> — распространение давления между рисками</div>
+    <div class="gg-row"><b>Центральные узлы</b> — системные драйверы</div>
   </div>
 
   <div id="chart-area">
@@ -1153,6 +1166,7 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
       var e=document.getElementById(id); if(e) e.style.display=graph?'none':'';
     });
     cv.style.border=graph?'none':'';
+    var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'':'none';
     var cw=document.getElementById('canvas-wrap'); if(cw) cw.style.marginLeft=graph?'0':'';
     render();
   });
