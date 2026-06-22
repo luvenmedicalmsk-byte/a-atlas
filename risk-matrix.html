@@ -158,7 +158,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 #side-links p{font-size:10px;color:var(--text2);line-height:1.6}
 
 /* TOP RISKS LIST */
-#top-risks{margin-top:32px}
+#top-risks{margin:28px 16px 0}
 #top-risks h2{
   font-size:9px;letter-spacing:0.2em;text-transform:uppercase;
   color:var(--gold);margin-bottom:14px;
@@ -286,7 +286,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 </div>
 
 <div id="top-risks">
-  <h2>◆ Все риски горизонта</h2>
+  <h2>◆ Все риски горизонта <span id="th-h">· 2 года</span></h2>
   <div id="risks-grid"></div>
 </div>
 
@@ -336,6 +336,7 @@ const ROLE={
  'Онлайн-вред':'Усиливает поляризацию, дезинформацию и социальную нестабильность.'
 };
 
+const HMAP={'2y':'2 года','5y':'5 лет','10y':'10 лет'};
 const DESCS={
   '2y':'Горизонт 2026–2028 · Доминируют геополитика и экономика · Острая фаза рисков',
   '5y':'Горизонт 2028–2031 · Переход к структурным рискам · Климат нарастает',
@@ -608,6 +609,7 @@ function _mkRiskCard(r){
   return card;
 }
 function renderGrid(){
+  var _th=document.getElementById('th-h'); if(_th&&typeof HMAP!=='undefined') _th.textContent='\u00b7 '+(HMAP[curH]||'');
   const grid=document.getElementById('risks-grid');
   grid.innerHTML='';
   const list=(RISKS[curH]||[])
