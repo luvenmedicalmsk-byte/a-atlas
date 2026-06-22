@@ -624,75 +624,8 @@ var mode='matrix';
 var _netLaid=false,_netW=0,_drag=null,_dragMoved=false;
 var _isTouch=false,_touchHandled=false;
 /* nxr,nyr — нормированные координаты (0..1) по образцу WEF Figure 6; lab — короткая подпись */
-var NET_NODES=[
- {id:'ineq',t:'Неравенство',lab:'Неравенство',d:'social',inf:100,nxr:0.48,nyr:0.49,s:'Самый взаимосвязанный глобальный риск (2 года подряд). Центр, через который сцепляются почти все остальные.'},
- {id:'downturn',t:'Экономический спад',lab:'Экономический спад',d:'economy',inf:82,nxr:0.44,nyr:0.42,s:'Рецессия усиливает долг, безработицу и социальное напряжение.'},
- {id:'health',t:'Спад здоровья и благополучия',lab:'Здоровье',d:'social',inf:80,nxr:0.29,nyr:0.42,s:'Связан с неравенством, загрязнением, климатом и инфекциями.'},
- {id:'polar',t:'Социальная поляризация',lab:'Поляризация',d:'social',inf:78,nxr:0.52,nyr:0.59,s:'Питается дезинформацией и неравенством; ведёт к насилию.'},
- {id:'geoecon',t:'Геоэкономическое противостояние',lab:'Геоэкономика',d:'geopolitics',inf:76,nxr:0.57,nyr:0.42,s:'Санкции и тарифы рвут цепочки поставок, разгоняют инфляцию.'},
- {id:'misinfo',t:'Дезинформация',lab:'Дезинформация',d:'technology',inf:74,nxr:0.73,nyr:0.34,s:'Усиливает поляризацию, переплетается с кибер-рисками и ИИ.'},
- {id:'migration',t:'Вынужденная миграция',lab:'Миграция',d:'social',inf:68,nxr:0.40,nyr:0.34,s:'Следствие конфликтов и климата; обостряет неравенство.'},
- {id:'weather',t:'Экстремальные погодные явления',lab:'Экстремальная погода',d:'climate',inf:66,nxr:0.36,nyr:0.22,s:'Корень климатического кластера: биоразнообразие, ресурсы, миграция.'},
- {id:'cyber',t:'Кибербезопасность',lab:'Кибербезопасность',d:'technology',inf:64,nxr:0.89,nyr:0.35,s:'Бьёт по критической инфраструктуре и цепочкам поставок.'},
- {id:'rights',t:'Эрозия прав человека',lab:'Права человека',d:'social',inf:62,nxr:0.64,nyr:0.53,s:'Связана с цензурой, поляризацией и насилием.'},
- {id:'conflict',t:'Вооружённые конфликты',lab:'Вооружённые конфликты',d:'geopolitics',inf:60,nxr:0.74,nyr:0.14,s:'Драйвер миграции и угрозы ОМП.'},
- {id:'infra',t:'Недостаток инфраструктуры и соцзащиты',lab:'Социальная защита',d:'social',inf:60,nxr:0.35,nyr:0.49,s:'Усиливает неравенство и спад здоровья.'},
- {id:'ai',t:'Неблагоприятные исходы ИИ',lab:'Исходы ИИ',d:'technology',inf:58,nxr:0.89,nyr:0.44,s:'Связан с дезинформацией, кибер-рисками и безработицей.'},
- {id:'unemploy',t:'Безработица и нехватка возможностей',lab:'Безработица',d:'social',inf:58,nxr:0.43,nyr:0.66,s:'Сцеплена с неравенством, спадом и автоматизацией.'},
- {id:'concentr',t:'Концентрация стратег. ресурсов',lab:'Концентрация ресурсов',d:'economy',inf:56,nxr:0.56,nyr:0.29,s:'Контроль над минералами и технологиями как рычаг давления.'},
- {id:'critinfra',t:'Сбои критической инфраструктуры',lab:'Критическая инфраструктура',d:'economy',inf:56,nxr:0.53,nyr:0.21,s:'На пересечении кибер-рисков, поставок и погоды.'},
- {id:'biodiv',t:'Потеря биоразнообразия',lab:'Биоразнообразие',d:'climate',inf:56,nxr:0.28,nyr:0.10,s:'Тесно связана с экстремальной погодой и системами Земли.'},
- {id:'earth',t:'Критические изменения систем Земли',lab:'Системы Земли',d:'climate',inf:54,nxr:0.46,nyr:0.07,s:'Необратимые пороги; усиливают погодные явления.'},
- {id:'supply',t:'Сбои цепочек поставок',lab:'Цепочки поставок',d:'economy',inf:54,nxr:0.55,nyr:0.34,s:'Узел между геоэкономикой, инфляцией и кибер-рисками.'},
- {id:'resources',t:'Нехватка природных ресурсов',lab:'Нехватка ресурсов',d:'climate',inf:52,nxr:0.25,nyr:0.33,s:'Вода и продовольствие; источник конфликтов и миграции.'},
- {id:'debt',t:'Долговая нагрузка',lab:'Долг',d:'economy',inf:52,nxr:0.24,nyr:0.60,s:'Связана со спадом и инфляцией.'},
- {id:'disease',t:'Инфекционные заболевания',lab:'Инфекции',d:'social',inf:50,nxr:0.10,nyr:0.41,s:'Сцеплены со здоровьем, миграцией и климатом.'},
- {id:'inflation',t:'Инфляция',lab:'Инфляция',d:'economy',inf:50,nxr:0.28,nyr:0.66,s:'Разгоняется геоэкономикой и сбоями поставок.'},
- {id:'bubble',t:'Схлопывание пузырей активов',lab:'Пузыри активов',d:'economy',inf:48,nxr:0.33,nyr:0.57,s:'Связано со спадом и долгом.'},
- {id:'pollution',t:'Загрязнение',lab:'Загрязнение',d:'climate',inf:48,nxr:0.11,nyr:0.33,s:'Влияет на здоровье и экосистемы.'},
- {id:'online',t:'Онлайн-вред',lab:'Онлайн-вред',d:'technology',inf:46,nxr:0.80,nyr:0.53,s:'Переплетается с дезинформацией и ИИ.'},
- {id:'intraviol',t:'Внутригосударственное насилие',lab:'Внутреннее насилие',d:'geopolitics',inf:46,nxr:0.70,nyr:0.45,s:'Следствие поляризации и эрозии прав.'},
- {id:'crime',t:'Преступность и теневая экономика',lab:'Преступность',d:'economy',inf:44,nxr:0.58,nyr:0.66,s:'Связана с неравенством и насилием.'},
- {id:'censor',t:'Цензура и слежка',lab:'Цензура и слежка',d:'technology',inf:44,nxr:0.73,nyr:0.61,s:'Сцеплена с правами человека и дезинформацией.'},
- {id:'cbrn',t:'Био-, хим- и ядерные угрозы',lab:'Био- и ядерные угрозы',d:'geopolitics',inf:42,nxr:0.62,nyr:0.08,s:'Связаны с вооружёнными конфликтами.'},
- {id:'talent',t:'Дефицит кадров и труда',lab:'Дефицит кадров',d:'economy',inf:40,nxr:0.13,nyr:0.47,s:'Связан с безработицей и спадом.'},
- {id:'frontier',t:'Передовые технологии',lab:'Передовые технологии',d:'technology',inf:40,nxr:0.83,nyr:0.23,s:'Квантовые и био-технологии; смыкаются с ИИ.'},
- {id:'disasters',t:'Стихийные бедствия (непогодные)',lab:'Стихийные бедствия',d:'climate',inf:38,nxr:0.17,nyr:0.20,s:'Землетрясения, вулканы; бьют по инфраструктуре.'},
- {id:'trust',t:'Кризис доверия к институтам',lab:'Доверие',d:'social',inf:86,nxr:0.5,nyr:0.5,s:'Эрозия доверия к институтам — фундамент нестабильности. Через него сцепляются поляризация, дезинформация и легитимность власти.'},
- {id:'econfrag',t:'Фрагментация мировой экономики',lab:'Фрагментация',d:'economy',inf:64,nxr:0.5,nyr:0.5,s:'Распад единого экономического пространства: блоки, дедолларизация, параллельные платёжные контуры.'},
- {id:'crops',t:'Системные потери урожайности',lab:'Урожайность',d:'climate',inf:54,nxr:0.5,nyr:0.5,s:'Звено каскада «погода и вода → еда → цены → напряжение → миграция».'},
- {id:'water',t:'Водный стресс',lab:'Водный стресс',d:'climate',inf:58,nxr:0.5,nyr:0.5,s:'Дефицит воды — тихий триггер урожайности, миграции и борьбы за ресурсы.'}
-,
- {id:'demographics',t:'Демографический дисбаланс',lab:'Демография',d:'social',inf:62,nxr:0.5,nyr:0.5,s:'Старение и дисбаланс населения — недооценённый драйвер 2030+. Давит на рынок труда, пенсии, госдолг и миграцию.'},
- {id:'instability',t:'Социальная нестабильность',lab:'Нестабильность',d:'social',inf:72,nxr:0.5,nyr:0.5,s:'Финальный сток цепочек неравенства, поляризации и экономического давления.'},
- {id:'humanitarian',t:'Гуманитарный кризис',lab:'Гум. кризис',d:'social',inf:70,nxr:0.5,nyr:0.5,s:'Сток миграции, конфликтов, эпидемий и климатических катастроф.'}
-];
-var NET_EDGES=[
- ['ineq','polar',3],['ineq','unemploy',3],['ineq','downturn',2],['ineq','rights',2],['ineq','health',2],
- ['ineq','migration',2],['ineq','infra',2],['ineq','crime',1],['ineq','disease',1],
- ['polar','misinfo',3],['polar','rights',2],['polar','censor',2],['polar','intraviol',2],
- ['misinfo','cyber',2],['misinfo','online',2],['misinfo','ai',2],['misinfo','censor',2],
- ['geoecon','supply',3],['geoecon','inflation',2],['geoecon','concentr',2],['geoecon','conflict',2],['geoecon','downturn',2],
- ['downturn','debt',2],['downturn','inflation',2],['downturn','bubble',2],['downturn','unemploy',2],
- ['weather','biodiv',3],['weather','earth',3],['weather','resources',2],['weather','pollution',2],['weather','migration',2],['weather','disease',1],['weather','disasters',1],
- ['biodiv','earth',2],['biodiv','resources',2],
- ['cyber','critinfra',3],['cyber','supply',1],['cyber','ai',2],
- ['ai','frontier',2],['ai','unemploy',2],['ai','online',1],
- ['conflict','cbrn',2],['conflict','migration',2],['conflict','intraviol',2],
- ['migration','disease',1,'fb'],['migration','rights',1],
- ['disease','health',2],['pollution','health',1],
- ['supply','critinfra',2],['supply','inflation',1],
- ['concentr','supply',1],['concentr','ai',1],
- ['rights','censor',2],['rights','intraviol',1],
- ['infra','health',1],['inflation','debt',1],
- ['resources','conflict',1,'fb'],['crime','intraviol',1],['pollution','disease',1],
- ['bubble','debt',1],['disasters','critinfra',1],
- ['ai','misinfo',3],['ai','cyber',2],['polar','trust',3],['ineq','trust',2],['misinfo','trust',2],['downturn','trust',2,'fb'],['trust','rights',2],['trust','intraviol',1],['weather','crops',3],['water','crops',3],['crops','inflation',2],['inflation','migration',2],['geoecon','econfrag',3],['econfrag','supply',2],['water','migration',1]
-,
- ['demographics','talent',2],['demographics','debt',2],['demographics','unemploy',2],['demographics','migration',2],
- ['polar','instability',3],['unemploy','instability',2],['migration','instability',2],['downturn','instability',2],
- ['migration','humanitarian',3],['conflict','humanitarian',3],['disease','humanitarian',2],['weather','humanitarian',2],
- ['unemploy','ineq',2,'fb'],['polar','downturn',2,'fb']];
+var NET_NODES=[];
+var NET_EDGES=[];
 
 function computeSI(){
   var wdeg={},adj={};
@@ -786,6 +719,26 @@ function _fetchHorizon(h){
       }
     })
     .catch(function(){ _hzLoading[h]=false; });
+}
+var _graphLoaded=false,_graphLoading=false;
+function _fetchGraph(){
+  if(_rank<1 || _graphLoaded || _graphLoading) return;
+  _graphLoading=true;
+  var tk=''; try{ tk=localStorage.getItem('cc_token')||''; }catch(e){}
+  fetch(API_BASE+'/api/risk-graph', { headers: tk?{'X-Snapshot-Token':tk}:{} })
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(d){ _graphLoading=false;
+      if(d && d.nodes && d.nodes.length && d.edges){
+        NET_NODES.length=0; d.nodes.forEach(function(n){ NET_NODES.push(n); });
+        NET_EDGES.length=0; d.edges.forEach(function(e){ NET_EDGES.push(e); });
+        _graphLoaded=true;
+        try{ computeSI(); }catch(e){}
+        try{ renderArchive(); }catch(e){}
+        if(mode==='graph'){ try{ layoutNet(); drawNetwork(); }catch(e){} }
+        try{ _applyHorizonLock(); }catch(e){}
+      }
+    })
+    .catch(function(){ _graphLoading=false; });
 }
 function _askTier(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage({t:'atlas-need-tier'},'*'); }catch(e){} }
 _askTier(); setTimeout(_askTier,600); setTimeout(_askTier,1600);
@@ -1160,7 +1113,7 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
     cv.style.border=graph?'none':'';
     var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'block':'none';
     if(graph){document.body.classList.add('mode-graph');}else{document.body.classList.remove('mode-graph');}
-    try{_applyHorizonLock();}catch(e){}
+    try{_applyHorizonLock();}catch(e){} try{ if(graph) _fetchGraph(); }catch(e){}
     var cw=document.getElementById('canvas-wrap'); if(cw) cw.style.marginLeft=graph?'0':'';
     render();
   });
@@ -1169,22 +1122,25 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
 document.getElementById('tab-desc').textContent=DESCS['2y'];
 document.getElementById('risk-count').textContent=(RISKS['2y']||[]).length+' рисков';
 function _applyHorizonLock(){
-  var locked=(mode==='matrix') && (_rank < (_HZMIN[curH]||0));
+  var isGraph=(mode==='graph');
+  var locked = isGraph ? (_rank < 1) : (_rank < (_HZMIN[curH]||0));
+  var els = isGraph ? ['canvas-wrap'] : ['canvas-wrap','sys-drivers','atlas-findings','atlas-diverge','top-risks'];
   ['canvas-wrap','sys-drivers','atlas-findings','atlas-diverge','top-risks'].forEach(function(id){
-    var e=document.getElementById(id); if(!e)return;
-    if(locked) e.classList.add('hz-blur'); else e.classList.remove('hz-blur');
+    var e=document.getElementById(id); if(e) e.classList.remove('hz-blur');
   });
+  if(locked) els.forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.add('hz-blur'); });
   var lk=document.getElementById('hz-lock'); if(!lk)return;
   if(!locked){ lk.style.display='none'; return; }
   var ic='<svg class="hzl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>';
-  if(curH==='10y'){
+  if(!isGraph && curH==='10y'){
     lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-sub">Долгосрочная аналитика основана на исследованиях Архива 2023\u20132026.</div><button class="hzl-btn" onclick="_openArchive()">Открыть Архив</button></div>';
   } else {
-    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-title">Доступно в Signal Pro</div><div class="hzl-sub">Горизонт 5 лет: точки и аналитика открываются в подписке Signal Pro.</div><button class="hzl-btn" onclick="_goPro()">Открыть Signal Pro \u2192</button></div>';
+    var _sub = isGraph ? 'Граф связей открывается в Signal Pro.' : 'Горизонт 5 лет: точки и аналитика открываются в подписке Signal Pro.';
+    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-title">Доступно в Signal Pro</div><div class="hzl-sub">'+_sub+'</div><button class="hzl-btn" onclick="_goPro()">Открыть Signal Pro \u2192</button></div>';
   }
   lk.style.display='flex';
 }
-function _boot(){ render(); renderGrid(); renderDrivers(); renderArchive(); try{_applyHorizonLock();}catch(e){} }
+function _boot(){ render(); renderGrid(); renderDrivers(); renderArchive(); try{_applyHorizonLock();}catch(e){} try{_fetchGraph();}catch(e){} }
 setTimeout(_boot,80); setTimeout(_boot,500); setTimeout(_boot,1200);
 window.addEventListener('load',_boot);
 window.addEventListener('resize',render);
