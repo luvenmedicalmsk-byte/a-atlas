@@ -139,16 +139,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 }
 #side-close:hover{color:var(--text);border-color:var(--gold-dim)}
 #side-domain{font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
-#side-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--text);margin-bottom:12px;line-height:1.3}
+#side-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--text);margin-bottom:10px;line-height:1.3}
 #side-scores{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .side-score{
   padding:6px 10px;border:1px solid var(--gold-dim);border-radius:2px;
   font-size:9px;color:var(--text2);letter-spacing:0.08em;text-transform:uppercase;
 }
 .side-score span{display:block;font-size:16px;font-weight:500;color:var(--gold-light);font-family:'Cormorant Garamond',serif}
-#side-summary{font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+#side-summary{font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:12px}
+#side-role{margin-bottom:14px}
 #side-region{font-size:9px;color:var(--text3);letter-spacing:0.08em}
-.side-divider{height:1px;background:var(--border);margin:14px 0}
+.side-divider{height:1px;background:var(--border);margin:12px 0}
 #side-links p{font-size:10px;color:var(--text2);line-height:1.6}
 
 /* TOP RISKS LIST */
@@ -273,8 +274,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
   <button id="atlas-diverge-cta" onclick="_goPro()" style="width:100%;margin-top:10px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:12px;cursor:pointer">Получить доступ к Signal Pro →</button>
 </div>
 
-<div id="rm-cta" style="margin:8px 16px 28px;padding:18px 16px;border:1px solid rgba(184,151,58,0.28);border-radius:10px;background:rgba(184,151,58,0.05);text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF5A;margin-bottom:6px">Проекция риска по странам</div><div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.55;margin:0 auto 14px;max-width:520px">Эта карта — открытый обзор глобальных взаимосвязей рисков. Персональная проекция на 2 и 5 лет по отдельным странам сейчас в разработке: открыты Россия и Турция, остальные страны Атласа добавляем постепенно. Подписчики Signal Pro получают доступ первыми.</div><button id="rm-cta-btn" style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:6px;padding:12px 24px;cursor:pointer">Получить доступ к Signal Pro →</button></div>
-
 <div id="top-risks">
   <h2>◆ Все риски горизонта</h2>
   <div id="risks-grid"></div>
@@ -285,12 +284,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
   <div id="side-close">✕</div>
   <div id="side-domain"></div>
   <div id="side-title"></div>
-  <div id="side-scores">
-    <div class="side-score">Индекс<span id="sd-sev"></span></div>
-    <div class="side-score">Краткосрочный<span id="sd-x"></span></div>
-    <div class="side-score">Долгосрочный<span id="sd-y"></span></div>
-  </div>
   <div id="side-summary"></div>
+  <div id="side-role"></div>
   <div id="sd-extra"></div>
   <div class="side-divider"></div>
   <div id="side-region"></div>
@@ -299,6 +294,36 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 <script>
 const DN={geopolitics:'Геополитика',economy:'Экономика',climate:'Климат',technology:'Технологии',social:'Социум'};
 const DC={geopolitics:'#ff7a00',economy:'#38bdf8',climate:'#22c55e',technology:'#a855f7',social:'#ef4444'};
+const ROLE={
+ 'Геоэкономическое противостояние':'Запускает сбои цепочек поставок, инфляцию и рост долговой нагрузки.',
+ 'Дезинформация':'Усиливает поляризацию, недоверие к институтам и киберугрозы.',
+ 'Социальная поляризация':'Переводит неравенство и дезинформацию в нестабильность и эрозию прав.',
+ 'Неравенство':'Скрытый корень: питает поляризацию, недоверие и социальную нестабильность.',
+ 'Неблагоприятные исходы ИИ':'Множитель: усиливает дезинформацию, киберугрозы и давление на рынок труда.',
+ 'Кибербезопасность':'Подрывает критическую инфраструктуру, доверие и финансовую стабильность.',
+ 'Экстремальные погодные явления':'Запускает цепочки урожая, воды, миграции и сбоев инфраструктуры.',
+ 'Вооружённые конфликты между государствами':'Источник последствий: давление на ресурсы, миграцию и цепочки поставок.',
+ 'Вынужденная миграция и перемещение':'Узел схождения климата, конфликтов и экономического давления.',
+ 'Экономический спад':'Передаёт давление в безработицу, долг и социальную нестабильность.',
+ 'Долговая нагрузка':'Усиливает риск финансовых кризисов и сужает пространство для политики.',
+ 'Инфляция':'Питает экономическое давление, неравенство и социальное недовольство.',
+ 'Сбои цепочек поставок':'Передают шоки в инфляцию, дефицит ресурсов и производство.',
+ 'Эрозия прав человека и свобод':'Усиливает поляризацию, недоверие и социальную нестабильность.',
+ 'Загрязнение':'Подрывает здоровье, продовольствие и устойчивость экосистем.',
+ 'Нехватка природных ресурсов':'Усиливает продовольственные риски, миграцию и экономическую нестабильность.',
+ 'Потеря биоразнообразия':'Подрывает продовольственные системы, воду и устойчивость к климату.',
+ 'Критические изменения систем Земли':'Долгосрочный драйвер климатических и продовольственных цепочек.',
+ 'Концентрация стратег. ресурсов и технологий':'Усиливает геоэкономическое противостояние и уязвимость цепочек.',
+ 'Сбои критической инфраструктуры':'Каскадно бьют по энергетике, связи и финансовой системе.',
+ 'Недостаток инфраструктуры и соцзащиты':'Углубляет неравенство и социальную уязвимость.',
+ 'Безработица и нехватка экон. возможностей':'Питает неравенство, поляризацию и социальное напряжение.',
+ 'Схлопывание пузырей активов':'Запускает экономический спад и долговые кризисы.',
+ 'Инфекционные заболевания':'Бьют по здоровью, экономике и цепочкам поставок.',
+ 'Био-, хим- и ядерные угрозы':'Низкая вероятность, но экстремальные системные последствия.',
+ 'Преступность и теневая экономика':'Подрывает институты, экономику и общественное доверие.',
+ 'Цензура и слежка':'Усиливает эрозию прав, недоверие и поляризацию.',
+ 'Онлайн-вред':'Усиливает поляризацию, дезинформацию и социальную нестабильность.'
+};
 
 const DESCS={
   '2y':'Горизонт 2026–2028 · Доминируют геополитика и экономика · Острая фаза рисков',
@@ -500,16 +525,14 @@ cv.addEventListener('click',e=>{
 function openSide(r){
   document.getElementById('side-domain').textContent=DN[r.d];
   document.getElementById('side-title').textContent=r.t;
-  document.getElementById('sd-sev').textContent=r.sev;
-  document.getElementById('sd-x').textContent=r.x;
-  document.getElementById('sd-y').textContent=r.y;
   document.getElementById('side-summary').textContent=r.s||'';
+  var _role=document.getElementById('side-role');
+  if(_role){ var rr=(r.si===undefined&&typeof ROLE!=='undefined'&&ROLE[r.t])?ROLE[r.t]:''; if(rr){ _role.style.display=''; _role.innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-bottom:4px">Системная роль в системе</div><div style="font-family:Montserrat,sans-serif;font-size:12.5px;color:rgba(232,224,208,0.9);line-height:1.5">'+rr+'</div>'; } else { _role.style.display='none'; _role.innerHTML=''; } }
   var _ex=document.getElementById('sd-extra');
   if(_ex){
     if(r.si!==undefined){ _ex.innerHTML=buildIntel(r); } else { _ex.innerHTML=''; }
   }
   document.getElementById('side-region').textContent='Регион: '+r.r;
-  try{ document.getElementById('side-scores').style.display=(r._id!==undefined)?'none':''; }catch(e){}
   document.getElementById('side').classList.add('open');
   document.getElementById('side-domain').style.color=DC[r.d];
 }
