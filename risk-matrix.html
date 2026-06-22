@@ -242,26 +242,6 @@ body.mode-graph #graph-hint{display:flex}
     <div class="leg" data-d="social"><div class="leg-dot" style="background:#ef4444"></div>Социум</div>
   </div>
 
-  <div id="graph-guide">
-    <div class="gg-title">Как читать граф связей</div>
-    <div class="gg-row"><b>Размер точки</b> — системное влияние риска</div>
-    <div class="gg-row"><b>Число связей</b> — вовлечённость в сеть</div>
-    <div class="gg-row"><b>Цвет</b> — домен риска</div>
-    <div class="gg-row"><b>Линии</b> — распространение давления между рисками</div>
-    <div class="gg-row"><b>Центральные узлы</b> — системные драйверы</div>
-  </div>
-
-  <div id="graph-hint">
-    <svg class="gh-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M9 18h6"/><path d="M10 21h4"/>
-      <path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>
-    </svg>
-    <div class="gh-text">
-      <div class="gh-title">Интерактивный граф</div>
-      <div class="gh-sub">Перетаскивайте узлы для изучения скрытых связей</div>
-    </div>
-  </div>
-
   <div id="chart-area">
     <span id="y-label">Долгосрочная тяжесть</span>
     <div id="y-axis">
@@ -293,6 +273,26 @@ body.mode-graph #graph-hint{display:flex}
       <span class="xtick">80</span><span class="xtick">88</span><span class="xtick">95</span>
     </div>
     <div id="x-label">Краткосрочная тяжесть →</div>
+  </div>
+
+  <div id="graph-guide">
+    <div class="gg-title">Как читать граф связей</div>
+    <div class="gg-row"><b>Размер точки</b> — системное влияние риска</div>
+    <div class="gg-row"><b>Число связей</b> — вовлечённость в сеть</div>
+    <div class="gg-row"><b>Цвет</b> — домен риска</div>
+    <div class="gg-row"><b>Линии</b> — распространение давления между рисками</div>
+    <div class="gg-row"><b>Центральные узлы</b> — системные драйверы</div>
+  </div>
+
+  <div id="graph-hint">
+    <svg class="gh-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M9 18h6"/><path d="M10 21h4"/>
+      <path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>
+    </svg>
+    <div class="gh-text">
+      <div class="gh-title">Интерактивный граф</div>
+      <div class="gh-sub">Перетаскивайте узлы для изучения скрытых связей</div>
+    </div>
   </div>
 </div>
 
@@ -540,7 +540,7 @@ cv.addEventListener('mouseleave',()=>tt.style.display='none');
 /* ── Перетаскивание узлов графа (центр «Неравенство» статичен) ── */
 function _evPos(e){var rc=cv.getBoundingClientRect();var t=(e.touches&&e.touches[0])||e;return{x:t.clientX-rc.left,y:t.clientY-rc.top};}
 function _grab(p){var h=nearest(p.x,p.y);if(h&&h.node&&h.node.id!=='ineq'){_drag=h.node;_dragMoved=false;}else _drag=null;}
-function _move(p){if(!_drag)return;_drag.nx=Math.max(10,Math.min(W-10,p.x));_drag.ny=Math.max(10,Math.min(H-10,p.y));_dragMoved=true;drawNetwork();}
+function _move(p){if(!_drag)return;var _r=4+(_drag.si||0)/100*10,_m=_r+8;_drag.nx=Math.max(_m,Math.min(W-_m,p.x));_drag.ny=Math.max(_m,Math.min(H-_m,p.y));_dragMoved=true;drawNetwork();}
 cv.addEventListener('mousedown',function(e){if(mode!=='graph')return;_grab(_evPos(e));});
 cv.addEventListener('mousemove',function(e){if(mode==='graph'&&_drag){_move(_evPos(e));}});
 window.addEventListener('mouseup',function(){_drag=null;});
@@ -1163,11 +1163,11 @@ function drawNetwork(){
     var rad=4+(n.si||0)/100*10, w=ctx.measureText(n.lab).width;
     if(n.nx>=cx){
       var sx=n.nx+rad+4;
-      if(sx+w>W-2){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(n.lab,Math.max(w/2+2,Math.min(W-w/2-2,n.nx)),n.ny-rad-3); }
+      if(sx+w>W-2){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(n.lab,Math.max(w/2+2,Math.min(W-w/2-2,n.nx)),Math.max(11,n.ny-rad-3)); }
       else { ctx.textAlign='start'; ctx.textBaseline='middle'; ctx.fillText(n.lab,sx,n.ny); }
     } else {
       var ex=n.nx-rad-4;
-      if(ex-w<2){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(n.lab,Math.max(w/2+2,Math.min(W-w/2-2,n.nx)),n.ny-rad-3); }
+      if(ex-w<2){ ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText(n.lab,Math.max(w/2+2,Math.min(W-w/2-2,n.nx)),Math.max(11,n.ny-rad-3)); }
       else { ctx.textAlign='end'; ctx.textBaseline='middle'; ctx.fillText(n.lab,ex,n.ny); }
     }
   });
