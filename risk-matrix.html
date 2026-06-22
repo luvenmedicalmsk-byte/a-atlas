@@ -298,7 +298,7 @@ body.mode-graph #graph-hint{display:flex}
 
 <div id="sys-drivers" style="margin:8px 16px 18px;padding:18px 16px;border:1px solid rgba(184,151,58,0.22);border-radius:10px;background:rgba(255,255,255,0.012)">
   <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:8px">Главное наблюдение Атлас</div>
-  <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18.5px;color:rgba(232,224,208,0.96);line-height:1.42;margin-bottom:16px">Наибольшее влияние на систему оказывают не самые тяжёлые риски, а те, что соединяют между собой несколько доменов и запускают каскадные последствия за пределами своего источника.</div>
+  <div id="sd-observation" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18.5px;color:rgba(232,224,208,0.96);line-height:1.42;margin-bottom:16px">Фокус на ближайших драйверах нестабильности и рисках немедленного воздействия.</div>
   <div style="font-family:'Montserrat',sans-serif;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(232,224,208,0.45);margin-bottom:2px">Наиболее влиятельные риски системы</div>
   <div id="sys-drivers-list"></div>
   <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.62);line-height:1.55;margin-top:14px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,0.18)">Именно поэтому оценки Атлас в ряде случаев расходятся с консенсусом WEF.</div>
@@ -366,6 +366,11 @@ const ROLE={
 };
 
 const HMAP={'2y':'2 года','5y':'5 лет','10y':'10 лет'};
+const DOBS={
+ '2y':'Фокус на ближайших драйверах нестабильности и рисках немедленного воздействия.',
+ '5y':'Фокус на переходных процессах и формировании устойчивых цепочек влияния.',
+ '10y':'Фокус на структурных и долгосрочных системных рисках.'
+};
 const DESCS={
   '2y':'Горизонт 2026–2028 · Доминируют геополитика и экономика · Острая фаза рисков',
   '5y':'Горизонт 2028–2031 · Переход к структурным рискам · Климат нарастает',
@@ -607,7 +612,7 @@ document.querySelectorAll('.tab').forEach(el=>{
     curH=el.dataset.h;
     document.getElementById('tab-desc').textContent=DESCS[curH];
     document.getElementById('risk-count').textContent=(RISKS[curH]||[]).length+' рисков';
-    render(); renderGrid();
+    render(); renderGrid(); renderDrivers();
   });
 });
 
@@ -782,19 +787,22 @@ function cascadeFrom(id){
   return chain.map(function(x){return lab[x];}).join(' \u2192 ');
 }
 function renderDrivers(){
+  var _obs=document.getElementById('sd-observation');
+  if(_obs && typeof DOBS!=='undefined') _obs.textContent=DOBS[curH]||'';
   var el=document.getElementById('sys-drivers-list'); if(!el)return;
-  var top=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}).slice(0,5);
-  el.innerHTML=top.map(function(n,i){
-    var desc=(typeof DRV_DESC!=='undefined'&&DRV_DESC[n.id])||(typeof _roleLine==='function'?_roleLine(n.id):'');
-    return '<div class="drv-row" data-id="'+n.id+'" style="padding:12px 0;border-top:'+(i?'0.5px solid rgba(255,255,255,0.06)':'0')+';cursor:pointer">'
-      +'<div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:'+DC[n.d]+';flex-shrink:0"></span><span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span></div>'
+  var top=(RISKS[curH]||[]).slice().sort(function(a,b){return b.sev-a.sev;}).slice(0,5);
+  el.innerHTML=top.map(function(r,i){
+    var desc=(typeof ROLE!=='undefined'&&ROLE[r.t])||r.s||'';
+    return '<div class="drv-row" data-t="'+r.t+'" style="padding:12px 0;border-top:'+(i?'0.5px solid rgba(255,255,255,0.06)':'0')+';cursor:pointer">'
+      +'<div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:'+DC[r.d]+';flex-shrink:0"></span><span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;color:rgba(232,224,208,0.92)">'+r.t+'</span></div>'
       +'<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.62);line-height:1.5;margin-top:4px;padding-left:17px">'+desc+'</div>'
       +'</div>';
   }).join('');
   Array.prototype.forEach.call(el.querySelectorAll('.drv-row'),function(row){
     row.addEventListener('click',function(){
-      var n=NET_NODES.filter(function(x){return x.id===row.getAttribute('data-id');})[0];
-      if(n) openSide({t:n.t,d:n.d,sev:n.inf,r:'Глобально',s:n.s||'',x:'\u2014',y:'\u2014',si:n.si,_id:n.id});
+      var t=row.getAttribute('data-t');
+      var r=(RISKS[curH]||[]).filter(function(x){return x.t===t;})[0];
+      if(r) openSide(r);
     });
   });
 }
