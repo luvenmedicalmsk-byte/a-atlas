@@ -748,6 +748,45 @@ var HIST={
  ai:{y:[['2023','—'],['2024','#29'],['2025','#31'],['2026','#8']],note:'Низко в краткосроке, но #5 в 10-летнем горизонте.'},
  cyber:{y:[['2023','#8'],['2024','#4'],['2025','#5'],['2026','#6']],note:'Стабильная значимость.'}
 };
+/* ===== V4: авторский слой (ручные данные, редактируются) ===== */
+var DIVX={
+ ai:{key:'Atlas рассматривает ИИ как усилитель уже существующих рисков — через информационный, кибернетический и социальный контур.',wefView:'Долгосрочный фактор, умеренный в ближайшие годы.',atlasView:'Активный мультипликатор уже сегодня.'},
+ ineq:{key:'Неравенство — скрытый корень большинства цепочек: оно усиливает поляризацию, недоверие и нестабильность.',wefView:'Риск среднего ряда.',atlasView:'Главный системный усилитель.'},
+ geoecon:{key:'Геоэкономика — мощный спусковой крючок, но давление от неё уходит вниз по системе и почти не возвращается.',wefView:'Риск №1 текущего момента.',atlasView:'Источник цепочек, а не их центр.'},
+ polar:{key:'Поляризация — двусторонний хаб: принимает давление и сама запускает недоверие и нестабильность.',wefView:'Один из ведущих рисков.',atlasView:'Ключевая точка усиления.'},
+ downturn:{key:'Экономический спад — не финал, а передаточный механизм: он разгоняет безработицу, долг и социальное давление.',wefView:'Воспринимается как итог.',atlasView:'Механизм распространения давления.'},
+ migration:{key:'Миграция — перекрёсток, где сходятся климат, конфликты и экономика, а на выходе — гуманитарный кризис.',wefView:'Отдельный риск среднего ряда.',atlasView:'Узел схождения нескольких угроз.'},
+ weather:{key:'Экстремальная погода — вход в климатические цепочки (урожай, вода, миграция), а не их центр.',wefView:'Риск №1 в долгосроке.',atlasView:'Источник давления при высокой тяжести.'},
+ trust:{key:'Кризис доверия — самостоятельный драйвер: через него сцепляются легитимность, поляризация и дезинформация.',wefView:'Растворён в «эрозии общества».',atlasView:'Выделен как ключевой драйвер.'},
+ conflict:{key:'Вооружённый конфликт — источник тяжёлых последствий, но не точка взаимоусиления рисков.',wefView:'Острейший риск.',atlasView:'Источник последствий, не хаб.'},
+ misinfo:{key:'Дезинформация — признанный усилитель; здесь Atlas и консенсус совпадают.',wefView:'Ведущий краткосрочный риск.',atlasView:'Системный усилитель — согласие.'}
+};
+var EVO={
+ ai:[['2023','периферийный риск'],['2024','растущий фактор'],['2025','системный усилитель'],['2026','один из ключевых мультипликаторов риска']],
+ geoecon:[['2023','один из факторов напряжения'],['2024','фоновый риск'],['2025','нарастающее давление'],['2026','риск №1 текущего момента']],
+ misinfo:[['2023','недооценённая угроза'],['2024','риск №1 повестки'],['2025','закрепился на вершине'],['2026','ядро рисков, уступил геоэкономике']],
+ weather:[['2023','устойчиво высокий риск'],['2024','подтверждённая тяжесть'],['2025','риск №1 долгосрока'],['2026','вход в климатические каскады']],
+ polar:[['2023','растущее напряжение'],['2024','в топе повестки'],['2025','закрепилась как драйвер'],['2026','ключевая точка усиления']],
+ conflict:[['2023','локальная угроза'],['2024','резкий рост значимости'],['2025','один из ведущих рисков'],['2026','острейший риск момента']],
+ ineq:[['2023','структурная проблема'],['2024','растущая взаимосвязанность'],['2025','самый взаимосвязанный риск'],['2026','главный системный усилитель Atlas']],
+ trust:[['2023','фоновое недоверие'],['2024','эрозия институтов'],['2025','самостоятельный фактор'],['2026','ключевой социальный драйвер']]
+};
+/* ARCH: метаданные исследований Архива. ЗНАЧЕНИЯ-ЗАГЛУШКИ — заменить реальными числами Архива. */
+var ARCH={
+ ai:{n:9,d:['сценарный анализ','исторические кейсы','технологические прогнозы']},
+ ineq:{n:11,d:['структурный анализ','исторические кейсы','сценарии']},
+ geoecon:{n:8,d:['геоэкономические сценарии','исторические кейсы']},
+ polar:{n:7,d:['социальный анализ','кейсы поляризации']},
+ weather:{n:10,d:['климатические сценарии','каскадный анализ']},
+ migration:{n:6,d:['миграционные сценарии','гуманитарные кейсы']},
+ trust:{n:5,d:['институциональный анализ','исторические кейсы']},
+ conflict:{n:8,d:['конфликтные сценарии','исторические кейсы']},
+ downturn:{n:7,d:['макроэкономические сценарии','исторические кейсы']},
+ misinfo:{n:6,d:['информационный анализ','кейсы кампаний']}
+};
+function _influenceLevel(id){ var r=_siRank(id); return r<=4?'Очень высокое':(r<=8?'Высокое':(r<=14?'Заметное':'Умеренное')); }
+function _roleLine(id){ var t=TYPE[id]; return t==='Driver'?'Системный драйвер — усиливает другие риски':(t==='Risk'?'Первичный риск системы':(t==='Cascade'?'Каскадный механизм — проводит давление дальше':'Последствие, замыкающее цепочки')); }
+
 function _h(s){ return '<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#D4AF5A;font-weight:700;margin-top:18px;margin-bottom:8px">'+s+'</div>'; }
 function _lock(inner){
   if(PRO)return inner;
@@ -780,37 +819,41 @@ function buildIntel(r){
   }
   var html='';
   html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(DC[r.d]||'#D4AF5A')+';margin-top:12px;font-weight:700">'+(ROLE_RU[TYPE[id]]||'')+'</div>';
-  html+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,224,208,0.6)">Системная важность</span><span style="font-family:Montserrat,sans-serif;font-size:22px;font-weight:700;color:#D4AF5A">'+n.si+'<span style="font-size:11px;color:rgba(232,224,208,0.45);font-weight:400"> \u00b7 #'+_siRank(id)+'</span></span></div>';
+  html+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,224,208,0.6)">Скрытое влияние на систему</span><span style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:700;color:#D4AF5A">'+_influenceLevel(id)+'</span></div>';
   var loop=_findLoop(id);
-  if(loop){ html+='<div style="margin-top:14px;padding:11px 12px;border:0.5px solid rgba(220,120,90,0.4);border-radius:8px;background:rgba(220,120,90,0.08)"><div style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;color:#e89a7a;margin-bottom:5px">\u27f3 Обнаружена самоподдерживающаяся петля</div><div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.5">'+loop+'</div></div>'; }
+  if(loop){ html+='<div style="margin-top:14px;padding:11px 12px;border:0.5px solid rgba(220,120,90,0.4);border-radius:8px;background:rgba(220,120,90,0.08)"><div style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;color:#e89a7a;margin-bottom:5px">\u27f3 Самоподдерживающаяся петля усиления</div><div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.5">'+loop+'</div><div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.55);margin-top:5px">Системная уязвимость: риск усиливает сам себя.</div></div>'; }
   var io=_degInOut(id), casc=0; NET_EDGES.forEach(function(e){ if(e[0]===id&&e[3]!=='fb')casc++; });
-  html+=_h('Почему Atlas считает это системно значимым');
+  html+=_h('Почему это важно');
   html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.8);line-height:1.6">'
-    +'\u00b7 Системная важность #'+_siRank(id)+' из '+NET_NODES.length+' (SI '+n.si+')<br>'
-    +'\u00b7 Связей: '+io[0]+' входящих, '+io[1]+' исходящих<br>'
-    +'\u00b7 Запускает причинных цепочек: '+casc+'<br>'
-    +'\u00b7 Роль: '+(ROLE_RU[TYPE[id]]||'\u2014')
-    +(loop?'<br>\u00b7 Участвует в петле усиления риска':'')+'</div>';
+    +'\u00b7 '+_roleLine(id)+'<br>'
+    +'\u00b7 Влияет напрямую на '+io[1]+' рисков системы<br>'
+    +(casc?'\u00b7 Запускает цепочки распространения давления<br>':'')
+    +'\u00b7 Создаёт последствия второго порядка за пределами своего домена'
+    +(loop?'<br>\u00b7 Системная уязвимость: усиливает сам себя':'')+'</div>';
   var c3=_cascadesTop3(id);
-  if(c3.length){ html+=_h('Ключевые каскады'); html+=c3.map(function(c){ return '<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.45;padding:5px 0;border-top:0.5px solid rgba(255,255,255,0.05)">'+c+'</div>'; }).join(''); }
-  var d=DIV[id];
-  if(d){ var aN=_siRank(id), v=_verdict(d.wefN,aN);
-    html+=_h('Оценка Atlas против консенсуса WEF');
-    var col=v.dir==='up'?'#7ec97e':(v.dir==='down'?'#e89a7a':'rgba(232,224,208,0.85)');
-    html+='<div style="font-family:Montserrat,sans-serif;font-size:13.5px;font-weight:600;color:'+col+';line-height:1.45">'+v.t+'.</div>';
-    html+='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.5);margin-top:5px">Консенсус WEF: '+d.wef+'  \u00b7  Atlas: '+aN+'-е место по влиянию</div>';
-    var detail='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-top:14px;margin-bottom:6px">Почему Atlas не согласен</div>'
+  if(c3.length){ html+=_h('Цепочки распространения давления'); html+=c3.map(function(c){ return '<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.45;padding:5px 0;border-top:0.5px solid rgba(255,255,255,0.05)">'+c+'</div>'; }).join(''); }
+  var d=DIV[id], dx=DIVX[id];
+  if(d){
+    html+=_h('Где Atlas не согласен с консенсусом');
+    if(dx&&dx.key){ html+='<div style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;color:#D4AF5A;line-height:1.5;margin-bottom:10px">'+dx.key+'</div>'; }
+    html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;line-height:1.55"><div style="color:rgba(232,224,208,0.72)"><b style="color:#8fb8d8">Позиция WEF:</b> '+((dx&&dx.wefView)||d.wef)+'</div><div style="color:rgba(232,224,208,0.72);margin-top:3px"><b style="color:#D4AF5A">Позиция Atlas:</b> '+((dx&&dx.atlasView)||'высокое скрытое влияние на систему')+'</div></div>';
+    html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-top:14px;margin-bottom:6px">Почему Atlas оценивает иначе</div>'
       +'<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.8);line-height:1.6">'+d.why+'</div>'
       +'<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#e89a7a;margin-top:14px;margin-bottom:6px">Что упускает консенсус</div>'
       +'<div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.92);line-height:1.6;font-style:italic">'+d.miss+'</div>';
-    html+=_lock(detail);
   }
-  var hi=HIST[id];
-  if(hi){ html+=_h('История 2023 \u2192 2026');
-    var rows=hi.y.map(function(p){ return '<div style="display:flex;justify-content:space-between;font-family:Montserrat,sans-serif;font-size:11.5px;padding:3px 0"><span style="color:rgba(232,224,208,0.6)">'+p[0]+'</span><span style="color:#D4AF5A;font-weight:600">WEF '+p[1]+'</span></div>'; }).join('');
-    rows+='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.6);line-height:1.5;margin-top:6px">'+hi.note+'</div>';
-    html+=_lock(rows);
+  var ev=EVO[id];
+  if(ev){ html+=_h('Как менялась оценка риска');
+    html+=ev.map(function(p){ return '<div style="display:flex;gap:12px;font-family:Montserrat,sans-serif;font-size:11.5px;padding:4px 0;border-top:0.5px solid rgba(255,255,255,0.05)"><span style="color:#D4AF5A;font-weight:600;width:34px;flex-shrink:0">'+p[0]+'</span><span style="color:rgba(232,224,208,0.82)">'+p[1]+'</span></div>'; }).join('');
   }
+  var ar=ARCH[id];
+  if(ar){ html+=_h('Исследования Архива');
+    html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.7">'
+      +'\u00b7 '+ar.n+' исследований<br>\u00b7 2023\u20132026<br>'
+      +ar.d.map(function(x){return '\u00b7 '+x;}).join('<br>')+'</div>';
+    html+='<button onclick="_goPro()" style="width:100%;margin-top:10px;font-family:Montserrat,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:11px;cursor:pointer">Открыть исследования →</button>';
+  }
+  html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.5);line-height:1.6;margin-top:16px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.06)">Что происходит сейчас \u2014 Signal Pro. Почему это важно \u2014 Архив.</div>';
   return html;
 }
 function renderArchive(){
