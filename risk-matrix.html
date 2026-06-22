@@ -959,10 +959,10 @@ function buildIntel(r){
       if(ar.forecasts) _aL.push('сигналы и триггеры');
       if(ar.historical_cases) _aL.push('исторические кейсы');
       html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.7">'+_aL.map(function(x){return '· '+x;}).join('<br>')+'</div>'; }
-    html+='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.55);line-height:1.55;margin-top:8px;font-style:italic">Материалы Архива используются как исследовательская база для анализа риска и его возможных последствий.</div>';
+    html+='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.55);line-height:1.55;margin-top:8px;font-style:italic">Оценка Atlas по этому риску опирается не на текущий сигнал, а на несколько лет накопленных наблюдений, сценариев и исследований Архива (2023–2026) — память системы, на которой строятся её выводы.</div>';
     html+='<div style="width:100%;margin-top:10px;font-family:Montserrat,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,224,208,0.6);background:rgba(184,151,58,0.14);border-radius:7px;padding:11px;text-align:center">Скоро в Архиве</div>';
   }
-  html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.5);line-height:1.6;margin-top:16px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.06)">Что происходит сейчас — Signal Pro. Глубже разобрать риск — в материалах Архива.</div>';
+  html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.5);line-height:1.6;margin-top:16px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.06)">Signal Pro — что происходит сейчас. Архив — почему Atlas пришёл к такому выводу.</div>';
   return html;
 }
 function _applyProUI(){
