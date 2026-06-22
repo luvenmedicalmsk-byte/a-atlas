@@ -57,6 +57,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 .tab:hover{border-color:var(--gold);color:var(--text)}
 .tab.active{border-color:var(--gold);color:var(--gold-light);background:rgba(184,151,58,0.08)}
 #mode-toggle{display:flex;gap:6px;margin:2px 0 10px}
+body.mode-graph #sys-drivers,body.mode-graph #atlas-findings,body.mode-graph #atlas-diverge{display:none!important}
 #graph-guide{display:none;margin:0 0 12px;padding:11px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
 #graph-guide .gg-title{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
 #graph-guide .gg-row{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.65}
@@ -1167,6 +1168,7 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
     });
     cv.style.border=graph?'none':'';
     var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'block':'none';
+    if(graph){document.body.classList.add('mode-graph');}else{document.body.classList.remove('mode-graph');}
     var cw=document.getElementById('canvas-wrap'); if(cw) cw.style.marginLeft=graph?'0':'';
     render();
   });
