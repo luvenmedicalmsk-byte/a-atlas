@@ -107,11 +107,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 }
 
 /* TOOLTIP */
-#mx-pop{position:absolute;display:none;z-index:50;width:230px;max-width:72vw;background:rgba(6,5,10,0.97);border:1px solid var(--gold-dim);border-radius:9px;padding:12px 13px;box-shadow:0 8px 28px rgba(0,0,0,0.5)}
-#mxp-title{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--text);line-height:1.25;margin-bottom:6px}
-#mxp-desc{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:7px}
-#mxp-role{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px}
-#mxp-region{font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+#mx-pop{position:absolute;display:none;z-index:50;width:230px;max-width:72vw;background:rgba(6,5,10,0.97);border:1px solid var(--gold-dim);border-radius:9px;padding:10px 12px;box-shadow:0 4px 14px rgba(0,0,0,0.4)}
+#mxp-title{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--text);line-height:1.25;margin-bottom:4px}
+#mxp-desc{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.45;margin-bottom:6px}
+#mxp-role{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.45}
 #tooltip{
   position:absolute;
   background:rgba(6,5,10,0.96);
@@ -167,7 +166,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
   display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;
 }
 .risk-card{
-  padding:12px 14px;border:1px solid var(--border);border-radius:3px;
+  padding:10px 13px;border:1px solid var(--border);border-radius:3px;
   cursor:pointer;transition:all .2s;background:var(--bg2);
 }
 .risk-card:hover{border-color:var(--gold-dim);background:var(--bg3)}
@@ -256,7 +255,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
         <div id="mxp-title"></div>
         <div id="mxp-desc"></div>
         <div id="mxp-role"></div>
-        <div id="mxp-region"></div>
       </div>
     </div>
     <div id="x-axis">
@@ -543,8 +541,7 @@ function _showPopover(r,px,py){
   document.getElementById('mxp-desc').textContent=r.s||'';
   var role=(typeof ROLE!=='undefined'&&ROLE[r.t])?ROLE[r.t]:'';
   var mxr=document.getElementById('mxp-role');
-  if(role){ mxr.textContent=role; mxr.style.display=''; } else { mxr.style.display='none'; }
-  document.getElementById('mxp-region').textContent='Регион: '+(r.r||'Глобально');
+  if(role){ mxr.innerHTML='<span style="color:var(--gold-light)">Системная роль:</span> '+role; mxr.style.display=''; } else { mxr.style.display='none'; }
   pop._risk=r; pop.style.display='block';
   var wrap=document.getElementById('canvas-wrap');
   var W=wrap.clientWidth||300, H=wrap.clientHeight||300, pw=pop.offsetWidth||230, ph=pop.offsetHeight||150;
@@ -759,7 +756,7 @@ function renderDrivers(){
   el.innerHTML=top.map(function(n,i){
     var desc=(typeof DRV_DESC!=='undefined'&&DRV_DESC[n.id])||(typeof _roleLine==='function'?_roleLine(n.id):'');
     return '<div class="drv-row" data-id="'+n.id+'" style="padding:12px 0;border-top:'+(i?'0.5px solid rgba(255,255,255,0.06)':'0')+';cursor:pointer">'
-      +'<div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:'+DC[n.d]+';flex-shrink:0"></span><span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;color:'+(DC[n.d]||'rgba(232,224,208,0.92)')+'">'+n.t+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:'+DC[n.d]+';flex-shrink:0"></span><span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span></div>'
       +'<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.62);line-height:1.5;margin-top:4px;padding-left:17px">'+desc+'</div>'
       +'</div>';
   }).join('');
@@ -1065,7 +1062,7 @@ function renderArchive(){
     var agree=(typeof CAT!=='undefined')&&CAT[it.id]==='C';
     var col='rgba(232,224,208,0.82)';
     var lbl=agree?'СОГЛАСИЕ':_magLabel(it.mag);
-    var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:'+(DC[n.d]||'rgba(232,224,208,0.92)')+'">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:'+(agree?'rgba(232,224,208,0.5)':'#D4AF5A')+';white-space:nowrap">'+lbl+'</span></div>';
+    var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:'+(agree?'rgba(232,224,208,0.5)':'#D4AF5A')+';white-space:nowrap">'+lbl+'</span></div>';
     var vt=agree?'Атлас подтверждает оценку WEF и углубляет её.':it.v.t;
     var verdict='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:'+col+';line-height:1.45;margin-top:3px">'+vt+'</div>';
     var body=agree?(((typeof AGREE!=='undefined')&&AGREE[it.id])?AGREE[it.id].mech:d.miss):d.miss;
