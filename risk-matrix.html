@@ -266,6 +266,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
   <div id="sys-drivers-list"></div>
 </div>
 
+<div id="atlas-diverge" style="margin:8px 16px 18px;padding:16px;border:1px solid rgba(184,151,58,0.22);border-radius:10px;background:rgba(255,255,255,0.012)">
+  <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:4px">Что Atlas видит иначе</div>
+  <div style="font-family:'Montserrat',sans-serif;font-size:10.5px;color:rgba(232,224,208,0.6);line-height:1.5;margin-bottom:6px">Где модель Atlas расходится с консенсусом WEF — и почему. Полные авторские разборы открыты в Signal Pro.</div>
+  <div id="atlas-diverge-list"></div>
+</div>
+
 <div id="rm-cta" style="margin:8px 16px 28px;padding:18px 16px;border:1px solid rgba(184,151,58,0.28);border-radius:10px;background:rgba(184,151,58,0.05);text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF5A;margin-bottom:6px">Проекция риска по странам</div><div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.55;margin:0 auto 14px;max-width:520px">Эта карта — открытый обзор глобальных взаимосвязей рисков. Персональная проекция на 2 и 5 лет по отдельным странам сейчас в разработке: открыты Россия и Турция, остальные страны Атласа добавляем постепенно. Подписчики Signal Pro получают доступ первыми.</div><button id="rm-cta-btn" style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:6px;padding:12px 24px;cursor:pointer">Получить Архив + Signal Pro →</button></div>
 
 <!-- SIDE PANEL -->
@@ -485,16 +491,7 @@ function openSide(r){
   document.getElementById('side-summary').textContent=r.s||'';
   var _ex=document.getElementById('sd-extra');
   if(_ex){
-    if(r.si!==undefined){
-      var _c=(typeof cascadeFrom==='function'&&r._id)?cascadeFrom(r._id):'';
-      var _role=(typeof TYPE!=='undefined'&&r._id&&TYPE[r._id])?ROLE_RU[TYPE[r._id]]:'';
-      var _fbk=(typeof inFeedback==='function'&&r._id)?inFeedback(r._id):false;
-      var _rolehtml=_role?'<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(r.d&&DC[r.d]||'#D4AF5A')+';margin-top:12px;font-weight:700">'+_role+'</div>':'';
-      var _fbhtml=_fbk?'<div style="display:flex;align-items:center;gap:7px;margin-top:12px;padding:8px 10px;border:0.5px solid rgba(220,120,90,0.4);border-radius:7px;background:rgba(220,120,90,0.08)"><span style="width:7px;height:7px;border-radius:50%;background:#dc785a"></span><span style="font-family:Montserrat,sans-serif;font-size:11px;color:#e89a7a;font-weight:600">Обнаружена петля усиления риска</span></div>':'';
-      _ex.innerHTML=_rolehtml+_fbhtml+'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;padding-top:14px;border-top:0.5px solid rgba(184,151,58,0.2)"><span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,224,208,0.6)">Системная важность</span><span style="font-family:Montserrat,sans-serif;font-size:18px;font-weight:700;color:#D4AF5A">'+r.si+'</span></div>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.5);line-height:1.5;margin-top:4px">Влияние узла на всю сеть, а не тяжесть самого риска.</div>'
-        +(_c?'<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#D4AF5A;margin-top:14px;margin-bottom:6px">Каскад последствий</div><div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.82);line-height:1.5">'+_c+'</div>':'');
-    } else { _ex.innerHTML=''; }
+    if(r.si!==undefined){ _ex.innerHTML=buildIntel(r); } else { _ex.innerHTML=''; }
   }
   document.getElementById('side-region').textContent='Регион: '+r.r;
   document.getElementById('side').classList.add('open');
@@ -689,6 +686,111 @@ function renderDrivers(){
     });
   });
 }
+
+/* ===== ФАЗА 2: WEF <-> Atlas Intelligence Layer ===== */
+function _goPro(){ var b=document.getElementById('rm-cta-btn'); if(b){ b.click(); } else if(window.parent){ try{window.parent.postMessage({t:'atlas-upgrade'},'*');}catch(e){} } }
+var PRO=/[?&]pro=1/.test(location.search);
+function _nodeById(id){ return NET_NODES.filter(function(n){return n.id===id;})[0]; }
+function _siRank(id){ var r=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}); for(var i=0;i<r.length;i++){ if(r[i].id===id)return i+1; } return 0; }
+function _degInOut(id){ var ind=0,outd=0; NET_EDGES.forEach(function(e){ if(e[0]===id)outd++; if(e[1]===id)ind++; }); return [ind,outd]; }
+function _cascadesTop3(id){
+  var out={},lab={}; NET_NODES.forEach(function(n){ out[n.id]=[]; lab[n.id]=n.lab; });
+  NET_EDGES.forEach(function(e){ if(out[e[0]]&&e[3]!=='fb') out[e[0]].push([e[1],e[2]||1]); });
+  function walk(first){
+    var chain=[id],seen={}; seen[id]=1; var cur=first; chain.push(first); seen[first]=1;
+    for(var k=0;k<3;k++){ var nx=(out[cur]||[]).filter(function(p){return !seen[p[0]];}); if(!nx.length)break; nx.sort(function(a,b){return b[1]-a[1];}); cur=nx[0][0]; seen[cur]=1; chain.push(cur); }
+    return chain.map(function(x){return lab[x];}).join(' \u2192 ');
+  }
+  var res=[];
+  if(typeof CASC!=='undefined'&&CASC[id]) res.push(CASC[id].map(function(x){return lab[x]||x;}).join(' \u2192 '));
+  var firsts=(out[id]||[]).slice().sort(function(a,b){return b[1]-a[1];});
+  for(var i=0;i<firsts.length&&res.length<3;i++){ var c=walk(firsts[i][0]); if(c&&res.indexOf(c)<0)res.push(c); }
+  return res.slice(0,3);
+}
+function _findLoop(id){
+  var out={}; NET_NODES.forEach(function(n){ out[n.id]=[]; });
+  NET_EDGES.forEach(function(e){ if(out[e[0]]) out[e[0]].push(e[1]); });
+  var best=null;
+  function dfs(cur,path){ if(best||path.length>5)return; var nx=out[cur]||[]; for(var i=0;i<nx.length;i++){ var t=nx[i]; if(t===id&&path.length>=2){ best=path.concat([id]); return; } if(path.indexOf(t)<0){ dfs(t,path.concat([t])); if(best)return; } } }
+  dfs(id,[id]); if(!best)return '';
+  var lab={}; NET_NODES.forEach(function(n){ lab[n.id]=n.lab; });
+  return best.map(function(x){return lab[x];}).join(' \u2192 ');
+}
+/* ===== РУЧНЫЕ данные расхождений (редактируются вручную, без авто-генерации) ===== */
+var DIV={
+ ineq:{wef:'#10 в 2026, но самый взаимосвязанный риск 2 года подряд',atlas:'#1 по системной важности',reason:'Atlas рассматривает неравенство как узел усиления большинства каскадов — через поляризацию, доверие и социальную нестабильность. Тяжесть средняя, влияние на сеть максимальное.'},
+ geoecon:{wef:'#1 (2026, краткосрочный)',atlas:'#10 по системной важности',reason:'WEF видит геоэкономику как острейший шок. Atlas — как мощный, но восходящий триггер: она запускает каскады (цепочки поставок, инфляция, спад), но мало что замыкается обратно на неё. Высокая тяжесть, средняя центральность.'},
+ ai:{wef:'#8 в 2026, но лишь #30 в 2-летнем горизонте тяжести',atlas:'#8 по системной важности, ключевой драйвер',reason:'WEF недооценивает ИИ в краткосроке. Atlas поднимает его как multiplier: ИИ усиливает дезинформацию и киберугрозы, поэтому его системное влияние выше собственной тяжести.'},
+ polar:{wef:'#4 (2026)',atlas:'#2 по системной важности',reason:'Atlas ставит поляризацию выше: она и принимает давление от неравенства и дезинформации, и сама запускает кризис доверия и нестабильность — двусторонний хаб.'},
+ downturn:{wef:'2-й по взаимосвязанности (WEF)',atlas:'#3, переклассифицирован в каскадный механизм',reason:'Atlas не считает спад конечным результатом: он порождает безработицу, долг, преступность и нестабильность. Это механизм распространения давления, а не сток.'},
+ migration:{wef:'около #15 (вынужденная миграция)',atlas:'#4 по системной важности',reason:'Atlas видит миграцию как каскадный хаб: сходятся климат, конфликты и экономика, а на выходе — гуманитарный кризис и социальная нестабильность.'},
+ weather:{wef:'#1 в 10-летнем горизонте',atlas:'#6 по системной важности',reason:'Высочайшая тяжесть в долгосроке, но в сети это источник-триггер: погода запускает урожайность, воду и миграцию, почти не получая обратного давления. Тяжесть максимальная, центральность ниже.'},
+ trust:{wef:'нет отдельного узла (внутри «эрозии общества»)',atlas:'#9, выделен в самостоятельный драйвер',reason:'Atlas делает кризис доверия явным драйвером: через него сцепляются легитимность власти, поляризация и дезинформация.'},
+ conflict:{wef:'#2 (2026)',atlas:'#11 по системной важности',reason:'Острый риск с высокой тяжестью, но в сети — преимущественно источник последствий (гуманитарный кризис, миграция, CBRN), а не хаб взаимоусиления.'},
+ misinfo:{wef:'#5 в 2026, #2 в 2-летнем горизонте',atlas:'#5 по системной важности',reason:'Здесь Atlas и WEF близки: дезинформация — общепризнанный multiplier. Расхождение минимально.'}
+};
+/* ===== РУЧНАЯ история позиций WEF (2-летний горизонт) ===== */
+var HIST={
+ geoecon:{y:[['2023','#3'],['2024','#9'],['2025','#9'],['2026','#1']],note:'Взлёт с мид-тира до #1 — «эпоха конкуренции».'},
+ misinfo:{y:[['2023','~#16'],['2024','#1'],['2025','#1'],['2026','#2']],note:'Два года №1, в 2026 уступила геоэкономике.'},
+ weather:{y:[['2023','#2'],['2024','#2'],['2025','#2'],['2026','#4']],note:'Стабильно высоко; в 10-летнем горизонте — #1.'},
+ polar:{y:[['2023','#5'],['2024','#3'],['2025','#4'],['2026','#3']],note:'Устойчиво в топ-5.'},
+ conflict:{y:[['2023','~#14'],['2024','#5'],['2025','#3'],['2026','#2']],note:'Резкий рост после 2022 года.'},
+ ineq:{y:[['2023','#11'],['2024','#9'],['2025','#7'],['2026','#7']],note:'Растёт + самый взаимосвязанный 2 года.'},
+ ai:{y:[['2023','—'],['2024','#29'],['2025','#31'],['2026','#8']],note:'Низко в краткосроке, но #5 в 10-летнем горизонте.'},
+ cyber:{y:[['2023','#8'],['2024','#4'],['2025','#5'],['2026','#6']],note:'Стабильная значимость.'}
+};
+function _h(s){ return '<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#D4AF5A;font-weight:700;margin-top:18px;margin-bottom:8px">'+s+'</div>'; }
+function _lock(inner){
+  if(PRO)return inner;
+  return '<div style="position:relative">'
+    +'<div style="filter:blur(4.5px);opacity:0.5;pointer-events:none;user-select:none">'+inner+'</div>'
+    +'<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center">'
+    +'<div onclick="_goPro()" style="font-family:Montserrat,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border-radius:6px;padding:7px 13px;cursor:pointer;white-space:nowrap">\uD83D\uDD12 Signal Pro</div>'
+    +'</div></div>';
+}
+function buildIntel(r){
+  var id=r._id, n=_nodeById(id); if(!n)return '';
+  var html='';
+  html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(DC[r.d]||'#D4AF5A')+';margin-top:12px;font-weight:700">'+(ROLE_RU[TYPE[id]]||'')+'</div>';
+  html+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,224,208,0.6)">Системная важность</span><span style="font-family:Montserrat,sans-serif;font-size:22px;font-weight:700;color:#D4AF5A">'+n.si+'<span style="font-size:11px;color:rgba(232,224,208,0.45);font-weight:400"> \u00b7 #'+_siRank(id)+'</span></span></div>';
+  var loop=_findLoop(id);
+  if(loop){ html+='<div style="margin-top:14px;padding:11px 12px;border:0.5px solid rgba(220,120,90,0.4);border-radius:8px;background:rgba(220,120,90,0.08)"><div style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;color:#e89a7a;margin-bottom:5px">\u27f3 Обнаружена самоподдерживающаяся петля</div><div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.5">'+loop+'</div></div>'; }
+  var io=_degInOut(id), casc=0; NET_EDGES.forEach(function(e){ if(e[0]===id&&e[3]!=='fb')casc++; });
+  html+=_h('Почему Atlas считает это системно значимым');
+  html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.8);line-height:1.6">'
+    +'\u00b7 Системная важность #'+_siRank(id)+' из '+NET_NODES.length+' (SI '+n.si+')<br>'
+    +'\u00b7 Связей: '+io[0]+' входящих, '+io[1]+' исходящих<br>'
+    +'\u00b7 Запускает причинных цепочек: '+casc+'<br>'
+    +'\u00b7 Роль: '+(ROLE_RU[TYPE[id]]||'\u2014')
+    +(loop?'<br>\u00b7 Участвует в петле усиления риска':'')+'</div>';
+  var c3=_cascadesTop3(id);
+  if(c3.length){ html+=_h('Ключевые каскады'); html+=c3.map(function(c){ return '<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.45;padding:5px 0;border-top:0.5px solid rgba(255,255,255,0.05)">'+c+'</div>'; }).join(''); }
+  var d=DIV[id];
+  if(d){ html+=_h('WEF \u2194 Atlas');
+    var dv='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;line-height:1.55"><div style="color:rgba(232,224,208,0.7)"><b style="color:#8fb8d8">WEF 2026:</b> '+d.wef+'</div><div style="color:rgba(232,224,208,0.7);margin-top:3px"><b style="color:#D4AF5A">Atlas:</b> '+d.atlas+'</div><div style="color:rgba(232,224,208,0.78);margin-top:7px;line-height:1.6"><b style="color:#e89a7a">\u0394 Причина:</b> '+d.reason+'</div></div>';
+    html+=_lock(dv);
+  }
+  var hi=HIST[id];
+  if(hi){ html+=_h('История 2023 \u2192 2026');
+    var rows=hi.y.map(function(p){ return '<div style="display:flex;justify-content:space-between;font-family:Montserrat,sans-serif;font-size:11.5px;padding:3px 0"><span style="color:rgba(232,224,208,0.6)">'+p[0]+'</span><span style="color:#D4AF5A;font-weight:600">WEF '+p[1]+'</span></div>'; }).join('');
+    rows+='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.6);line-height:1.5;margin-top:6px">'+hi.note+'</div>';
+    html+=_lock(rows);
+  }
+  return html;
+}
+function renderArchive(){
+  var el=document.getElementById('atlas-diverge-list'); if(!el)return;
+  var keys=['ineq','geoecon','ai','polar','weather'];
+  el.innerHTML=keys.map(function(id){
+    var n=_nodeById(id), d=DIV[id]; if(!n||!d)return '';
+    var teaser='<div style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92);margin-bottom:3px">'+n.t+'</div>'
+      +'<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.62);line-height:1.5"><b style="color:#8fb8d8">WEF:</b> '+d.wef+'  \u00b7  <b style="color:#D4AF5A">Atlas:</b> '+d.atlas+'</div>';
+    var reason='<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.75);line-height:1.55;margin-top:5px">'+d.reason+'</div>';
+    return '<div style="padding:12px 0;border-top:0.5px solid rgba(255,255,255,0.06)">'+teaser+_lock(reason)+'</div>';
+  }).join('');
+}
+
 function layoutNet(){
   /* круговая раскладка — Неравенство в центре, остальные радиально по секторам категорий */
   var cx=W/2, cy=H/2, Rring=Math.min(W,H)*0.33;
@@ -777,7 +879,7 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
 
 document.getElementById('tab-desc').textContent=DESCS['2y'];
 document.getElementById('risk-count').textContent=(RISKS['2y']||[]).length+' рисков';
-function _boot(){ render(); renderGrid(); renderDrivers(); }
+function _boot(){ render(); renderGrid(); renderDrivers(); renderArchive(); }
 setTimeout(_boot,80); setTimeout(_boot,500); setTimeout(_boot,1200);
 window.addEventListener('load',_boot);
 window.addEventListener('resize',render);
