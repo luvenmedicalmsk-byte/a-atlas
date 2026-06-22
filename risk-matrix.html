@@ -107,6 +107,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 }
 
 /* TOOLTIP */
+#mx-pop{position:absolute;display:none;z-index:50;width:230px;max-width:72vw;background:rgba(6,5,10,0.97);border:1px solid var(--gold-dim);border-radius:9px;padding:12px 13px;box-shadow:0 8px 28px rgba(0,0,0,0.5)}
+#mxp-title{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--text);line-height:1.25;margin-bottom:6px}
+#mxp-desc{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:7px}
+#mxp-role{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+#mxp-more{display:inline-block;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:.03em;color:var(--gold-light);background:none;border:none;cursor:pointer;padding:0}
 #tooltip{
   position:absolute;
   background:rgba(6,5,10,0.96);
@@ -246,6 +251,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
           <span class="tt-s">Регион: <span id="tt-reg" class="tt-v"></span></span>
         </div>
         <div id="tt-hint">Нажмите для подробностей</div>
+      </div>
+      <div id="mx-pop">
+        <div id="mxp-title"></div>
+        <div id="mxp-desc"></div>
+        <div id="mxp-role"></div>
+        <button id="mxp-more">Подробнее →</button>
       </div>
     </div>
     <div id="x-axis">
@@ -510,18 +521,36 @@ cv.addEventListener('touchend',function(e){
   tt.style.display='none';
   if(wasDrag)return;
   var ct=e.changedTouches&&e.changedTouches[0]; if(!ct)return;
-  var rc=cv.getBoundingClientRect(); var h=nearest(ct.clientX-rc.left,ct.clientY-rc.top);
-  if(h){ _touchHandled=true; openSide(h.risk); }
+  var rc=cv.getBoundingClientRect(); var px=ct.clientX-rc.left, py=ct.clientY-rc.top; var h=nearest(px,py);
+  _touchHandled=true;
+  if(h){ if(mode==='matrix'){ _showPopover(h.risk,px,py); } else { openSide(h.risk); } } else { _hidePopover(); }
 },{passive:true});
 
 cv.addEventListener('click',e=>{
   if(_touchHandled){_touchHandled=false;return;}
   if(_dragMoved){_dragMoved=false;return;}
   const rc=cv.getBoundingClientRect();
-  const h=nearest(e.clientX-rc.left,e.clientY-rc.top);
-  if(h)openSide(h.risk);
+  const px=e.clientX-rc.left, py=e.clientY-rc.top;
+  const h=nearest(px,py);
+  if(h){ if(mode==='matrix'){ _showPopover(h.risk,px,py); } else { openSide(h.risk); } } else { _hidePopover(); }
 });
 
+function _hidePopover(){ var p=document.getElementById('mx-pop'); if(p)p.style.display='none'; }
+function _showPopover(r,px,py){
+  var pop=document.getElementById('mx-pop'); if(!pop)return;
+  document.getElementById('mxp-title').textContent=r.t;
+  document.getElementById('mxp-desc').textContent=r.s||'';
+  var role=(typeof ROLE!=='undefined'&&ROLE[r.t])?ROLE[r.t]:'';
+  var mxr=document.getElementById('mxp-role');
+  if(role){ mxr.textContent=role; mxr.style.display=''; } else { mxr.style.display='none'; }
+  pop._risk=r; pop.style.display='block';
+  var wrap=document.getElementById('canvas-wrap');
+  var W=wrap.clientWidth||300, H=wrap.clientHeight||300, pw=pop.offsetWidth||230, ph=pop.offsetHeight||150;
+  var tx=px+14, ty=py-10;
+  if(tx+pw>W) tx=px-pw-14; if(tx<2) tx=2;
+  if(ty+ph>H) ty=H-ph-2; if(ty<2) ty=2;
+  pop.style.left=tx+'px'; pop.style.top=ty+'px';
+}
 function openSide(r){
   document.getElementById('side-domain').textContent=DN[r.d];
   document.getElementById('side-title').textContent=r.t;
@@ -540,6 +569,8 @@ function openSide(r){
 document.getElementById('side-close').addEventListener('click',()=>{
   document.getElementById('side').classList.remove('open');
 });
+var _mxMore=document.getElementById('mxp-more');
+if(_mxMore) _mxMore.addEventListener('click',function(){ var p=document.getElementById('mx-pop'); if(p&&p._risk) openSide(p._risk); _hidePopover(); });
 
 document.querySelectorAll('.tab').forEach(el=>{
   el.addEventListener('click',()=>{
@@ -953,7 +984,7 @@ function buildIntel(r){
       }
     } else {
       var se=(typeof SEES!=='undefined')?SEES[id]:null;
-      html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#e89a7a;margin-bottom:7px">Что упускает консенсус</div>';
+      html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-bottom:7px">Что упускает консенсус</div>';
       if(se){
         html+='<div style="border-left:2px solid rgba(143,184,216,0.4);padding-left:10px;margin-bottom:8px"><div style="font-family:Montserrat,sans-serif;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#8fb8d8;margin-bottom:2px">Консенсус видит</div><div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.72);line-height:1.5">'+se.cons+'</div></div>';
         html+='<div style="border-left:2px solid rgba(212,175,90,0.55);padding-left:10px;margin-bottom:14px"><div style="font-family:Montserrat,sans-serif;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#D4AF5A;margin-bottom:2px">Атлас видит</div><div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.93);line-height:1.55">'+se.atlas+'</div></div>';
@@ -1031,9 +1062,9 @@ function renderArchive(){
   el.innerHTML=items.map(function(it,i){
     var n=_nodeById(it.id), d=DIV[it.id];
     var agree=(typeof CAT!=='undefined')&&CAT[it.id]==='C';
-    var col=agree?'#7ec97e':(it.v.dir==='up'?'#7ec97e':(it.v.dir==='down'?'#e89a7a':'rgba(232,224,208,0.8)'));
+    var col='rgba(232,224,208,0.82)';
     var lbl=agree?'СОГЛАСИЕ':_magLabel(it.mag);
-    var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:'+(agree?'rgba(126,201,126,0.7)':'rgba(232,224,208,0.45)')+';white-space:nowrap">'+lbl+'</span></div>';
+    var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:'+(agree?'rgba(232,224,208,0.5)':'#D4AF5A')+';white-space:nowrap">'+lbl+'</span></div>';
     var vt=agree?'Атлас подтверждает оценку WEF и углубляет её.':it.v.t;
     var verdict='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:'+col+';line-height:1.45;margin-top:3px">'+vt+'</div>';
     var body=agree?(((typeof AGREE!=='undefined')&&AGREE[it.id])?AGREE[it.id].mech:d.miss):d.miss;
@@ -1113,7 +1144,7 @@ function drawNetwork(){
   });
   ctx.shadowBlur=0; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }
-function render(){ if(mode==='graph') drawNetwork(); else draw(); }
+function render(){ try{_hidePopover();}catch(e){} if(mode==='graph') drawNetwork(); else draw(); }
 document.querySelectorAll('.mode-btn').forEach(function(el){
   el.addEventListener('click',function(){
     document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
