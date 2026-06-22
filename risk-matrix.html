@@ -261,8 +261,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 </div>
 
 <div id="sys-drivers" style="margin:8px 16px 18px;padding:16px;border:1px solid rgba(184,151,58,0.22);border-radius:10px;background:rgba(255,255,255,0.012)">
-  <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:4px">Ключевые драйверы системы</div>
-  <div style="font-family:'Montserrat',sans-serif;font-size:10.5px;color:rgba(232,224,208,0.6);line-height:1.5;margin-bottom:10px">Узлы с максимальной системной важностью — держат сеть и запускают больше всего последствий. Это не самые «тяжёлые», а самые влиятельные риски.</div>
+  <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:4px">Наиболее влиятельные риски системы</div>
+  <div style="font-family:'Montserrat',sans-serif;font-size:10.5px;color:rgba(232,224,208,0.6);line-height:1.5;margin-bottom:10px">Риски, которые сильнее всего влияют на остальную систему. Не самые тяжёлые — самые влиятельные.</div>
   <div id="sys-drivers-list"></div>
 </div>
 
@@ -678,11 +678,11 @@ function renderDrivers(){
   var el=document.getElementById('sys-drivers-list'); if(!el)return;
   var top=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}).slice(0,5);
   el.innerHTML=top.map(function(n,i){
-    return '<div class="drv-row" data-id="'+n.id+'" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:'+(i?'0.5px solid rgba(255,255,255,0.06)':'0')+';cursor:pointer">'
-      +'<span style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;color:rgba(232,224,208,0.45);width:14px">'+(i+1)+'</span>'
-      +'<span style="width:8px;height:8px;border-radius:50%;background:'+DC[n.d]+';flex-shrink:0"></span>'
-      +'<span style="flex:1;font-family:Montserrat,sans-serif;font-size:12.5px;color:rgba(232,224,208,0.9)">'+n.lab+'</span>'
-      +'<span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;color:#D4AF5A">'+n.si+'</span></div>';
+    var desc=(typeof DRV_DESC!=='undefined'&&DRV_DESC[n.id])||(typeof _roleLine==='function'?_roleLine(n.id):'');
+    return '<div class="drv-row" data-id="'+n.id+'" style="padding:12px 0;border-top:'+(i?'0.5px solid rgba(255,255,255,0.06)':'0')+';cursor:pointer">'
+      +'<div style="display:flex;align-items:center;gap:9px"><span style="width:8px;height:8px;border-radius:50%;background:'+DC[n.d]+';flex-shrink:0"></span><span style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span></div>'
+      +'<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.62);line-height:1.5;margin-top:4px;padding-left:17px">'+desc+'</div>'
+      +'</div>';
   }).join('');
   Array.prototype.forEach.call(el.querySelectorAll('.drv-row'),function(row){
     row.addEventListener('click',function(){
@@ -690,30 +690,6 @@ function renderDrivers(){
       if(n) openSide({t:n.t,d:n.d,sev:n.inf,r:'Глобально',s:n.s||'',x:'\u2014',y:'\u2014',si:n.si,_id:n.id});
     });
   });
-}
-
-/* ===== ФАЗА 2: WEF <-> Atlas Intelligence Layer ===== */
-function _goPro(){ var b=document.getElementById('rm-cta-btn'); if(b){ b.click(); } else if(window.parent){ try{window.parent.postMessage({t:'atlas-upgrade'},'*');}catch(e){} } }
-var PRO=/[?&]pro=1/.test(location.search);
-function _askTier(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage({t:'atlas-need-tier'},'*'); }catch(e){} }
-_askTier(); setTimeout(_askTier,600); setTimeout(_askTier,1600);
-window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-tier'&&ev.data.pro&&!PRO){ PRO=true; try{renderArchive();}catch(e){} try{var sd=document.getElementById('side'); if(sd) sd.classList.remove('open');}catch(e){} } });
-function _nodeById(id){ return NET_NODES.filter(function(n){return n.id===id;})[0]; }
-function _siRank(id){ var r=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}); for(var i=0;i<r.length;i++){ if(r[i].id===id)return i+1; } return 0; }
-function _degInOut(id){ var ind=0,outd=0; NET_EDGES.forEach(function(e){ if(e[0]===id)outd++; if(e[1]===id)ind++; }); return [ind,outd]; }
-function _cascadesTop3(id){
-  var out={},lab={}; NET_NODES.forEach(function(n){ out[n.id]=[]; lab[n.id]=n.lab; });
-  NET_EDGES.forEach(function(e){ if(out[e[0]]&&e[3]!=='fb') out[e[0]].push([e[1],e[2]||1]); });
-  function walk(first){
-    var chain=[id],seen={}; seen[id]=1; var cur=first; chain.push(first); seen[first]=1;
-    for(var k=0;k<3;k++){ var nx=(out[cur]||[]).filter(function(p){return !seen[p[0]];}); if(!nx.length)break; nx.sort(function(a,b){return b[1]-a[1];}); cur=nx[0][0]; seen[cur]=1; chain.push(cur); }
-    return chain.map(function(x){return lab[x];}).join(' \u2192 ');
-  }
-  var res=[];
-  if(typeof CASC!=='undefined'&&CASC[id]) res.push(CASC[id].map(function(x){return lab[x]||x;}).join(' \u2192 '));
-  var firsts=(out[id]||[]).slice().sort(function(a,b){return b[1]-a[1];});
-  for(var i=0;i<firsts.length&&res.length<3;i++){ var c=walk(firsts[i][0]); if(c&&res.indexOf(c)<0)res.push(c); }
-  return res.slice(0,3);
 }
 function _findLoop(id){
   var out={}; NET_NODES.forEach(function(n){ out[n.id]=[]; });
@@ -749,6 +725,19 @@ var HIST={
  cyber:{y:[['2023','#8'],['2024','#4'],['2025','#5'],['2026','#6']],note:'Стабильная значимость.'}
 };
 /* ===== V4: авторский слой (ручные данные, редактируются) ===== */
+var DRV_DESC={
+ ineq:'Скрыто влияет на несколько доменов одновременно и усиливает каскадные последствия.',
+ polar:'Ускоряет распространение давления между социальными и политическими рисками.',
+ downturn:'Не завершает цепочки, а запускает новые последствия в системе.',
+ migration:'Сводит вместе климат, конфликты и экономику в один поток давления.',
+ misinfo:'Усиливает другие риски, ускоряя поляризацию и подрыв доверия.',
+ weather:'Запускает климатические цепочки — урожай, воду и миграцию.',
+ ai:'Усиливает уже существующие риски через информацию, кибер и общество.',
+ trust:'Связывает легитимность власти, поляризацию и дезинформацию.',
+ geoecon:'Запускает цепочки поставок, инфляции и экономического спада.',
+ unemploy:'Передаёт экономическое давление в социальное напряжение.',
+ cyber:'Бьёт по критической инфраструктуре и усиливается через ИИ.'
+};
 var DIVX={
  ai:{key:'Atlas рассматривает ИИ как усилитель уже существующих рисков — через информационный, кибернетический и социальный контур.',wefView:'Долгосрочный фактор, умеренный в ближайшие годы.',atlasView:'Активный мультипликатор уже сегодня.'},
  ineq:{key:'Неравенство — скрытый корень большинства цепочек: оно усиливает поляризацию, недоверие и нестабильность.',wefView:'Риск среднего ряда.',atlasView:'Главный системный усилитель.'},
