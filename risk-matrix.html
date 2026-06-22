@@ -267,13 +267,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 </div>
 
 <div id="atlas-diverge" style="margin:8px 16px 18px;padding:16px;border:1px solid rgba(184,151,58,0.22);border-radius:10px;background:rgba(255,255,255,0.012)">
-  <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:5px">Самые большие расхождения Atlas ↔ WEF</div>
-  <div id="atlas-diverge-count" style="font-family:'Montserrat',sans-serif;font-size:12.5px;color:rgba(232,224,208,0.85);line-height:1.5;margin-bottom:2px"></div>
+  <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:5px">Что Atlas видит иначе</div>
+  <div id="atlas-diverge-count" style="font-family:'Montserrat',sans-serif;font-size:12.5px;color:rgba(232,224,208,0.85);line-height:1.5;margin-bottom:8px"></div>
   <div id="atlas-diverge-list"></div>
-  <button onclick="_goPro()" style="width:100%;margin-top:14px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:12px;cursor:pointer">Открыть полный анализ расхождений →</button>
+  <button onclick="_goPro()" style="width:100%;margin-top:14px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:12px;cursor:pointer">Открыть полный анализ Signal Pro →</button>
 </div>
 
-<div id="rm-cta" style="margin:8px 16px 28px;padding:18px 16px;border:1px solid rgba(184,151,58,0.28);border-radius:10px;background:rgba(184,151,58,0.05);text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF5A;margin-bottom:6px">Проекция риска по странам</div><div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.55;margin:0 auto 14px;max-width:520px">Эта карта — открытый обзор глобальных взаимосвязей рисков. Персональная проекция на 2 и 5 лет по отдельным странам сейчас в разработке: открыты Россия и Турция, остальные страны Атласа добавляем постепенно. Подписчики Signal Pro получают доступ первыми.</div><button id="rm-cta-btn" style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:6px;padding:12px 24px;cursor:pointer">Получить Архив + Signal Pro →</button></div>
+<div id="rm-cta" style="margin:8px 16px 28px;padding:18px 16px;border:1px solid rgba(184,151,58,0.28);border-radius:10px;background:rgba(184,151,58,0.05);text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF5A;margin-bottom:6px">Проекция риска по странам</div><div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.55;margin:0 auto 14px;max-width:520px">Эта карта — открытый обзор глобальных взаимосвязей рисков. Персональная проекция на 2 и 5 лет по отдельным странам сейчас в разработке: открыты Россия и Турция, остальные страны Атласа добавляем постепенно. Подписчики Signal Pro получают доступ первыми.</div><button id="rm-cta-btn" style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:6px;padding:12px 24px;cursor:pointer">Получить доступ к Signal Pro →</button></div>
 
 <!-- SIDE PANEL -->
 <div id="side">
@@ -495,6 +495,7 @@ function openSide(r){
     if(r.si!==undefined){ _ex.innerHTML=buildIntel(r); } else { _ex.innerHTML=''; }
   }
   document.getElementById('side-region').textContent='Регион: '+r.r;
+  try{ document.getElementById('side-scores').style.display=(r._id!==undefined)?'none':''; }catch(e){}
   document.getElementById('side').classList.add('open');
   document.getElementById('side-domain').style.color=DC[r.d];
 }
@@ -691,6 +692,9 @@ function renderDrivers(){
 /* ===== ФАЗА 2: WEF <-> Atlas Intelligence Layer ===== */
 function _goPro(){ var b=document.getElementById('rm-cta-btn'); if(b){ b.click(); } else if(window.parent){ try{window.parent.postMessage({t:'atlas-upgrade'},'*');}catch(e){} } }
 var PRO=/[?&]pro=1/.test(location.search);
+function _askTier(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage({t:'atlas-need-tier'},'*'); }catch(e){} }
+_askTier(); setTimeout(_askTier,600); setTimeout(_askTier,1600);
+window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-tier'&&ev.data.pro&&!PRO){ PRO=true; try{renderArchive();}catch(e){} try{var sd=document.getElementById('side'); if(sd) sd.classList.remove('open');}catch(e){} } });
 function _nodeById(id){ return NET_NODES.filter(function(n){return n.id===id;})[0]; }
 function _siRank(id){ var r=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}); for(var i=0;i<r.length;i++){ if(r[i].id===id)return i+1; } return 0; }
 function _degInOut(id){ var ind=0,outd=0; NET_EDGES.forEach(function(e){ if(e[0]===id)outd++; if(e[1]===id)ind++; }); return [ind,outd]; }
@@ -761,6 +765,16 @@ function _verdict(wefN,atlasN){
 function _magLabel(m){ return m>=8?'сильное расхождение':(m>=4?'заметное расхождение':'умеренное расхождение'); }
 function buildIntel(r){
   var id=r._id, n=_nodeById(id); if(!n)return '';
+  if(!PRO){
+    var _io=_degInOut(id), _conn=_io[0]+_io[1];
+    var f='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(DC[r.d]||'#D4AF5A')+';margin-top:12px;font-weight:700">'+(ROLE_RU[TYPE[id]]||'')+'</div>';
+    f+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.7);margin-top:8px">'+_conn+' прямых связей в системе</div>';
+    f+='<div style="margin-top:16px;padding:14px;border:1px solid rgba(184,151,58,0.3);border-radius:9px;background:rgba(184,151,58,0.05)">'
+      +'<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.85);line-height:1.55;margin-bottom:12px">Для данного риска подготовлен расширенный аналитический профиль.</div>'
+      +'<button onclick="_goPro()" style="width:100%;font-family:Montserrat,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:11px;cursor:pointer">Открыть профиль в Signal Pro →</button>'
+      +'</div>';
+    return f;
+  }
   var html='';
   html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:'+(DC[r.d]||'#D4AF5A')+';margin-top:12px;font-weight:700">'+(ROLE_RU[TYPE[id]]||'')+'</div>';
   html+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,224,208,0.6)">Системная важность</span><span style="font-family:Montserrat,sans-serif;font-size:22px;font-weight:700;color:#D4AF5A">'+n.si+'<span style="font-size:11px;color:rgba(232,224,208,0.45);font-weight:400"> \u00b7 #'+_siRank(id)+'</span></span></div>';
@@ -798,17 +812,29 @@ function buildIntel(r){
 }
 function renderArchive(){
   var el=document.getElementById('atlas-diverge-list'); if(!el)return;
+  var cel=document.getElementById('atlas-diverge-count');
+  if(!PRO){
+    if(cel) cel.textContent='Atlas обнаружил существенные расхождения с общепринятыми оценками глобальных рисков.';
+    var bars='';
+    for(var i=0;i<4;i++){ bars+='<div style="padding:11px 0;border-top:0.5px solid rgba(255,255,255,0.06)"><div style="height:11px;width:'+(50+i*9)+'%;background:rgba(232,224,208,0.2);border-radius:3px;margin-bottom:6px"></div><div style="height:9px;width:'+(80-i*7)+'%;background:rgba(232,224,208,0.09);border-radius:3px"></div></div>'; }
+    el.innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.55);line-height:1.5;margin-bottom:4px">Полный анализ причин и последствий доступен в Signal Pro.</div>'
+      +'<div style="position:relative">'
+        +'<div style="filter:blur(7px);opacity:0.4;pointer-events:none;user-select:none">'+bars+'</div>'
+        +'<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;padding:0 14px"><div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.9);line-height:1.6;text-align:center">Система выявила расхождения между общепринятыми оценками и структурным влиянием рисков на систему.</div></div>'
+      +'</div>';
+    return;
+  }
   var items=Object.keys(DIV).map(function(id){ var aN=_siRank(id),wN=DIV[id].wefN; return {id:id,mag:Math.abs(wN-aN),v:_verdict(wN,aN)}; });
   items.sort(function(a,b){return b.mag-a.mag;});
   var count=items.filter(function(x){return x.mag>=2;}).length;
-  var cel=document.getElementById('atlas-diverge-count'); if(cel) cel.textContent='Atlas обнаружил '+count+' существенных расхождений с консенсусом WEF.';
+  if(cel) cel.textContent='Atlas обнаружил '+count+' существенных расхождений с консенсусом WEF.';
   el.innerHTML=items.map(function(it,i){
-    var n=_nodeById(it.id), d=DIV[it.id], open=(i<2||PRO);
+    var n=_nodeById(it.id), d=DIV[it.id];
     var col=it.v.dir==='up'?'#7ec97e':(it.v.dir==='down'?'#e89a7a':'rgba(232,224,208,0.8)');
     var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:rgba(232,224,208,0.45);white-space:nowrap">'+_magLabel(it.mag)+'</span></div>';
     var verdict='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:'+col+';line-height:1.45;margin-top:3px">'+it.v.t+'</div>';
     var miss='<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.72);line-height:1.55;margin-top:5px;font-style:italic">'+d.miss+'</div>';
-    return '<div style="padding:13px 0;border-top:0.5px solid rgba(255,255,255,0.06)">'+head+verdict+(open?miss:_lock(miss))+'</div>';
+    return '<div style="padding:13px 0;border-top:0.5px solid rgba(255,255,255,0.06)">'+head+verdict+miss+'</div>';
   }).join('');
 }
 
