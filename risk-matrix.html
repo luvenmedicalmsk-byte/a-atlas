@@ -976,7 +976,7 @@ function _verdict(wefN,atlasN){
   return {t:'Оценка Атлас близка к консенсусу WEF',dir:'eq'};
 }
 function _magLabel(m){ return m>=8?'сильное расхождение':(m>=4?'заметное расхождение':'умеренное расхождение'); }
-function _openArchive(){ try{ if(window.self!==window.top){ window.parent.postMessage({type:'atlas-open-archive'}, location.origin); } }catch(e){} }
+function _openArchive(){ try{ window.open('https://t.me/archive_navigator_bot?profile','_blank'); }catch(e){} }
 function buildIntel(r){
   var id=r._id, n=_nodeById(id); if(!n)return '';
   if(!PRO){
