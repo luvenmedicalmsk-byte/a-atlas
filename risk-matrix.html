@@ -267,9 +267,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 </div>
 
 <div id="atlas-diverge" style="margin:8px 16px 18px;padding:16px;border:1px solid rgba(184,151,58,0.22);border-radius:10px;background:rgba(255,255,255,0.012)">
-  <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:4px">Что Atlas видит иначе</div>
-  <div style="font-family:'Montserrat',sans-serif;font-size:10.5px;color:rgba(232,224,208,0.6);line-height:1.5;margin-bottom:6px">Где модель Atlas расходится с консенсусом WEF — и почему. Полные авторские разборы открыты в Signal Pro.</div>
+  <div style="font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;color:#D4AF5A;margin-bottom:5px">Самые большие расхождения Atlas ↔ WEF</div>
+  <div id="atlas-diverge-count" style="font-family:'Montserrat',sans-serif;font-size:12.5px;color:rgba(232,224,208,0.85);line-height:1.5;margin-bottom:2px"></div>
   <div id="atlas-diverge-list"></div>
+  <button onclick="_goPro()" style="width:100%;margin-top:14px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:12px;cursor:pointer">Открыть полный анализ расхождений →</button>
 </div>
 
 <div id="rm-cta" style="margin:8px 16px 28px;padding:18px 16px;border:1px solid rgba(184,151,58,0.28);border-radius:10px;background:rgba(184,151,58,0.05);text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF5A;margin-bottom:6px">Проекция риска по странам</div><div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.55;margin:0 auto 14px;max-width:520px">Эта карта — открытый обзор глобальных взаимосвязей рисков. Персональная проекция на 2 и 5 лет по отдельным странам сейчас в разработке: открыты Россия и Турция, остальные страны Атласа добавляем постепенно. Подписчики Signal Pro получают доступ первыми.</div><button id="rm-cta-btn" style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:6px;padding:12px 24px;cursor:pointer">Получить Архив + Signal Pro →</button></div>
@@ -718,16 +719,16 @@ function _findLoop(id){
 }
 /* ===== РУЧНЫЕ данные расхождений (редактируются вручную, без авто-генерации) ===== */
 var DIV={
- ineq:{wef:'#10 в 2026, но самый взаимосвязанный риск 2 года подряд',atlas:'#1 по системной важности',reason:'Atlas рассматривает неравенство как узел усиления большинства каскадов — через поляризацию, доверие и социальную нестабильность. Тяжесть средняя, влияние на сеть максимальное.'},
- geoecon:{wef:'#1 (2026, краткосрочный)',atlas:'#10 по системной важности',reason:'WEF видит геоэкономику как острейший шок. Atlas — как мощный, но восходящий триггер: она запускает каскады (цепочки поставок, инфляция, спад), но мало что замыкается обратно на неё. Высокая тяжесть, средняя центральность.'},
- ai:{wef:'#8 в 2026, но лишь #30 в 2-летнем горизонте тяжести',atlas:'#8 по системной важности, ключевой драйвер',reason:'WEF недооценивает ИИ в краткосроке. Atlas поднимает его как multiplier: ИИ усиливает дезинформацию и киберугрозы, поэтому его системное влияние выше собственной тяжести.'},
- polar:{wef:'#4 (2026)',atlas:'#2 по системной важности',reason:'Atlas ставит поляризацию выше: она и принимает давление от неравенства и дезинформации, и сама запускает кризис доверия и нестабильность — двусторонний хаб.'},
- downturn:{wef:'2-й по взаимосвязанности (WEF)',atlas:'#3, переклассифицирован в каскадный механизм',reason:'Atlas не считает спад конечным результатом: он порождает безработицу, долг, преступность и нестабильность. Это механизм распространения давления, а не сток.'},
- migration:{wef:'около #15 (вынужденная миграция)',atlas:'#4 по системной важности',reason:'Atlas видит миграцию как каскадный хаб: сходятся климат, конфликты и экономика, а на выходе — гуманитарный кризис и социальная нестабильность.'},
- weather:{wef:'#1 в 10-летнем горизонте',atlas:'#6 по системной важности',reason:'Высочайшая тяжесть в долгосроке, но в сети это источник-триггер: погода запускает урожайность, воду и миграцию, почти не получая обратного давления. Тяжесть максимальная, центральность ниже.'},
- trust:{wef:'нет отдельного узла (внутри «эрозии общества»)',atlas:'#9, выделен в самостоятельный драйвер',reason:'Atlas делает кризис доверия явным драйвером: через него сцепляются легитимность власти, поляризация и дезинформация.'},
- conflict:{wef:'#2 (2026)',atlas:'#11 по системной важности',reason:'Острый риск с высокой тяжестью, но в сети — преимущественно источник последствий (гуманитарный кризис, миграция, CBRN), а не хаб взаимоусиления.'},
- misinfo:{wef:'#5 в 2026, #2 в 2-летнем горизонте',atlas:'#5 по системной важности',reason:'Здесь Atlas и WEF близки: дезинформация — общепризнанный multiplier. Расхождение минимально.'}
+ ineq:{wefN:10,wef:'#10 в 2026',why:'Неравенство почти не вызывает прямых шоков — поэтому консенсус ставит его в середину списка. Но именно оно тихо подпитывает поляризацию, недоверие и нестабильность, усиливая большинство других угроз.',miss:'Atlas видит в неравенстве скрытый усилитель: оно стоит за цепочками, которые консенсус оценивает по отдельности, не связывая их с одним источником.'},
+ geoecon:{wefN:1,wef:'#1 в 2026',why:'Консенсус реагирует на остроту момента. Atlas видит, что геоэкономика — мощный спусковой крючок, но давление от неё уходит вниз по системе и почти не возвращается: это начало цепочек, а не точка их схождения.',miss:'Консенсус принимает силу удара за системную роль. Atlas разделяет «громкий риск» и «риск, который держит всю сеть».'},
+ ai:{wefN:30,wef:'низко в 2-летнем горизонте',why:'В ближайшие годы ИИ кажется умеренной угрозой, и консенсус ставит его невысоко. Но ИИ усиливает сразу и дезинформацию, и киберугрозы — его вес в системе намного больше собственной тяжести.',miss:'Atlas относит ИИ к недооценённым системным драйверам: его реальный эффект — это последствия второго порядка через другие риски.'},
+ polar:{wefN:4,wef:'#4 в 2026',why:'Поляризация и принимает давление от неравенства и дезинформации, и сама запускает недоверие и нестабильность. Это одна из главных точек усиления во всей системе.',miss:'Atlas фиксирует у поляризации двустороннее влияние на соседние угрозы, не отражённое в линейном ранжировании.'},
+ downturn:{wefN:11,wef:'около #11',why:'Консенсус часто рассматривает спад как итог. Atlas видит в нём передаточный механизм: он порождает безработицу, долг, преступность и социальное давление дальше по цепочке.',miss:'Atlas считает спад не финалом, а точкой, откуда давление расходится по системе.'},
+ migration:{wefN:15,wef:'около #15',why:'В миграции сходятся климат, конфликты и экономика, а на выходе — гуманитарный кризис и нестабильность. Консенсус оценивает её как отдельный риск, Atlas — как перекрёсток многих.',miss:'Atlas видит в миграции узел схождения нескольких угроз, недооценённый при раздельной оценке.'},
+ weather:{wefN:1,wef:'#1 в 10-летнем горизонте',why:'Тяжесть погодных явлений максимальна, и здесь Atlas согласен. Но в системе это источник давления: погода запускает урожайность, воду и миграцию, почти не получая обратного эффекта.',miss:'Расхождение мягкое: Atlas подтверждает тяжесть, но уточняет роль — это вход в цепочки, а не их центр.'},
+ trust:{wefN:18,wef:'нет отдельного узла у WEF',why:'Консенсус растворяет доверие внутри «эрозии общества». Atlas выделяет его отдельно: через доверие сцепляются легитимность власти, поляризация и дезинформация.',miss:'Atlas считает кризис доверия самостоятельным системным драйвером, скрытым в агрегированных категориях консенсуса.'},
+ conflict:{wefN:2,wef:'#2 в 2026',why:'Вооружённый конфликт — острейшая угроза, и его тяжесть бесспорна. Но в сети он в основном порождает последствия (гуманитарный кризис, миграцию), а не усиливает другие риски по кругу.',miss:'Atlas разделяет тяжесть конфликта и его системную роль: высокая цена, но не точка взаимоусиления.'},
+ misinfo:{wefN:2,wef:'#2 в 2-летнем горизонте',why:'Дезинформация — признанный усилитель, и здесь Atlas и консенсус совпадают: она ускоряет поляризацию, недоверие и киберугрозы.',miss:'Редкий случай согласия: оба видят в дезинформации системный усилитель.'}
 };
 /* ===== РУЧНАЯ история позиций WEF (2-летний горизонт) ===== */
 var HIST={
@@ -749,6 +750,15 @@ function _lock(inner){
     +'<div onclick="_goPro()" style="font-family:Montserrat,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border-radius:6px;padding:7px 13px;cursor:pointer;white-space:nowrap">\uD83D\uDD12 Signal Pro</div>'
     +'</div></div>';
 }
+function _verdict(wefN,atlasN){
+  var d=wefN-atlasN;
+  if(d>=8)return {t:'Atlas оценивает риск значительно выше консенсуса WEF',dir:'up'};
+  if(d>=2)return {t:'Atlas оценивает риск выше консенсуса WEF',dir:'up'};
+  if(d<=-8)return {t:'Atlas считает риск переоценённым относительно консенсуса WEF',dir:'down'};
+  if(d<=-2)return {t:'Atlas оценивает риск ниже консенсуса WEF',dir:'down'};
+  return {t:'Оценка Atlas близка к консенсусу WEF',dir:'eq'};
+}
+function _magLabel(m){ return m>=8?'сильное расхождение':(m>=4?'заметное расхождение':'умеренное расхождение'); }
 function buildIntel(r){
   var id=r._id, n=_nodeById(id); if(!n)return '';
   var html='';
@@ -767,9 +777,16 @@ function buildIntel(r){
   var c3=_cascadesTop3(id);
   if(c3.length){ html+=_h('Ключевые каскады'); html+=c3.map(function(c){ return '<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.45;padding:5px 0;border-top:0.5px solid rgba(255,255,255,0.05)">'+c+'</div>'; }).join(''); }
   var d=DIV[id];
-  if(d){ html+=_h('WEF \u2194 Atlas');
-    var dv='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;line-height:1.55"><div style="color:rgba(232,224,208,0.7)"><b style="color:#8fb8d8">WEF 2026:</b> '+d.wef+'</div><div style="color:rgba(232,224,208,0.7);margin-top:3px"><b style="color:#D4AF5A">Atlas:</b> '+d.atlas+'</div><div style="color:rgba(232,224,208,0.78);margin-top:7px;line-height:1.6"><b style="color:#e89a7a">\u0394 Причина:</b> '+d.reason+'</div></div>';
-    html+=_lock(dv);
+  if(d){ var aN=_siRank(id), v=_verdict(d.wefN,aN);
+    html+=_h('Оценка Atlas против консенсуса WEF');
+    var col=v.dir==='up'?'#7ec97e':(v.dir==='down'?'#e89a7a':'rgba(232,224,208,0.85)');
+    html+='<div style="font-family:Montserrat,sans-serif;font-size:13.5px;font-weight:600;color:'+col+';line-height:1.45">'+v.t+'.</div>';
+    html+='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.5);margin-top:5px">Консенсус WEF: '+d.wef+'  \u00b7  Atlas: '+aN+'-е место по влиянию</div>';
+    var detail='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-top:14px;margin-bottom:6px">Почему Atlas не согласен</div>'
+      +'<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.8);line-height:1.6">'+d.why+'</div>'
+      +'<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#e89a7a;margin-top:14px;margin-bottom:6px">Что упускает консенсус</div>'
+      +'<div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.92);line-height:1.6;font-style:italic">'+d.miss+'</div>';
+    html+=_lock(detail);
   }
   var hi=HIST[id];
   if(hi){ html+=_h('История 2023 \u2192 2026');
@@ -781,13 +798,17 @@ function buildIntel(r){
 }
 function renderArchive(){
   var el=document.getElementById('atlas-diverge-list'); if(!el)return;
-  var keys=['ineq','geoecon','ai','polar','weather'];
-  el.innerHTML=keys.map(function(id){
-    var n=_nodeById(id), d=DIV[id]; if(!n||!d)return '';
-    var teaser='<div style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92);margin-bottom:3px">'+n.t+'</div>'
-      +'<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.62);line-height:1.5"><b style="color:#8fb8d8">WEF:</b> '+d.wef+'  \u00b7  <b style="color:#D4AF5A">Atlas:</b> '+d.atlas+'</div>';
-    var reason='<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.75);line-height:1.55;margin-top:5px">'+d.reason+'</div>';
-    return '<div style="padding:12px 0;border-top:0.5px solid rgba(255,255,255,0.06)">'+teaser+_lock(reason)+'</div>';
+  var items=Object.keys(DIV).map(function(id){ var aN=_siRank(id),wN=DIV[id].wefN; return {id:id,mag:Math.abs(wN-aN),v:_verdict(wN,aN)}; });
+  items.sort(function(a,b){return b.mag-a.mag;});
+  var count=items.filter(function(x){return x.mag>=2;}).length;
+  var cel=document.getElementById('atlas-diverge-count'); if(cel) cel.textContent='Atlas обнаружил '+count+' существенных расхождений с консенсусом WEF.';
+  el.innerHTML=items.map(function(it,i){
+    var n=_nodeById(it.id), d=DIV[it.id], open=(i<2||PRO);
+    var col=it.v.dir==='up'?'#7ec97e':(it.v.dir==='down'?'#e89a7a':'rgba(232,224,208,0.8)');
+    var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:rgba(232,224,208,0.45);white-space:nowrap">'+_magLabel(it.mag)+'</span></div>';
+    var verdict='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:'+col+';line-height:1.45;margin-top:3px">'+it.v.t+'</div>';
+    var miss='<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.72);line-height:1.55;margin-top:5px;font-style:italic">'+d.miss+'</div>';
+    return '<div style="padding:13px 0;border-top:0.5px solid rgba(255,255,255,0.06)">'+head+verdict+(open?miss:_lock(miss))+'</div>';
   }).join('');
 }
 
