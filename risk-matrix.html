@@ -452,6 +452,7 @@ function nearest(mx,my){
 }
 
 cv.addEventListener('mousemove',e=>{
+  if(_isTouch)return;
   if(mode==='graph'&&_drag)return;
   const rc=cv.getBoundingClientRect();
   const mx=e.clientX-rc.left,my=e.clientY-rc.top;
@@ -477,11 +478,19 @@ function _move(p){if(!_drag)return;_drag.nx=Math.max(10,Math.min(W-10,p.x));_dra
 cv.addEventListener('mousedown',function(e){if(mode!=='graph')return;_grab(_evPos(e));});
 cv.addEventListener('mousemove',function(e){if(mode==='graph'&&_drag){_move(_evPos(e));}});
 window.addEventListener('mouseup',function(){_drag=null;});
-cv.addEventListener('touchstart',function(e){if(mode!=='graph')return;_grab(_evPos(e));},{passive:true});
+cv.addEventListener('touchstart',function(e){_isTouch=true;tt.style.display='none';if(mode==='graph')_grab(_evPos(e));},{passive:true});
 cv.addEventListener('touchmove',function(e){if(mode!=='graph'||!_drag)return;e.preventDefault();_move(_evPos(e));},{passive:false});
-cv.addEventListener('touchend',function(){setTimeout(function(){_drag=null;},0);});
+cv.addEventListener('touchend',function(e){
+  var wasDrag=_dragMoved; _dragMoved=false; _drag=null;
+  tt.style.display='none';
+  if(wasDrag)return;
+  var ct=e.changedTouches&&e.changedTouches[0]; if(!ct)return;
+  var rc=cv.getBoundingClientRect(); var h=nearest(ct.clientX-rc.left,ct.clientY-rc.top);
+  if(h){ _touchHandled=true; openSide(h.risk); }
+},{passive:true});
 
 cv.addEventListener('click',e=>{
+  if(_touchHandled){_touchHandled=false;return;}
   if(_dragMoved){_dragMoved=false;return;}
   const rc=cv.getBoundingClientRect();
   const h=nearest(e.clientX-rc.left,e.clientY-rc.top);
@@ -554,6 +563,7 @@ function renderGrid(){
 /* Граф взаимосвязей рисков (Figure 6) — Неравенство в центре, остальные по кругу секторами категорий. */
 var mode='matrix';
 var _netLaid=false,_netW=0,_drag=null,_dragMoved=false;
+var _isTouch=false,_touchHandled=false;
 /* nxr,nyr — нормированные координаты (0..1) по образцу WEF Figure 6; lab — короткая подпись */
 var NET_NODES=[
  {id:'ineq',t:'Неравенство',lab:'Неравенство',d:'social',inf:100,nxr:0.48,nyr:0.49,s:'Самый взаимосвязанный глобальный риск (2 года подряд). Центр, через который сцепляются почти все остальные.'},
