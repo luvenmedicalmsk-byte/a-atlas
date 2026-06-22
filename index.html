@@ -8947,9 +8947,8 @@ function grdfRenderCountryPanel(cc) {
   if(isSig){ html += _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, 'rest'); }
   if(isSig){ html += _grdfContextHtml(c); } else { try{ html += _grdfFreeMirror(c); setTimeout(function(){ try{ _fmLoadArch(c.country); }catch(_e){} }, 60); }catch(_e){} }
         /* V2-C: вынесен в аккордеон внутри панели страны */
-  // Bottom padding: 56px nav + 24px safe area + 20px buffer = 100px
+  // Низ: sheet уже стоит над навигацией (bottom:56px), доп. спейсер не нужен — как в радаре
   if(!isSig){}
-  html += '<div style="height:100px"></div>';
   var _csEl = document.getElementById('grdf-cs-content');
   if(_csEl) {
     _csEl.scrollTop = 0;       // reset BEFORE setting content
