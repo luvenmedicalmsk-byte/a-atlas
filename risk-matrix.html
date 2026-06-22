@@ -1166,7 +1166,7 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
       var e=document.getElementById(id); if(e) e.style.display=graph?'none':'';
     });
     cv.style.border=graph?'none':'';
-    var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'':'none';
+    var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'block':'none';
     var cw=document.getElementById('canvas-wrap'); if(cw) cw.style.marginLeft=graph?'0':'';
     render();
   });
