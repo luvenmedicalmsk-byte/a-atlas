@@ -7539,10 +7539,10 @@ function _evM(val, lbl, col) {
   <div class="grdf-screen-head"><div class="grdf-screen-title">Радар сигналов</div><span class="grdf-radar-live"></span><span style="font-size:10px;color:rgba(148,163,184,0.5)" id="grdf-radar-count"></span></div>
   <div id="grdf-radar-funnel"></div>
   <div id="grdf-radar-canvas"></div>
+  <div class="grdf-radar-note">Радар отображает текущую структуру глобальных сигналов. Чем ближе сигнал к центру, тем выше его актуальность и потенциальное влияние. Системное давление отражает общий уровень нагрузки на систему.</div>
   <div id="grdf-radar-dynamics"></div>
   <div id="grdf-radar-detail"></div>
   <div id="grdf-radar-panel"></div>
-  <div class="grdf-radar-note">Радар отображает текущую структуру глобальных сигналов. Чем ближе сигнал к центру, тем выше его актуальность и потенциальное влияние. Системное давление отражает общий уровень нагрузки на систему.</div>
   <div id="grdf-signalpro"></div>
 </div>
 
@@ -9398,16 +9398,26 @@ window._rDC = function(){ return (typeof DC!=='undefined'&&DC)?DC:{climate:'#22c
 window._rDL = function(){ return (typeof DL!=='undefined'&&DL)?DL:{climate:'Климат',geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум'}; };
 window._radarSell = function(){
   var GOLD='#E3B23C';
-  var CHK='<svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:6px;flex-shrink:0"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#4ade80" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CHK='<svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:7px;flex-shrink:0"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#4ade80" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function e(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-  var det=['ведущий драйвер давления','ключевые активные сигналы','наиболее значимые каскады','точки усиления давления','доминирующие направления изменений','критические сигналы наблюдения'];
+  var det=['определён ведущий драйвер давления','выявлены ключевые активные сигналы','рассчитаны наиболее значимые каскады','обнаружены точки усиления давления','определены доминирующие направления изменений','выделены критические сигналы наблюдения'];
   var hid=['Что означают текущие изменения','Какие риски усиливаются быстрее остальных','Какие каскадные сценарии наиболее вероятны','Какие сигналы являются системно важными','Как изменится структура давления','На что обратить внимание в ближайшие недели','Практические выводы для бизнеса и инвесторов','Локальная интерпретация для выбранной страны'];
-  var pro=['интерпретация текущих изменений','вероятные последствия','формирующиеся тенденции','каскадные сценарии','практические выводы','локальная аналитика по стране','прогноз дальнейшего развития'];
+  var calc=['вероятные сценарии развития','скрытые связи между сигналами','точки усиления давления','вероятные переходы риска','стратегические последствия','формирующиеся тенденции'];
+  var sysd=['ведущий драйвер давления','критические сигналы наблюдения','системно значимые изменения','наиболее вероятные последствия','направления распространения давления','прогноз развития ситуации'];
   var h='';
   h+='<div style="margin:18px 2px 0;padding:14px;border:0.5px solid rgba(184,151,58,.18);border-radius:12px;background:rgba(184,151,58,.05)"><div style="font-size:13px;font-weight:600;color:#f1f5f9">Анализ сигналов завершён</div><div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">Система обработала сигналы, выявила основные драйверы давления, оценила каскадные связи и определила вероятные направления развития ситуации.</div></div>';
-  h+='<div style="margin:14px 2px 0;padding:14px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)"><div style="font-size:10px;color:'+GOLD+';text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:10px">Выявлено</div>'+det.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:3px 0;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'</div>';
+  h+='<div style="margin:14px 2px 0;padding:14px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)"><div style="font-size:10px;color:'+GOLD+';text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:10px">Выявлено</div>'+det.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:4px 0;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'</div>';
   h+='<div style="margin:14px 2px 0;padding:14px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:rgba(184,151,58,.04)"><div style="font-size:10px;color:#b8973a;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px">Что остаётся скрытым</div>'+hid.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.82);padding:6px 0;border-top:0.5px solid rgba(255,255,255,.04);display:flex;gap:8px"><span>🔒</span><span>'+e(t)+'</span></div>';}).join('')+'</div>';
-  h+='<div style="margin:14px 2px 4px;padding:18px 16px;border:1px solid rgba(227,178,60,.40);border-radius:14px;background:linear-gradient(180deg,rgba(227,178,60,.10),rgba(255,255,255,.012))"><div style="font-size:11px;color:'+GOLD+';text-transform:uppercase;letter-spacing:.1em;font-weight:700">Signal Pro</div><div style="font-size:13px;font-weight:600;color:#f1f5f9;margin-top:6px">Система завершила расширенный анализ сигналов</div><div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:12px;margin-bottom:9px">Доступны</div>'+pro.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:3px 0;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:13px">Сигналы показывают, что происходит сейчас. Signal Pro показывает, почему это происходит и к чему может привести.</div><button onclick="grdfOpenUpgrade(\'signal_pro\')" style="margin-top:16px;width:100%;font-size:13.5px;font-weight:700;color:#06050A;background:'+GOLD+';border:none;border-radius:26px;padding:15px 24px;cursor:pointer;font-family:Montserrat,sans-serif;box-shadow:0 6px 22px rgba(227,178,60,.32)">Разблокировать Signal Pro →</button></div>';
+  h+='<div style="margin:16px 2px 6px;padding:22px 16px;border:1px solid rgba(227,178,60,.42);border-radius:16px;background:linear-gradient(180deg,rgba(227,178,60,.11),rgba(255,255,255,.012))">'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:23px;font-weight:600;color:#f1f5f9;line-height:1.22">Система завершила полный анализ сигналов</div>'
+    +'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.6;margin-top:10px">На основе междоменного анализа, каскадных связей и сценарного моделирования.</div>'
+    +'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-top:18px;margin-bottom:9px">Рассчитаны</div>'
+    +'<div>'+calc.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:3px 0;line-height:1.4"><span style="color:'+GOLD+';font-weight:700">•</span> '+e(t)+'</div>';}).join('')+'</div>'
+    +'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-top:16px;margin-bottom:9px">Система определила</div>'
+    +'<div>'+sysd.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.88);padding:4px 0;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'</div>'
+    +'<div style="font-size:11px;color:rgba(203,213,225,.80);line-height:1.5;margin-top:14px">Полный анализ содержит интерпретацию сигналов, сценарии развития и стратегические выводы системы.</div>'
+    +'<button onclick="grdfOpenUpgrade(\'signal_pro\')" style="margin-top:18px;width:100%;font-size:13.5px;font-weight:700;color:#06050A;background:'+GOLD+';border:none;border-radius:26px;padding:15px 24px;cursor:pointer;font-family:Montserrat,sans-serif;box-shadow:0 6px 22px rgba(227,178,60,.32)">Открыть полный анализ сигналов →</button>'
+  +'</div>';
   return h;
 };
 window._radarRenderPanels = function(M){
@@ -9454,15 +9464,7 @@ window._spRender = function(el,d){
   function block(h,body){ return '<div class="sp-block"><div class="sp-block-h">'+esc(h)+'</div>'+body+'</div>'; }
   function badge(label){ var col=/Сильн|Высок/.test(label)?'#ef4444':(/Средн/.test(label)?'#eab308':'#22c55e'); return '<span style="font-size:9px;font-weight:600;letter-spacing:.04em;padding:1px 7px;border-radius:999px;border:1px solid '+col+';color:'+col+';margin-left:6px;white-space:nowrap">'+esc(label)+'</span>'; }
   function subL(t,arr){ return (arr&&arr.length)?('<div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f1f5f9;margin:8px 0 4px">'+esc(t)+'</div>'+ul(arr)):''; }
-  if(d && d.locked){
-    el.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">🔒 SIGNAL PRO</span></div>'
-      +'<div class="sp-sub">Аналитическая интерпретация сигналов</div>'
-      +'<div class="sp-body"><div class="sp-block">'
-      +ul(['Что означают текущие изменения','Основные последствия','Формирующиеся тенденции','Каскадные сценарии','Практические выводы для бизнеса, инвесторов и частных лиц','Локальная интерпретация для вашей страны'])
-      +'<div class="sp-lock-t" style="margin:12px 0 14px;max-width:none">Сигналы показывают, что происходит. Signal Pro объясняет, что это означает и к чему может привести.</div>'
-      +'<button class="sp-cta" onclick="grdfOpenUpgrade(\'signal_pro\')">Разблокировать Signal Pro →</button>'
-      +'</div></div></div>';
-    return;
+  if(d && d.locked){ el.innerHTML=''; return;
   }
   if(!d || !d.interpretation){ el.innerHTML=''; return; }
   var rows=(d.change&&d.change.rows)||[];
