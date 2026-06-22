@@ -729,7 +729,7 @@ function _findLoop(id){
 /* ===== РУЧНЫЕ данные расхождений (редактируются вручную, без авто-генерации) ===== */
 var DIV={
  ineq:{wefN:10,wef:'#10 в 2026',why:'Неравенство почти не вызывает прямых шоков — поэтому консенсус ставит его в середину списка. Но именно оно тихо подпитывает поляризацию, недоверие и нестабильность, усиливая большинство других угроз.',miss:'Atlas видит в неравенстве скрытый усилитель: оно стоит за цепочками, которые консенсус оценивает по отдельности, не связывая их с одним источником.'},
- geoecon:{wefN:1,wef:'#1 в 2026',why:'Консенсус реагирует на остроту момента. Atlas видит, что геоэкономика — мощный спусковой крючок, но давление от неё уходит вниз по системе и почти не возвращается: это начало цепочек, а не точка их схождения.',miss:'Консенсус принимает силу удара за системную роль. Atlas разделяет «громкий риск» и «риск, который держит всю сеть».'},
+ geoecon:{wefN:1,wef:'#1 в 2026',why:'Консенсус реагирует на остроту момента. Atlas видит, что геоэкономика — мощный спусковой крючок, но давление от неё уходит вниз по системе и почти не возвращается: это начало цепочек, а не точка их схождения.',miss:'WEF тоже считает геоэкономику центральной. Atlas уточняет направление: давление идёт от неё вниз по системе и почти не возвращается — это вход в цепочки, а не их перекрёсток.'},
  ai:{wefN:30,wef:'низко в 2-летнем горизонте',why:'В ближайшие годы ИИ кажется умеренной угрозой, и консенсус ставит его невысоко. Но ИИ усиливает сразу и дезинформацию, и киберугрозы — его вес в системе намного больше собственной тяжести.',miss:'Atlas относит ИИ к недооценённым системным драйверам: его реальный эффект — это последствия второго порядка через другие риски.'},
  polar:{wefN:4,wef:'#4 в 2026',why:'Поляризация и принимает давление от неравенства и дезинформации, и сама запускает недоверие и нестабильность. Это одна из главных точек усиления во всей системе.',miss:'Рейтинг видит поляризацию как один из социальных рисков в ряду. Atlas — как переключатель: она превращает неравенство и дезинформацию в недоверие и нестабильность. Без неё половина цепочек не замыкается.'},
  downturn:{wefN:11,wef:'около #11',why:'Консенсус часто рассматривает спад как итог. Atlas видит в нём передаточный механизм: он порождает безработицу, долг, преступность и социальное давление дальше по цепочке.',miss:'Консенсус считает спад исходом и останавливается на нём. Atlas прослеживает вторую волну — как спад перезапускает безработицу, долг и преступность, которых в оценке «итога» уже нет.'},
@@ -787,6 +787,12 @@ var SEES={
  downturn:{cons:'Итог цепочки, на котором оценка останавливается.',atlas:'Передаточный механизм: перезапускает безработицу, долг и преступность дальше.'},
  conflict:{cons:'Острейший риск по тяжести и цене.',atlas:'Источник последствий, но не точка взаимоусиления: давление идёт наружу.'},
  weather:{cons:'Риск №1 в долгосроке по тяжести.',atlas:'Высокая тяжесть подтверждается, но роль — вход в цепочки, а не их центр.'}
+};
+var CAT={ai:'A',geoecon:'B',ineq:'C',trust:'B',migration:'B',polar:'C',misinfo:'C',downturn:'B',conflict:'B',weather:'B'};
+var AGREE={
+ ineq:{shared:'Неравенство — самый взаимосвязанный риск сети и корень, питающий другие угрозы. Это и вывод WEF этого года.',mech:'Atlas показывает, через какие именно цепочки оно бьёт — поляризацию, недоверие и нестабильность — и связывает их с одним источником.'},
+ misinfo:{shared:'Дезинформация — системный усилитель краткосрочного ряда. Оценки Atlas и WEF совпадают.',mech:'Atlas показывает, как она ускоряет сразу поляризацию, недоверие и киберугрозы, а не действует изолированно.'},
+ polar:{shared:'Поляризация — один из острейших рисков; WEF ставит её в верх списка, Atlas согласен.',mech:'Atlas показывает её роль переключателя: она превращает неравенство и дезинформацию в недоверие и нестабильность.'}
 };
 var DIVX={
  ai:{key:'Atlas рассматривает ИИ как усилитель уже существующих рисков — через информационный, кибернетический и социальный контур.',wefView:'Долгосрочный фактор, умеренный в ближайшие годы.',atlasView:'Активный мультипликатор уже сегодня.'},
@@ -866,22 +872,34 @@ function buildIntel(r){
 
   /* === АВТОРСКИЙ ВЫВОД (узлы с расхождением) — вперёд === */
   if(d){
-    html+=_h('Где Atlas не согласен с консенсусом');
+    var cat=(typeof CAT!=='undefined'&&CAT[id])||'B';
+    var hdr=cat==='C'?'Atlas и WEF сходятся в оценке':(cat==='A'?'Где Atlas расходится с консенсусом':'Где Atlas уточняет консенсус');
+    html+=_h(hdr);
     if(dx&&dx.key){ html+='<div style="font-family:\'Cormorant Garamond\',Georgia,serif;font-size:17px;color:rgba(232,224,208,0.97);line-height:1.42;margin-bottom:12px">'+dx.key+'</div>'; }
     if(typeof WHATCH!=='undefined'&&WHATCH[id]){
       html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-bottom:5px">Что это меняет</div>';
       html+='<div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.9);line-height:1.55;margin-bottom:14px">'+WHATCH[id]+'</div>';
     }
-    var se=(typeof SEES!=='undefined')?SEES[id]:null;
-    html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#e89a7a;margin-bottom:7px">Что упускает консенсус</div>';
-    if(se){
-      html+='<div style="border-left:2px solid rgba(143,184,216,0.4);padding-left:10px;margin-bottom:8px"><div style="font-family:Montserrat,sans-serif;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#8fb8d8;margin-bottom:2px">Консенсус видит</div><div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.72);line-height:1.5">'+se.cons+'</div></div>';
-      html+='<div style="border-left:2px solid rgba(212,175,90,0.55);padding-left:10px;margin-bottom:14px"><div style="font-family:Montserrat,sans-serif;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#D4AF5A;margin-bottom:2px">Atlas видит</div><div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.93);line-height:1.55">'+se.atlas+'</div></div>';
+    if(cat==='C'){
+      var ag=(typeof AGREE!=='undefined')?AGREE[id]:null;
+      if(ag){
+        html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#7ec97e;margin-bottom:5px">В чём согласие</div>';
+        html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.55;margin-bottom:14px">'+ag.shared+'</div>';
+        html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-bottom:5px">Ценность Atlas — механизм</div>';
+        html+='<div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.93);line-height:1.55">'+ag.mech+'</div>';
+      }
     } else {
-      html+='<div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.92);line-height:1.6;font-style:italic;margin-bottom:14px">'+d.miss+'</div>';
+      var se=(typeof SEES!=='undefined')?SEES[id]:null;
+      html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#e89a7a;margin-bottom:7px">Что упускает консенсус</div>';
+      if(se){
+        html+='<div style="border-left:2px solid rgba(143,184,216,0.4);padding-left:10px;margin-bottom:8px"><div style="font-family:Montserrat,sans-serif;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#8fb8d8;margin-bottom:2px">Консенсус видит</div><div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.72);line-height:1.5">'+se.cons+'</div></div>';
+        html+='<div style="border-left:2px solid rgba(212,175,90,0.55);padding-left:10px;margin-bottom:14px"><div style="font-family:Montserrat,sans-serif;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#D4AF5A;margin-bottom:2px">Atlas видит</div><div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.93);line-height:1.55">'+se.atlas+'</div></div>';
+      } else {
+        html+='<div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.92);line-height:1.6;font-style:italic;margin-bottom:14px">'+d.miss+'</div>';
+      }
+      html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-bottom:6px">Почему Atlas оценивает иначе</div>'
+        +'<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.8);line-height:1.6">'+d.why+'</div>';
     }
-    html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#D4AF5A;margin-bottom:6px">Почему Atlas оценивает иначе</div>'
-      +'<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.8);line-height:1.6">'+d.why+'</div>';
   }
 
   /* === СИСТЕМНАЯ РОЛЬ (доказательство) === */
@@ -939,14 +957,19 @@ function renderArchive(){
   var fel=document.getElementById('atlas-findings'); if(fel) fel.style.display='none'; var sell=document.getElementById('atlas-diverge-sell'); if(sell) sell.style.display='none';
   var items=Object.keys(DIV).map(function(id){ var aN=_siRank(id),wN=DIV[id].wefN; return {id:id,mag:Math.abs(wN-aN),v:_verdict(wN,aN)}; });
   items.sort(function(a,b){return b.mag-a.mag;});
-  var count=items.filter(function(x){return x.mag>=2;}).length;
-  if(cel) cel.textContent='Atlas обнаружил '+count+' существенных расхождений с консенсусом WEF.';
+  var count=items.filter(function(x){return ((typeof CAT==='undefined')||CAT[x.id]!=='C')&&x.mag>=2;}).length;
+  var agreeN=items.filter(function(x){return (typeof CAT!=='undefined')&&CAT[x.id]==='C';}).length;
+  if(cel) cel.textContent='Atlas сверил риски с консенсусом WEF — '+count+' расхождений и '+agreeN+' совпадений.';
   el.innerHTML=items.map(function(it,i){
     var n=_nodeById(it.id), d=DIV[it.id];
-    var col=it.v.dir==='up'?'#7ec97e':(it.v.dir==='down'?'#e89a7a':'rgba(232,224,208,0.8)');
-    var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:rgba(232,224,208,0.45);white-space:nowrap">'+_magLabel(it.mag)+'</span></div>';
-    var verdict='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:'+col+';line-height:1.45;margin-top:3px">'+it.v.t+'</div>';
-    var miss='<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.72);line-height:1.55;margin-top:5px;font-style:italic">'+d.miss+'</div>';
+    var agree=(typeof CAT!=='undefined')&&CAT[it.id]==='C';
+    var col=agree?'#7ec97e':(it.v.dir==='up'?'#7ec97e':(it.v.dir==='down'?'#e89a7a':'rgba(232,224,208,0.8)'));
+    var lbl=agree?'СОГЛАСИЕ':_magLabel(it.mag);
+    var head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-family:Montserrat,sans-serif;font-size:12.5px;font-weight:600;color:rgba(232,224,208,0.92)">'+n.t+'</span><span style="font-family:Montserrat,sans-serif;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:'+(agree?'rgba(126,201,126,0.7)':'rgba(232,224,208,0.45)')+';white-space:nowrap">'+lbl+'</span></div>';
+    var vt=agree?'Atlas подтверждает оценку WEF и углубляет её.':it.v.t;
+    var verdict='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:'+col+';line-height:1.45;margin-top:3px">'+vt+'</div>';
+    var body=agree?(((typeof AGREE!=='undefined')&&AGREE[it.id])?AGREE[it.id].mech:d.miss):d.miss;
+    var miss='<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.72);line-height:1.55;margin-top:5px;font-style:italic">'+body+'</div>';
     return '<div style="padding:13px 0;border-top:0.5px solid rgba(255,255,255,0.06)">'+head+verdict+miss+'</div>';
   }).join('');
   _applyProUI();
