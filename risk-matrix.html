@@ -691,6 +691,30 @@ function renderDrivers(){
     });
   });
 }
+
+/* ===== ФАЗА 2: WEF <-> Atlas Intelligence Layer ===== */
+function _goPro(){ var b=document.getElementById('rm-cta-btn'); if(b){ b.click(); } else if(window.parent){ try{window.parent.postMessage({t:'atlas-upgrade'},'*');}catch(e){} } }
+var PRO=/[?&]pro=1/.test(location.search);
+function _askTier(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage({t:'atlas-need-tier'},'*'); }catch(e){} }
+_askTier(); setTimeout(_askTier,600); setTimeout(_askTier,1600);
+window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-tier'&&ev.data.pro&&!PRO){ PRO=true; try{renderArchive();}catch(e){} try{var sd=document.getElementById('side'); if(sd) sd.classList.remove('open');}catch(e){} } });
+function _nodeById(id){ return NET_NODES.filter(function(n){return n.id===id;})[0]; }
+function _siRank(id){ var r=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}); for(var i=0;i<r.length;i++){ if(r[i].id===id)return i+1; } return 0; }
+function _degInOut(id){ var ind=0,outd=0; NET_EDGES.forEach(function(e){ if(e[0]===id)outd++; if(e[1]===id)ind++; }); return [ind,outd]; }
+function _cascadesTop3(id){
+  var out={},lab={}; NET_NODES.forEach(function(n){ out[n.id]=[]; lab[n.id]=n.lab; });
+  NET_EDGES.forEach(function(e){ if(out[e[0]]&&e[3]!=='fb') out[e[0]].push([e[1],e[2]||1]); });
+  function walk(first){
+    var chain=[id],seen={}; seen[id]=1; var cur=first; chain.push(first); seen[first]=1;
+    for(var k=0;k<3;k++){ var nx=(out[cur]||[]).filter(function(p){return !seen[p[0]];}); if(!nx.length)break; nx.sort(function(a,b){return b[1]-a[1];}); cur=nx[0][0]; seen[cur]=1; chain.push(cur); }
+    return chain.map(function(x){return lab[x];}).join(' \u2192 ');
+  }
+  var res=[];
+  if(typeof CASC!=='undefined'&&CASC[id]) res.push(CASC[id].map(function(x){return lab[x]||x;}).join(' \u2192 '));
+  var firsts=(out[id]||[]).slice().sort(function(a,b){return b[1]-a[1];});
+  for(var i=0;i<firsts.length&&res.length<3;i++){ var c=walk(firsts[i][0]); if(c&&res.indexOf(c)<0)res.push(c); }
+  return res.slice(0,3);
+}
 function _findLoop(id){
   var out={}; NET_NODES.forEach(function(n){ out[n.id]=[]; });
   NET_EDGES.forEach(function(e){ if(out[e[0]]) out[e[0]].push(e[1]); });
