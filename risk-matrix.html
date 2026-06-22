@@ -93,6 +93,13 @@ body.mode-graph #graph-hint{display:flex}
 
 /* CHART */
 #chart-area{position:relative;margin-bottom:6px}
+.hz-blur{filter:blur(7px) grayscale(1)!important;pointer-events:none!important;user-select:none!important}
+#hz-lock{position:absolute;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(6,5,10,0.34)}
+#hz-lock .hzl-card{max-width:300px}
+#hz-lock .hzl-ic{width:28px;height:28px;color:var(--gold-light);margin:0 auto 12px;display:block}
+#hz-lock .hzl-title{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--text);margin-bottom:8px;line-height:1.25}
+#hz-lock .hzl-sub{font-family:'Montserrat',sans-serif;font-size:11.5px;color:var(--text2);line-height:1.55;margin-bottom:15px}
+#hz-lock .hzl-btn{display:inline-block;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#06050A;background:var(--gold-light);border:none;border-radius:8px;padding:11px 18px;cursor:pointer}
 #y-axis{
   position:absolute;left:0;top:0;bottom:28px;width:36px;
   display:flex;flex-direction:column;justify-content:space-between;
@@ -243,6 +250,7 @@ body.mode-graph #graph-hint{display:flex}
   </div>
 
   <div id="chart-area">
+    <div id="hz-lock"></div>
     <span id="y-label">Долгосрочная тяжесть</span>
     <div id="y-axis">
       <span class="ytick">95</span>
@@ -612,7 +620,7 @@ document.querySelectorAll('.tab').forEach(el=>{
     curH=el.dataset.h;
     document.getElementById('tab-desc').textContent=DESCS[curH];
     document.getElementById('risk-count').textContent=(RISKS[curH]||[]).length+' рисков';
-    render(); renderGrid(); renderDrivers();
+    render(); renderGrid(); renderDrivers(); try{_applyHorizonLock();}catch(e){}
   });
 });
 
@@ -810,9 +818,10 @@ function renderDrivers(){
 /* ===== ФАЗА 2: WEF <-> Атлас Intelligence Layer ===== */
 function _goPro(){ var b=document.getElementById('rm-cta-btn'); if(b){ b.click(); } else if(window.parent){ try{window.parent.postMessage({t:'atlas-upgrade'},'*');}catch(e){} } }
 var PRO=/[?&]pro=1/.test(location.search);
+var _rank=PRO?3:0; var _HZMIN={'2y':0,'5y':1,'10y':2};
 function _askTier(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage({t:'atlas-need-tier'},'*'); }catch(e){} }
 _askTier(); setTimeout(_askTier,600); setTimeout(_askTier,1600);
-window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-tier'&&ev.data.pro&&!PRO){ PRO=true; try{renderArchive();}catch(e){} try{var sd=document.getElementById('side'); if(sd) sd.classList.remove('open');}catch(e){} } });
+window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-tier'){ if(ev.data.rank!=null) _rank=ev.data.rank; if(ev.data.pro&&!PRO){ PRO=true; try{renderArchive();}catch(e){} try{var sd=document.getElementById('side'); if(sd) sd.classList.remove('open');}catch(e){} } try{_applyHorizonLock();}catch(e){} } });
 function _nodeById(id){ return NET_NODES.filter(function(n){return n.id===id;})[0]; }
 function _siRank(id){ var r=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}); for(var i=0;i<r.length;i++){ if(r[i].id===id)return i+1; } return 0; }
 function _degInOut(id){ var ind=0,outd=0; NET_EDGES.forEach(function(e){ if(e[0]===id)outd++; if(e[1]===id)ind++; }); return [ind,outd]; }
@@ -1183,6 +1192,7 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
     cv.style.border=graph?'none':'';
     var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'block':'none';
     if(graph){document.body.classList.add('mode-graph');}else{document.body.classList.remove('mode-graph');}
+    try{_applyHorizonLock();}catch(e){}
     var cw=document.getElementById('canvas-wrap'); if(cw) cw.style.marginLeft=graph?'0':'';
     render();
   });
@@ -1190,7 +1200,23 @@ document.querySelectorAll('.mode-btn').forEach(function(el){
 
 document.getElementById('tab-desc').textContent=DESCS['2y'];
 document.getElementById('risk-count').textContent=(RISKS['2y']||[]).length+' рисков';
-function _boot(){ render(); renderGrid(); renderDrivers(); renderArchive(); }
+function _applyHorizonLock(){
+  var locked=(mode==='matrix') && (_rank < (_HZMIN[curH]||0));
+  ['canvas-wrap','sys-drivers','atlas-findings','atlas-diverge','top-risks'].forEach(function(id){
+    var e=document.getElementById(id); if(!e)return;
+    if(locked) e.classList.add('hz-blur'); else e.classList.remove('hz-blur');
+  });
+  var lk=document.getElementById('hz-lock'); if(!lk)return;
+  if(!locked){ lk.style.display='none'; return; }
+  var ic='<svg class="hzl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>';
+  if(curH==='10y'){
+    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-sub">Долгосрочная аналитика основана на исследованиях Архива 2023\u20132026.</div><button class="hzl-btn" onclick="_openArchive()">Открыть Архив</button></div>';
+  } else {
+    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-title">Доступно в Signal Pro</div><div class="hzl-sub">Горизонт 5 лет: точки и аналитика открываются в подписке Signal Pro.</div><button class="hzl-btn" onclick="_goPro()">Открыть Signal Pro \u2192</button></div>';
+  }
+  lk.style.display='flex';
+}
+function _boot(){ render(); renderGrid(); renderDrivers(); renderArchive(); try{_applyHorizonLock();}catch(e){} }
 setTimeout(_boot,80); setTimeout(_boot,500); setTimeout(_boot,1200);
 window.addEventListener('load',_boot);
 window.addEventListener('resize',render);
