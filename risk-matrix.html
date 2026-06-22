@@ -829,6 +829,18 @@ var EVO={
  downturn:[['2023','фоновый риск'],['2024','рост долга и инфляции'],['2025','усиление давления'],['2026','один из самых взаимосвязанных рисков']]
 };
 /* ARCH: метаданные исследований Архива. ЗНАЧЕНИЯ-ЗАГЛУШКИ — заменить реальными числами Архива. */
+var ARCH_TOPIC={
+ ai:'Архив содержит материалы по дезинформации, киберрискам и технологическим усилителям.',
+ ineq:'Архив содержит материалы по социальной устойчивости, доверию, историческим кризисам и общественным трансформациям.',
+ geoecon:'Архив содержит сценарии фрагментации мировой экономики, санкционных контуров и ресурсных конфликтов.',
+ trust:'Архив содержит материалы по институтам, легитимности и кризисам общественного доверия.',
+ migration:'Архив содержит материалы по климатической, конфликтной и экономической миграции и гуманитарным сценариям.',
+ polar:'Архив содержит материалы по социальной поляризации, медиасреде и политической нестабильности.',
+ misinfo:'Архив содержит материалы по информационным кампаниям, медиаэкосистемам и манипуляции.',
+ downturn:'Архив содержит сценарии рецессий, долговых кризисов и их социальных последствий.',
+ conflict:'Архив содержит материалы по вооружённым конфликтам, их динамике и экономическим контурам.',
+ weather:'Архив содержит климатические сценарии, кейсы экстремальной погоды и их каскадные последствия.'
+};
 var ARCH={
  /* Реальные данные Архива. real:false -> нейтральная подача без чисел.
     Чтобы включить детали по узлу: {real:true, research_count:N, years_covered:'2023–2026',
@@ -918,7 +930,7 @@ function buildIntel(r){
     }
   }
 
-  /* === СИСТЕМНАЯ РОЛЬ (доказательство) === */
+  /* === СИСТЕМНАЯ РОЛЬ В СЕТИ === */
   html+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;padding-top:14px;border-top:0.5px solid rgba(255,255,255,0.06)"><span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,224,208,0.6)">Скрытое влияние на систему</span><span style="font-family:Montserrat,sans-serif;font-size:16px;font-weight:700;color:#D4AF5A">'+_influenceLevel(id)+'</span></div>';
   var loop=_findLoop(id);
   if(loop){ html+='<div style="margin-top:14px;padding:11px 12px;border:0.5px solid rgba(220,120,90,0.4);border-radius:8px;background:rgba(220,120,90,0.08)"><div style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;color:#e89a7a;margin-bottom:5px">↻ Самоподдерживающаяся петля усиления</div><div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.5">'+loop+'</div><div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.55);margin-top:5px">Системная уязвимость: риск усиливает сам себя.</div></div>'; }
@@ -939,17 +951,18 @@ function buildIntel(r){
   }
   var ar=ARCH[id];
   if(ar){ html+=_h('Исследования Архива');
+    if(typeof ARCH_TOPIC!=='undefined'&&ARCH_TOPIC[id]){ html+='<div style="font-family:Montserrat,sans-serif;font-size:12px;color:rgba(232,224,208,0.88);line-height:1.6;margin-bottom:8px">'+ARCH_TOPIC[id]+'</div>'; }
     if(ar.real){ var _aL=[];
       if(ar.research_count) _aL.push(ar.research_count+' материалов');
       if(ar.years_covered) _aL.push(ar.years_covered);
-      if(ar.scenarios) _aL.push('сценарный анализ');
-      if(ar.forecasts) _aL.push('прогнозы');
+      if(ar.scenarios) _aL.push('сценарные разработки');
+      if(ar.forecasts) _aL.push('сигналы и триггеры');
       if(ar.historical_cases) _aL.push('исторические кейсы');
       html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.7">'+_aL.map(function(x){return '· '+x;}).join('<br>')+'</div>'; }
-    else { html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.78);line-height:1.6">Подборка исследований Архива по этому риску — сценарии, прогнозы и исторические кейсы.</div>'; }
+    html+='<div style="font-family:Montserrat,sans-serif;font-size:10.5px;color:rgba(232,224,208,0.55);line-height:1.55;margin-top:8px;font-style:italic">Материалы Архива используются как исследовательская база для анализа риска и его возможных последствий.</div>';
     html+='<div style="width:100%;margin-top:10px;font-family:Montserrat,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,224,208,0.6);background:rgba(184,151,58,0.14);border-radius:7px;padding:11px;text-align:center">Скоро в Архиве</div>';
   }
-  html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.5);line-height:1.6;margin-top:16px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.06)">Что происходит сейчас — Signal Pro. Почему это важно — Архив.</div>';
+  html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.5);line-height:1.6;margin-top:16px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.06)">Что происходит сейчас — Signal Pro. Глубже разобрать риск — в материалах Архива.</div>';
   return html;
 }
 function _applyProUI(){
