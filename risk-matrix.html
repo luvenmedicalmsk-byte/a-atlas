@@ -273,7 +273,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
   <div id="atlas-diverge-count" style="font-family:'Montserrat',sans-serif;font-size:12.5px;color:rgba(232,224,208,0.85);line-height:1.5;margin-bottom:8px"></div>
   <div id="atlas-diverge-list"></div>
   <div id="atlas-diverge-sell" style="font-family:'Montserrat',sans-serif;font-size:11px;color:#D4AF5A;line-height:1.55;margin-top:14px">Полный анализ содержит причины расхождений, каскадные последствия и стратегические выводы системы.</div>
-  <button onclick="_goPro()" style="width:100%;margin-top:10px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:12px;cursor:pointer">Получить доступ к Signal Pro →</button>
+  <button id="atlas-diverge-cta" onclick="_goPro()" style="width:100%;margin-top:10px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:12px;cursor:pointer">Получить доступ к Signal Pro →</button>
 </div>
 
 <div id="rm-cta" style="margin:8px 16px 28px;padding:18px 16px;border:1px solid rgba(184,151,58,0.28);border-radius:10px;background:rgba(184,151,58,0.05);text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#D4AF5A;margin-bottom:6px">Проекция риска по странам</div><div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.55;margin:0 auto 14px;max-width:520px">Эта карта — открытый обзор глобальных взаимосвязей рисков. Персональная проекция на 2 и 5 лет по отдельным странам сейчас в разработке: открыты Россия и Турция, остальные страны Атласа добавляем постепенно. Подписчики Signal Pro получают доступ первыми.</div><button id="rm-cta-btn" style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:6px;padding:12px 24px;cursor:pointer">Получить доступ к Signal Pro →</button></div>
@@ -855,11 +855,16 @@ function buildIntel(r){
     if(ar.real){ html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.82);line-height:1.7">'
       +'\u00b7 '+ar.n+' материалов<br>\u00b7 '+(ar.years||'2023\u20132026')+'<br>'
       +ar.d.map(function(x){return '\u00b7 '+x;}).join('<br>')+'</div>'; }
-    else { html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.78);line-height:1.6">Подборка исследований Архива по этому риску — сценарии, прогнозы и исторические кейсы — доступна в Signal Pro.</div>'; }
-    html+='<button onclick="_goPro()" style="width:100%;margin-top:10px;font-family:Montserrat,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0a0a0a;background:#D4AF5A;border:0;border-radius:7px;padding:11px;cursor:pointer">Открыть исследования →</button>';
+    else { html+='<div style="font-family:Montserrat,sans-serif;font-size:11.5px;color:rgba(232,224,208,0.78);line-height:1.6">Подборка исследований Архива по этому риску — сценарии, прогнозы и исторические кейсы.</div>'; }
+    html+='<div style="width:100%;margin-top:10px;font-family:Montserrat,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(232,224,208,0.6);background:rgba(184,151,58,0.14);border-radius:7px;padding:11px;text-align:center">Скоро в Архиве</div>';
   }
   html+='<div style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(232,224,208,0.5);line-height:1.6;margin-top:16px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.06)">Что происходит сейчас \u2014 Signal Pro. Почему это важно \u2014 Архив.</div>';
   return html;
+}
+function _applyProUI(){
+  if(!PRO)return;
+  var dc=document.getElementById('atlas-diverge-cta'); if(dc) dc.style.display='none';
+  var rb=document.getElementById('rm-cta-btn'); if(rb){ rb.textContent='Скоро будет доступно'; rb.style.background='rgba(184,151,58,0.18)'; rb.style.color='rgba(232,224,208,0.7)'; rb.style.cursor='default'; rb.style.pointerEvents='none'; }
 }
 function renderArchive(){
   var el=document.getElementById('atlas-diverge-list'); if(!el)return;
@@ -891,6 +896,7 @@ function renderArchive(){
     var miss='<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.72);line-height:1.55;margin-top:5px;font-style:italic">'+d.miss+'</div>';
     return '<div style="padding:13px 0;border-top:0.5px solid rgba(255,255,255,0.06)">'+head+verdict+miss+'</div>';
   }).join('');
+  _applyProUI();
 }
 
 function layoutNet(){
