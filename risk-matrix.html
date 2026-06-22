@@ -58,6 +58,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 .tab.active{border-color:var(--gold);color:var(--gold-light);background:rgba(184,151,58,0.08)}
 #mode-toggle{display:flex;gap:6px;margin:2px 0 10px}
 body.mode-graph #sys-drivers,body.mode-graph #atlas-findings,body.mode-graph #atlas-diverge{display:none!important}
+#graph-hint{display:none;align-items:center;gap:11px;margin:0 0 14px;padding:9px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
+body.mode-graph #graph-hint{display:flex}
+#graph-hint .gh-bulb{width:19px;height:19px;flex-shrink:0;color:var(--gold-light);animation:ghpulse 4s ease-in-out infinite;transform-origin:center}
+#graph-hint .gh-title{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.02em;color:var(--text);margin-bottom:2px}
+#graph-hint .gh-sub{font-family:'Montserrat',sans-serif;font-size:10.5px;color:var(--text2);line-height:1.4}
+@keyframes ghpulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
 #graph-guide{display:none;margin:0 0 12px;padding:11px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
 #graph-guide .gg-title{font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
 #graph-guide .gg-row{font-family:'Montserrat',sans-serif;font-size:11px;color:var(--text2);line-height:1.65}
@@ -243,6 +249,17 @@ body.mode-graph #sys-drivers,body.mode-graph #atlas-findings,body.mode-graph #at
     <div class="gg-row"><b>Цвет</b> — домен риска</div>
     <div class="gg-row"><b>Линии</b> — распространение давления между рисками</div>
     <div class="gg-row"><b>Центральные узлы</b> — системные драйверы</div>
+  </div>
+
+  <div id="graph-hint">
+    <svg class="gh-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M9 18h6"/><path d="M10 21h4"/>
+      <path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>
+    </svg>
+    <div class="gh-text">
+      <div class="gh-title">Интерактивный граф</div>
+      <div class="gh-sub">Перетаскивайте узлы для изучения скрытых связей</div>
+    </div>
   </div>
 
   <div id="chart-area">
