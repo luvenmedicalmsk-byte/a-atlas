@@ -1861,7 +1861,7 @@ function renderMarkers() {
 }
 
 // ── СТАТИСТИКА И СПИСОК ──────────────────────────────────────────────────────
-function sc(s){ return s>=90?'#cc5a3a':s>=75?'#cf9a3a':s>=60?'#b8973a':s>=40?'#9a9a52':'#7d8a6a' }
+function sc(s){ return s>=85?'#C0392B':s>=70?'#D35400':'#2980B9' }
 function fd(iso){ return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) }
 
 function updateStats() {
@@ -9763,7 +9763,7 @@ function grdfRenderSignals(dom){
       + '<div class="sig-main">'
       +   '<div class="grdf-sig-title sig-clamp2">'+escx(_stripPromo(_deEnt(ev.title)))+'</div>'
       +   _cb
-      +   '<div class="grdf-sig-meta">'+(_cb?'':'<span>\ud83d\udccd '+escx(_deEnt(ev.region))+'</span>')+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
+      +   '<div class="grdf-sig-meta">'+(_cb?'':'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_deEnt(ev.region))+'</span>')+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
       +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
       + '</div>'
       + '<div class="grdf-sig-sev">'
