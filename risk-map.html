@@ -7522,16 +7522,21 @@ function _evM(val, lbl, col) {
     <button class="grdf-nav-btn" id="grdf-nav-countries" onclick="grdfNavTo('countries')">
       <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><span>Страны</span>
     </button>
-    <button class="grdf-nav-btn" id="grdf-nav-analytics" onclick="grdfNavTo('analytics')">
-      <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span>Аналитика</span>
-    </button>
+    
   </div>
 </div>
 
+<style>
+#conn-tabs{display:flex;gap:6px;justify-content:center;padding:8px 16px 10px;flex:0 0 auto}
+.conn-tab{padding:7px 16px;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;border:1px solid rgba(184,151,58,0.2);border-radius:2px;cursor:pointer;color:rgba(232,224,208,0.6);background:transparent;transition:all .2s;font-family:'Montserrat',sans-serif}
+.conn-tab.active{border-color:#B8973A;color:#D4AF5A;background:rgba(184,151,58,0.08)}
+</style>
 <div id="grdf-matrix-screen">
   <span class="grdf-screen-x" onclick="grdfNavTo('map')">✕</span>
   <div class="grdf-screen-head"><div class="grdf-screen-title">Связи рисков</div></div>
-  <iframe src="risk-matrix.html?v=65" title="Карта взаимосвязей рисков" loading="lazy" style="flex:1;width:100%;border:0;display:block"></iframe>
+  <div id="conn-tabs"><button class="conn-tab active" data-cmode="matrix" onclick="connSetMode('matrix')">◆ Матрица</button><button class="conn-tab" data-cmode="graph" onclick="connSetMode('graph')">◆ Граф связей</button><button class="conn-tab" data-cmode="analysis" onclick="connSetMode('analysis')">◆ Системный анализ</button></div>
+  <iframe id="conn-frame" src="risk-matrix.html?v=66" title="Карта взаимосвязей рисков" loading="lazy" style="flex:1;width:100%;border:0;display:block"></iframe>
+  <div id="conn-analysis-wrap" style="flex:1;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none"></div>
 </div>
 
 <!-- Foresight signal radar (same source as map: ALL_EVENTS) -->
@@ -9271,7 +9276,23 @@ window.grdfNavTo = function(tab) {
     if(window._riskPulseTimer) clearInterval(window._riskPulseTimer);
     window._riskPulseTimer = setInterval(function(){ if(window.grdfRenderRiskPulse) window.grdfRenderRiskPulse(); }, 30000);
   }
-};
+}
+
+function connSetMode(m){
+  var tabs=document.querySelectorAll('.conn-tab'); for(var i=0;i<tabs.length;i++){ tabs[i].classList.toggle('active', tabs[i].getAttribute('data-cmode')===m); }
+  var fr=document.getElementById('conn-frame'); var aw=document.getElementById('conn-analysis-wrap');
+  if(m==='analysis'){
+    if(fr) fr.style.display='none';
+    if(aw){ if(!aw._moved){ var inner=document.querySelector('.grdf-analytics-screen-inner'); if(inner){ aw.appendChild(inner); aw._moved=true; } } aw.style.display='block'; }
+    try{ grdfLoadAccuracyData(); }catch(e){}
+    try{ grdfRenderAtlas(); }catch(e){}
+  } else {
+    if(aw) aw.style.display='none';
+    if(fr){ fr.style.display='block'; try{ if(fr.contentWindow) fr.contentWindow.postMessage({t:'atlas-set-mode', mode:m}, '*'); }catch(e){} }
+  }
+}
+window.connSetMode=connSetMode;
+;
 
 // ── Sprint 7: Populate warnings ────────────────────────────────────
 function grdfPopulateWarnings(countries) {
@@ -9954,7 +9975,8 @@ window.addEventListener("message", function(e){
     if(typeof openAccess==="function") openAccess();
   }
   if(e.data && e.data.type==="atlas-open-archive"){
-    try{ grdfNavTo("analytics"); }catch(_){}
+    try{ grdfNavTo("matrix"); }catch(_){}
+    try{ connSetMode("analysis"); }catch(_){}
   }
 });
 function closeAccess(){
