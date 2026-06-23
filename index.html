@@ -9383,8 +9383,6 @@ function _radarEmptyM(){ var D=['climate','geopolitics','economy','technology','
 function _radarSigFn(ded){ var s=ded.length+':'; for(var i=0;i<ded.length;i++){ var e=ded[i]; s+=(e._sev||0)+'.'+((e.domain||'')[0]||'')+'.'+String(e.date||'').slice(0,10)+';'; } return s; }
 function _radarFetchM(ded, sig){
   if(window._radarMLoading) return;
-  var rank=0; try{ rank=({free:0,signal:1,strategic:2,elite:3})[CC.tier()]||0; }catch(e){}
-  if(rank<1) return;
   window._radarMLoading=true;
   var tk=''; try{ tk=localStorage.getItem('cc_token')||''; }catch(e){}
   var payload=ded.map(function(e){ return {_sev:e._sev||0, date:e.date, domain:e.domain}; });
