@@ -56,7 +56,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Montse
 }
 .tab:hover{border-color:var(--gold);color:var(--text)}
 .tab.active{border-color:var(--gold);color:var(--gold-light);background:rgba(184,151,58,0.08)}
-#mode-toggle{display:flex;gap:6px;margin:2px 0 10px}
+#mode-toggle{display:none}
 body.mode-graph #sys-drivers,body.mode-graph #atlas-findings,body.mode-graph #atlas-diverge{display:none!important}
 #graph-hint{display:none;align-items:center;gap:11px;margin:0 0 14px;padding:9px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)}
 body.mode-graph #graph-hint{display:flex}
@@ -804,7 +804,7 @@ function _fetchDivergence(){
 }
 function _askTier(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage({t:'atlas-need-tier'},'*'); }catch(e){} }
 _askTier(); setTimeout(_askTier,600); setTimeout(_askTier,1600);
-window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-tier'){ if(ev.data.rank!=null) _rank=ev.data.rank; if(ev.data.pro&&!PRO){ PRO=true; try{renderArchive();}catch(e){} try{var sd=document.getElementById('side'); if(sd) sd.classList.remove('open');}catch(e){} } try{_applyHorizonLock();}catch(e){}  try{_fetchHorizon(curH);}catch(e){} } });
+window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-set-mode'&&ev.data.mode){ try{_applyMode(ev.data.mode);}catch(e){} return; } if(ev&&ev.data&&ev.data.t==='atlas-tier'){ if(ev.data.rank!=null) _rank=ev.data.rank; if(ev.data.pro&&!PRO){ PRO=true; try{renderArchive();}catch(e){} try{var sd=document.getElementById('side'); if(sd) sd.classList.remove('open');}catch(e){} } try{_applyHorizonLock();}catch(e){}  try{_fetchHorizon(curH);}catch(e){} } });
 function _nodeById(id){ return NET_NODES.filter(function(n){return n.id===id;})[0]; }
 function _siRank(id){ var r=NET_NODES.slice().sort(function(a,b){return b.si-a.si;}); for(var i=0;i<r.length;i++){ if(r[i].id===id)return i+1; } return 0; }
 function _degInOut(id){ var ind=0,outd=0; NET_EDGES.forEach(function(e){ if(e[0]===id)outd++; if(e[1]===id)ind++; }); return [ind,outd]; }
@@ -1115,6 +1115,17 @@ function drawNetwork(){
   ctx.shadowBlur=0; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 }
 function render(){ try{_hidePopover();}catch(e){} if(mode==='graph') drawNetwork(); else draw(); }
+function _applyMode(m){
+  mode=m; var graph=(mode==='graph');
+  ['x-label','y-label','y-axis','x-axis','tabs','desc-bar','top-risks'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display=graph?'none':''; });
+  try{ cv.style.border=graph?'none':''; }catch(e){}
+  var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'block':'none';
+  if(graph){document.body.classList.add('mode-graph');}else{document.body.classList.remove('mode-graph');}
+  try{_applyHorizonLock();}catch(e){}
+  var cw=document.getElementById('canvas-wrap'); if(cw) cw.style.marginLeft=graph?'0':'';
+  try{ render(); }catch(e){}
+}
+window._applyMode=_applyMode;
 document.querySelectorAll('.mode-btn').forEach(function(el){
   el.addEventListener('click',function(){
     document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
