@@ -277,15 +277,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
 .grdf-sig-filters::-webkit-scrollbar{display:none}
 .grdf-sig-pill{flex:0 0 auto;background:transparent;border:0.5px solid rgba(184,151,58,0.25);color:rgba(148,163,184,0.7);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:300;letter-spacing:0.08em;text-transform:uppercase;padding:5px 11px;border-radius:20px;cursor:pointer;white-space:nowrap}
 .grdf-sig-pill.active{background:rgba(184,151,58,0.15);border-color:#B8973A;color:#D4AF5A}
-.grdf-sig-card{display:flex;align-items:stretch;gap:10px;padding:12px 14px;border-bottom:0.5px solid rgba(184,151,58,0.1)}
+.grdf-sig-card{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:0.5px solid rgba(184,151,58,0.1)}
 .grdf-sig-card .sig-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
 .grdf-sig-card .sig-main{flex:1;min-width:0}
 .grdf-sig-dom{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2px}
 .grdf-sig-title{font-size:14px;color:#E8E0D0;font-weight:500;line-height:1.32;margin-bottom:6px}
 .grdf-sig-meta{font-size:9px;color:rgba(148,163,184,0.5);display:flex;gap:8px}
 .grdf-sig-flag{display:inline-block;font-size:8px;letter-spacing:0.06em;color:#C9A961;border:0.5px solid rgba(184,151,58,0.4);border-radius:4px;padding:1px 6px;margin-bottom:4px}
-.grdf-sig-card .sig-sev,.grdf-sig-sev{font-family:'Cormorant Garamond',serif;font-size:18px;line-height:1;flex-shrink:0;align-self:center}
-.sig-sevbar{width:3px;border-radius:2px;flex-shrink:0;align-self:stretch}
+.grdf-sig-card .sig-sev,.grdf-sig-sev{display:flex;flex-direction:column;align-items:flex-end;text-align:right;flex-shrink:0;align-self:center;line-height:1}
+.sig-sev-num{font-family:'Cormorant Garamond',serif;font-size:20px;line-height:1}
+.sig-sev-d{font-size:9px;opacity:.45;font-family:Montserrat,sans-serif;letter-spacing:.04em}
+.sig-sev-lvl{font-size:9px;letter-spacing:.05em;font-weight:600;margin-top:4px;opacity:.9}
 .sig-clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .sig-domtag{font-size:9px;letter-spacing:.04em;opacity:.9}
 .sig-markers{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:6px}
@@ -9751,19 +9753,22 @@ function grdfRenderSignals(dom){
     var col = DCx[ev.domain]||'#B8973A';
     var sev = ev.severity||0;
     var _m = ev._meta||ev.meta;
-    var _lc=(sev>=75)?['\u0412\u044b\u0441\u043e\u043a\u0438\u0439','#e2484a']:((sev>=60)?['\u041f\u043e\u0432\u044b\u0448\u0435\u043d\u043d\u044b\u0439','#e8643c']:((sev>=40)?['\u0421\u0440\u0435\u0434\u043d\u0438\u0439','#d4a04a']:['\u041d\u0438\u0437\u043a\u0438\u0439','#5dba6e']));
+    var _lw=(sev>=90)?'\u041a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439':((sev>=75)?'\u0412\u044b\u0441\u043e\u043a\u0438\u0439':((sev>=60)?'\u041f\u043e\u0432\u044b\u0448\u0435\u043d\u043d\u044b\u0439':((sev>=40)?'\u0421\u0440\u0435\u0434\u043d\u0438\u0439':'\u041d\u0438\u0437\u043a\u0438\u0439')));
+      var _cb = (function(){ var FB={RU:['🇷🇺','Россия'],US:['🇺🇸','США'],GB:['🇬🇧','Великобритания'],FR:['🇫🇷','Франция'],CN:['🇨🇳','Китай'],IR:['🇮🇷','Иран'],IL:['🇮🇱','Израиль'],DE:['🇩🇪','Германия'],UA:['🇺🇦','Украина'],TR:['🇹🇷','Турция'],GE:['🇬🇪','Грузия'],AM:['🇦🇲','Армения'],AE:['🇦🇪','ОАЭ'],JP:['🇯🇵','Япония'],CH:['🇨🇭','Швейцария'],IT:['🇮🇹','Италия'],PL:['🇵🇱','Польша'],BY:['🇧🇾','Беларусь'],EU:['🇪🇺','ЕС'],KP:['🇰🇵','КНДР'],ME:['🌍','Ближний Восток']}; var ec=String(ev.event_country||'').toUpperCase(), pc=String(ev.primary_country||'').toUpperCase(); if(!ec||!pc||ec===pc) return ''; var nm=function(x){ var f=FB[x]; return f?(f[0]+' '+f[1]):('🌍 '+x); }; var IA='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>', IB='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>', IC='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M6 8H18M15 5l3 3-3 3"/><path d="M18 16H6M9 13l-3 3 3 3"/></svg>'; var sn={}; sn[ec]=1; sn[pc]=1; var cps=(ev.impact_countries||[]).map(function(x){return String(x||'').toUpperCase();}).filter(function(x){ if(!x||sn[x])return false; sn[x]=1; return true; }).slice(0,3); var cr=''; if(cps.length){ var lb=cps.length>1?'Контрагенты':'Контрагент'; cr='<div style="color:#6f88ab;letter-spacing:.04em">'+IC+lb+'</div>'+'<div style="color:#cbd5e1;margin-left:16px">'+cps.map(nm).join(' · ')+'</div>'; } return '<div style="display:block;margin:6px 0 2px 12px;padding:5px 0 5px 10px;border-left:2px solid rgba(184,151,58,.45);font-size:10px;line-height:1.55">'+'<div style="color:#6f88ab;letter-spacing:.04em">'+IA+'Где произошло</div>'+'<div style="color:#cbd5e1;margin-left:16px">'+nm(ec)+'</div>'+'<div style="color:#caa45a;letter-spacing:.04em">'+IB+'На кого влияет</div>'+'<div style="color:#e7d9ad;margin-left:16px">'+nm(pc)+'</div>'+cr+'</div>'; })();
+      var _fk = ((_m && _m.kind==='firms') ? '<div class="grdf-sig-flag">Сигнал · не подтверждён · '+(((_m.confidence==='h'||_m.confidence==='high'))?'выс. достоверность':'ном. достоверность')+(_m.frp?(' · FRP '+Math.round(_m.frp)):'')+(_m.persist_days>=2?(' · '+_m.persist_days+'д подряд'):'')+'</span>' : '');
+      var _rk = ((_m && _m.kind==='radar_outage') ? '<div class="grdf-sig-flag">Cloudflare Radar · '+(_RDOT[_m.outage_type]||'отключение')+(_RDC[_m.cause]?(' · '+_RDC[_m.cause]):'')+'</span>' : '');
+      var _dk = (ev.dup_count?'<span class="sig-dup" style="color:'+col+'">+ \u0435\u0449\u0451 '+ev.dup_count+'</span>':'');
+      var _mk = _fk + _rk + _dk;
       html += '<div class="grdf-sig-card'+(ev._news?' sig-news':'')+'">'
-      + '<span class="sig-sevbar" style="background:'+_lc[1]+'"></span>'
       + '<div class="sig-main">'
       +   '<div class="grdf-sig-title sig-clamp2">'+escx(_stripPromo(_deEnt(ev.title)))+'</div>'
-      + (function(){ var FB={RU:['🇷🇺','Россия'],US:['🇺🇸','США'],GB:['🇬🇧','Великобритания'],FR:['🇫🇷','Франция'],CN:['🇨🇳','Китай'],IR:['🇮🇷','Иран'],IL:['🇮🇱','Израиль'],DE:['🇩🇪','Германия'],UA:['🇺🇦','Украина'],TR:['🇹🇷','Турция'],GE:['🇬🇪','Грузия'],AM:['🇦🇲','Армения'],AE:['🇦🇪','ОАЭ'],JP:['🇯🇵','Япония'],CH:['🇨🇭','Швейцария'],IT:['🇮🇹','Италия'],PL:['🇵🇱','Польша'],BY:['🇧🇾','Беларусь'],EU:['🇪🇺','ЕС'],KP:['🇰🇵','КНДР'],ME:['🌍','Ближний Восток']}; var ec=String(ev.event_country||'').toUpperCase(), pc=String(ev.primary_country||'').toUpperCase(); if(!ec||!pc||ec===pc) return ''; var nm=function(x){ var f=FB[x]; return f?(f[0]+' '+f[1]):('🌍 '+x); }; var IA='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>', IB='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>', IC='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M6 8H18M15 5l3 3-3 3"/><path d="M18 16H6M9 13l-3 3 3 3"/></svg>'; var sn={}; sn[ec]=1; sn[pc]=1; var cps=(ev.impact_countries||[]).map(function(x){return String(x||'').toUpperCase();}).filter(function(x){ if(!x||sn[x])return false; sn[x]=1; return true; }).slice(0,3); var cr=''; if(cps.length){ var lb=cps.length>1?'Контрагенты':'Контрагент'; cr='<div style="color:#6f88ab;letter-spacing:.04em">'+IC+lb+'</div>'+'<div style="color:#cbd5e1;margin-left:16px">'+cps.map(nm).join(' · ')+'</div>'; } return '<div style="display:block;margin:6px 0 2px 12px;padding:5px 0 5px 10px;border-left:2px solid rgba(184,151,58,.45);font-size:10px;line-height:1.55">'+'<div style="color:#6f88ab;letter-spacing:.04em">'+IA+'Где произошло</div>'+'<div style="color:#cbd5e1;margin-left:16px">'+nm(ec)+'</div>'+'<div style="color:#caa45a;letter-spacing:.04em">'+IB+'На кого влияет</div>'+'<div style="color:#e7d9ad;margin-left:16px">'+nm(pc)+'</div>'+cr+'</div>'; })()
-      +   '<div class="grdf-sig-meta"><span>\ud83d\udccd '+escx(_deEnt(ev.region))+'</span><span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
-      +   '<div class="sig-markers">'
-      +     '<span class="sig-lvl" style="color:'+_lc[1]+'">'+_lc[0]+'</span>'
-      +     ((_m && _m.kind==='firms') ? '<div class="grdf-sig-flag">Сигнал · не подтверждён · '+(((_m.confidence==='h'||_m.confidence==='high'))?'выс. достоверность':'ном. достоверность')+(_m.frp?(' · FRP '+Math.round(_m.frp)):'')+(_m.persist_days>=2?(' · '+_m.persist_days+'д подряд'):'')+'</span>' : '')
-      +     ((_m && _m.kind==='radar_outage') ? '<div class="grdf-sig-flag">Cloudflare Radar · '+(_RDOT[_m.outage_type]||'отключение')+(_RDC[_m.cause]?(' · '+_RDC[_m.cause]):'')+'</span>' : '')
-      +     (ev.dup_count?'<span class="sig-dup" style="color:'+col+'">+ \u0435\u0449\u0451 '+ev.dup_count+'</span>':'')
-      +   '</div>'
+      +   _cb
+      +   '<div class="grdf-sig-meta">'+(_cb?'':'<span>\ud83d\udccd '+escx(_deEnt(ev.region))+'</span>')+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
+      +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
+      + '</div>'
+      + '<div class="grdf-sig-sev">'
+      +   '<div class="sig-sev-num" style="color:'+scx(sev)+'">'+sev+'<span class="sig-sev-d"> /100</span></div>'
+      +   '<div class="sig-sev-lvl" style="color:'+scx(sev)+'">'+_lw+'</div>'
       + '</div>'
       + '</div>';
   });
