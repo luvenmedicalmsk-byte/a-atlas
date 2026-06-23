@@ -9378,27 +9378,36 @@ window._arrow = function(t){
   else s+='<rect x="2" y="5.2" width="8" height="1.6" rx="0.8" fill="currentColor"/>';
   return s+'</svg>';
 };
-window._radarM=null; window._radarMSig=null; window._radarMLoading=false;
-function _radarEmptyM(){ var D=['climate','geopolitics','economy','technology','social']; var pd={},dy={},co={}; D.forEach(function(d){ pd[d]={n:0,sev:0,sys:0,crit:0,rec:0,old:0}; dy[d]='flat'; co[d]=0; }); return {total:0,active:0,systemic:0,critical:0,avgSev:0,new24:0,crossLinks:0,pressure:0,perDom:pd,dyn:dy,contrib:co,drivers:[],pairs:[]}; }
-function _radarSigFn(ded){ var s=ded.length+':'; for(var i=0;i<ded.length;i++){ var e=ded[i]; s+=(e._sev||0)+'.'+((e.domain||'')[0]||'')+'.'+String(e.date||'').slice(0,10)+';'; } return s; }
-function _radarFetchM(ded, sig){
-  if(window._radarMLoading) return;
-  window._radarMLoading=true;
-  var tk=''; try{ tk=localStorage.getItem('cc_token')||''; }catch(e){}
-  var payload=ded.map(function(e){ return {_sev:e._sev||0, date:e.date, domain:e.domain}; });
-  var hdr={'Content-Type':'application/json'}; if(tk) hdr['X-Snapshot-Token']=tk;
-  fetch('https://api.a-atlas.com/api/radar-metrics', { method:'POST', headers:hdr, body:JSON.stringify({events:payload}) })
-    .then(function(r){ return r.ok?r.json():null; })
-    .then(function(d){ window._radarMLoading=false;
-      if(d && d.metrics){ window._radarM=d.metrics; window._radarMSig=sig; try{ if(window.grdfRenderRadar) window.grdfRenderRadar(true); }catch(e){} }
-    })
-    .catch(function(){ window._radarMLoading=false; });
-}
 window._radarMetrics = function(ded){
-  var sig=_radarSigFn(ded);
-  if(window._radarMSig===sig && window._radarM) return window._radarM;
-  _radarFetchM(ded, sig);
-  return window._radarM || _radarEmptyM();
+  var DOMS=['climate','geopolitics','economy','technology','social'];
+  var DAY=86400000, now=Date.now();
+  var total=ded.length, active=0, systemic=0, critical=0, sevSum=0, new24=0;
+  var perDom={}; DOMS.forEach(function(d){ perDom[d]={n:0,sev:0,sys:0,crit:0,rec:0,old:0}; });
+  ded.forEach(function(e){
+    var s=e._sev||0; sevSum+=s;
+    if(s>=40) active++; if(s>=60) systemic++; if(s>=75) critical++;
+    var t=Date.parse(e.date||'')||0;
+    if(t && (now-t)<=DAY) new24++;
+    var pd=perDom[e.domain]; if(pd){ pd.n++; pd.sev+=s; if(s>=60) pd.sys++; if(s>=75) pd.crit++;
+      if(t){ var age=now-t; if(age<=3.5*DAY) pd.rec+=s; else if(age<=7*DAY) pd.old+=s; } }
+  });
+  var avgSev= total? sevSum/total : 0;
+  var pairs=[];
+  for(var i=0;i<DOMS.length;i++){ for(var j=i+1;j<DOMS.length;j++){
+    var a=DOMS[i], b=DOMS[j], n=Math.min(perDom[a].sys, perDom[b].sys);
+    if(n>0) pairs.push({a:a,b:b,n:n}); } }
+  pairs.sort(function(x,y){ return y.n-x.n; });
+  var crossLinks=pairs.length;
+  var intensity=avgSev/100, sysShare= total?(systemic+critical)/total:0;
+  var critW=Math.min(critical/5,1), volW=Math.min(total/50,1), crossW=Math.min(crossLinks/8,1);
+  var pressure=Math.round(100*(0.30*intensity+0.25*sysShare+0.20*critW+0.15*volW+0.10*crossW));
+  pressure=Math.max(0,Math.min(100,pressure));
+  var dyn={}, contrib={}; DOMS.forEach(function(d){ var pd=perDom[d];
+    dyn[d]=(pd.rec>pd.old*1.15)?'up':(pd.rec<pd.old*0.85?'down':'flat'); if(pd.rec===0&&pd.old===0) dyn[d]='flat';
+    contrib[d]= sevSum? Math.round(100*pd.sev/sevSum):0; });
+  var drivers=DOMS.slice().sort(function(a,b){ return perDom[b].n-perDom[a].n; }).filter(function(d){ return perDom[d].n>0; }).slice(0,3);
+  return {total:total,active:active,systemic:systemic,critical:critical,avgSev:Math.round(avgSev),new24:new24,
+          crossLinks:crossLinks,pressure:pressure,perDom:perDom,dyn:dyn,contrib:contrib,drivers:drivers,pairs:pairs.slice(0,3)};
 };;
 window._radarLevel = function(lvl){
   var mp={all:0,active:40,systemic:60,critical:75};
