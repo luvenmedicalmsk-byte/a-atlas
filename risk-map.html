@@ -9760,7 +9760,7 @@ function grdfRenderSignals(dom){
       var _dk = (ev.dup_count?'<span class="sig-dup" style="color:'+col+'">+ \u0435\u0449\u0451 '+ev.dup_count+'</span>':'');
       var _mk = _fk + _rk + _dk;
       var _sum = String(ev.summary||'').split('|||')[0].split('|')[0].trim();
-      var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx(_deEnt(_sum))+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">Источник: '+escx(_deEnt(String(ev.source)))+'</div>':'')+'</div>';
+      var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx(_deEnt(_sum))+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">'+escx(window._srcLabel(ev.source))+'</div>':'')+'</div>';
       html += '<div class="grdf-sig-card'+(ev._news?' sig-news':'')+'">'
       + '<div class="sig-main">'
       +   '<div class="grdf-sig-title sig-clamp2">'+escx(_stripPromo(_deEnt(ev.title)))+'</div>'
