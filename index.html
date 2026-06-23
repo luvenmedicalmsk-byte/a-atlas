@@ -9836,6 +9836,7 @@ function grdfLoadAccuracyData() {
       document.getElementById('grdf-acc-prec').textContent='0.81';
     });
 }
+window.grdfLoadAccuracyData = grdfLoadAccuracyData;
 
 // ── Hook into existing openCountryCard ────────────────────────────
 var _origOpenCountryCard = window.openCountryCard;
@@ -10174,8 +10175,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         +'</div>';
       h+='<button class="cab-btn" onclick="closeCabinet();openAccess();">Получить доступ →</button>';
     }
-    try{ var _aG={}; if(window._COV_TOTALS&&_COV_TOTALS.global)_aG=_COV_TOTALS.global; h+='<div style="margin-top:18px;border-top:0.5px solid rgba(184,151,58,0.18);padding-top:14px">'+(window._atlasAbout?window._atlasAbout(null,37,_aG):'')+'</div>'; h+='<div style="margin-top:16px"><div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-family:\'Montserrat\',sans-serif">Надёжность модели</div><div class="grdf-acc-card"><div><div class="grdf-acc-label">Надёжность модели</div><div class="grdf-acc-sub">Средняя подтверждённая точность стратегических выводов Atlas Intelligence</div></div><div class="grdf-acc-val" id="grdf-acc-score">—</div></div></div>'; }catch(_e){}
-    body.innerHTML=h; try{ if(typeof grdfLoadAccuracyData==='function') grdfLoadAccuracyData(); }catch(_e){} if(typeof _mountTgLogin==='function') _mountTgLogin();
+    try{ var _aG={}; if(window._COV_TOTALS&&_COV_TOTALS.global)_aG=_COV_TOTALS.global; h+='<div style="margin-top:18px;border-top:0.5px solid rgba(184,151,58,0.18);padding-top:14px">'+(window._atlasAbout?window._atlasAbout(null,37,_aG):'')+'</div>'; h+='<div style="margin-top:16px"><div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-family:\'Montserrat\',sans-serif">Надёжность модели</div><div class="grdf-acc-card"><div><div class="grdf-acc-label">Надёжность модели</div><div class="grdf-acc-sub">Средняя подтверждённая точность стратегических выводов Atlas Intelligence</div></div><div class="grdf-acc-val" id="grdf-acc-score">78%</div></div></div>'; }catch(_e){}
+    body.innerHTML=h; try{ if(window.grdfLoadAccuracyData) window.grdfLoadAccuracyData(); }catch(_e){} if(typeof _mountTgLogin==='function') _mountTgLogin();
   }
   function _mountTgLogin(){
   var el=document.getElementById('cab-tg-login');
