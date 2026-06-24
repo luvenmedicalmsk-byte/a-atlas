@@ -2987,7 +2987,7 @@ window._grdfDisasterEnsure=function(){
   function _newsToEv(items){
     return items.map(function(it){
       var full=(it.text||'').replace(/\s*\n\s*/g,' ').trim();
-      return { domain: it.domain||'geopolitics', title: full, region: it.source||'', date: it.time||'', severity:(typeof it.severity==='number'?it.severity:50), dup_count: it.dup_count||0, dup_sources: it.dup_sources||[], _news:true };
+      return { domain: it.domain||'geopolitics', title: full, region: (it.region||it.country||''), country_code: it.country_code||'', event_country: it.event_country||'', source: it.source||'', date: it.time||'', severity:(typeof it.severity==='number'?it.severity:50), dup_count: it.dup_count||0, dup_sources: it.dup_sources||[], _news:true };
     });
   }
   async function _loadNewsEv(){
@@ -9372,13 +9372,25 @@ function _fixDomain(e){
   return null;
 }
 window._pressColor = function(p){ return p>=75?'#ef4444':(p>=60?'#ff7a00':(p>=40?'#eab308':'#22c55e')); };
+window._SRC_SLUGS = ['bbbreaking','breaking','rian_ru','rbc_news','forbesrussia','mchs_official','readovkanews','mash','bazabazon','novosti_efir','rbc','rian','readovka','mchs','tlive','t live','baza','efir','forbes','mash','telegram'];
+window._isSourceLike = function(val){
+  // V6.4: значение является источником/каналом, а не географией?
+  var v = String(val||'').trim().toLowerCase().replace(/^telegram\//,'').replace(/^@/,'');
+  if(!v) return false;
+  if(window._SRC_SLUGS.indexOf(v) >= 0) return true;
+  // совпадение с отображаемым именем из _srcLabel (Breaking, РБК, Readovka, ...)
+  try{ for(var i=0;i<window._SRC_SLUGS.length;i++){ if(window._srcLabel(window._SRC_SLUGS[i]).toLowerCase()===v) return true; } }catch(e){}
+  if(/^telegram\//i.test(String(val||''))) return true;
+  return false;
+};
 window._pinGeo = function(ev){
   try{
     var FB={RU:"🇷🇺 Россия",US:"🇺🇸 США",GB:"🇬🇧 Великобритания",FR:"🇫🇷 Франция",CN:"🇨🇳 Китай",IR:"🇮🇷 Иран",IL:"🇮🇱 Израиль",DE:"🇩🇪 Германия",UA:"🇺🇦 Украина",TR:"🇹🇷 Турция",GE:"🇬🇪 Грузия",AM:"🇦🇲 Армения",AE:"🇦🇪 ОАЭ",JP:"🇯🇵 Япония",CH:"🇨🇭 Швейцария",IT:"🇮🇹 Италия",PL:"🇵🇱 Польша",BY:"🇧🇾 Беларусь",KZ:"🇰🇿 Казахстан",IN:"🇮🇳 Индия",KP:"🇰🇵 КНДР",LT:"🇱🇹 Литва",LV:"🇱🇻 Латвия",EE:"🇪🇪 Эстония"};
     var reg=String(ev.region||""), src=String(ev.source||""), regL=reg.toLowerCase();
     var MACRO=["урал","сибир","поволж","кавказ","дальн","чернозем","приволж","забайкал","арктик","закавказ"];
     if(MACRO.some(function(m){return regL.indexOf(m)>=0;})) return "🇷🇺 Россия";
-    if(reg && reg!==src && regL!=="глобально") return reg;
+    // V6.4: region показываем как гео ТОЛЬКО если это не источник/канал
+    if(reg && regL!=="глобально" && !window._isSourceLike(reg)) return reg;
     var ec=String(ev.event_country||"").toUpperCase();
     if(ec && FB[ec]) return FB[ec];
     var txt=(String(ev.title||"")+" "+String(ev.summary||"")).toLowerCase();
@@ -9387,9 +9399,12 @@ window._pinGeo = function(ev){
     if(MACRO.some(function(m){return txt.indexOf(m)>=0;})) return "🇷🇺 Россия";
     var CTRY={"росси":"🇷🇺 Россия","украин":"🇺🇦 Украина","литв":"🇱🇹 Литва","латви":"🇱🇻 Латвия","эстони":"🇪🇪 Эстония","польш":"🇵🇱 Польша","герман":"🇩🇪 Германия","франци":"🇫🇷 Франция","казахстан":"🇰🇿 Казахстан","армени":"🇦🇲 Армения","грузи":"🇬🇪 Грузия","беларус":"🇧🇾 Беларусь","китай":"🇨🇳 Китай","иран":"🇮🇷 Иран","израил":"🇮🇱 Израиль","турци":"🇹🇷 Турция","сша":"🇺🇸 США","япони":"🇯🇵 Япония","узбекистан":"🇺🇿 Узбекистан","азербайджан":"🇦🇿 Азербайджан","молдов":"🇲🇩 Молдова","финлянд":"🇫🇮 Финляндия"};
     for(var c in CTRY){ if(txt.indexOf(c)>=0) return CTRY[c]; }
-    if(regL==="глобально") return "Глобально";
-    return "";
-  }catch(e){ return ""; }
+    // V6.4 треб.5: для новостных карточек -- доп.попытка по event_country
+    var _ec2=String(ev.event_country||"").toUpperCase();
+    if(_ec2 && FB[_ec2]) return FB[_ec2];
+    // V6.4 треб.4: гео не определена -> единый текст, НИКОГДА источник/Глобально/пусто
+    return "География уточняется";
+  }catch(e){ return "География уточняется"; }
 };
 window._srcLabel = function(s){ s=String(s||'').trim(); var x=s.replace(/^telegram\//i,'').replace(/^@/,'');
   var m={'bbbreaking':'Breaking','breaking':'Breaking','rian_ru':'РИА Новости','rbc_news':'РБК','forbesrussia':'Forbes Russia','mchs_official':'МЧС','readovkanews':'Readovka','mash':'Mash','bazabazon':'Baza','novosti_efir':'Efir'};
