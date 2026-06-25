@@ -9166,7 +9166,8 @@ window._atlasRender = function(bEl, mEl, dEl, d){
     var d30t=(d30p!=null)?('прогноз '+d30p+'/100'):(ch.d30?ch.d30.text:'—');
     var changesHtml='<div class="sp-dyn"><span class="sp-dyn-d">24ч</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(h24t)+'</span></div>'
       +'<div class="sp-dyn"><span class="sp-dyn-d">7д</span><span class="sp-dyn-v" style="color:'+((d7d!=null&&d7d>0)?'#ff7a00':(d7d!=null&&d7d<0?'#22c55e':'rgba(232,224,208,0.9)'))+'">'+esc(d7t)+'</span></div>'
-      +'<div class="sp-dyn"><span class="sp-dyn-d">30д</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(d30t)+'</span></div>';
+      +'<div class="sp-dyn"><span class="sp-dyn-d">30д</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(d30t)+'</span></div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 0;padding-top:9px;border-top:0.5px solid rgba(184,151,58,.12);font-family:Montserrat,sans-serif;font-size:9.5px;color:rgba(232,224,208,0.55);letter-spacing:.02em"><span><span style="color:#ff7a00;font-weight:700">▲</span> рост давления</span><span><span style="color:#22c55e;font-weight:700">▼</span> снижение давления</span></div>';
     var leadDom=(d.brief_free&&d.brief_free.lead_strategic)||'';
     var leadHtml=leadDom?('<div class="sp-dyn"><span class="sp-dyn-d">Текущий ведущий домен</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(leadDom))+'</span></div>'):'';
     var nextHtml=(FB.next_pressure&&FB.next_pressure.domain)?('<div class="sp-dyn"><span class="sp-dyn-d">Каскадное распространение давления</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(FB.next_pressure.domain))+'</span></div>'):'';
@@ -9204,7 +9205,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
       if(tS) P.push('По совокупности признаков ситуация ближе всего к паттерну «'+esc((window._noEsc?window._noEsc(tS.name):tS.name))+'» ('+tS.match_pct+'% сходства с историческим шаблоном).');
       return P.slice(0,5).map(function(t){return '<p class="sp-p" style="margin:0 0 8px">'+t+'</p>';}).join('');
     })();
-    return '<div class="sp-section"><div class="sp-head"><span class="sp-badge">СТРАТЕГИЧЕСКАЯ АНАЛИТИКА · ATLAS</span></div><div class="sp-sub">'+esc(sub)+'</div><div class="sp-body"><div class="sp-blocks">'
+    return '<div class="sp-section"><div class="sp-head"><span class="sp-badge">СТРАТЕГИЧЕСКАЯ АНАЛИТИКА</span></div><div class="sp-sub">'+esc(sub)+'</div><div class="sp-body"><div class="sp-blocks">'
       +blk('Изменения', changesHtml)
       +(focusHtml?blk('Стратегический фокус', focusHtml):'')
       +(FB.conclusion_day?blk('Главный вывод дня','<p class="sp-p sp-key">'+esc(clip(FB.conclusion_day,2))+'</p>'):'')
