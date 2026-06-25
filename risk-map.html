@@ -5522,7 +5522,7 @@ function renderDecisionSupport(data, caps) {
 
   var html = '<div class="cc-ds">';
   html += '<div class="cc-ds-header">'
-        + '<span class="cc-ds-label">Decision Intelligence</span>'
+        + '<span class="cc-ds-label">Аналитика решений</span>'
         + '<span class="cc-ds-score" style="color:' + dsCol + '">' + ds + '</span>';
 
   if (access !== 'score') {
@@ -6794,7 +6794,7 @@ function renderStrategyOptimization(data,caps){
     html+='<div class="cc-so-action"><span class="cc-so-action-id">'+_esc(a.action_id||'')+'</span>'
         +'<div class="cc-so-action-bar-wrap"><div class="cc-so-action-bar" style="width:'+Math.min(100,a.win_rate||0)+'%;background:'+aC+'"></div></div>'
         +'<span class="cc-so-action-val" style="color:'+aC+'">'+(a.avg_alpha>0?'+':'')+a.avg_alpha+'</span>'
-        +'<span class="cc-so-action-badge boost">boost</span></div>';});}
+        +'<span class="cc-so-action-badge boost">рост</span></div>';});}
   if(access==='summary'){html+='<div class="cc-so-depth">История: '+depth+'</div></div>';block.innerHTML=html;return;}
   // STRATEGIC+: Section C (underperform) + D (rebalance) + E (diag)
   var up=data.underperforming||[];
@@ -6824,7 +6824,7 @@ function renderStrategyOptimization(data,caps){
     html+='<div class="cc-so-action"><span class="cc-so-action-id">'+_esc(a.action_id||'')+'</span>'
         +'<div class="cc-so-action-bar-wrap"><div class="cc-so-action-bar" style="width:'+Math.min(100,a.adjusted_score||0)+'%;background:'+fc+'"></div></div>'
         +'<span class="cc-so-action-val" style="color:'+fc+'">'+(a.adjusted_score||0)+'</span>'
-        +'<span class="cc-so-action-badge '+(a.factor>1?'boost':'reduce')+'">'+(a.factor>1?'+':'')+(Math.round((a.factor-1)*100))+'%</span></div>';});}
+        +'<span class="cc-so-action-badge '+(a.factor>1?'boost':'reduce')+'">'+(a.factor>1?'рост ':'снижение ')+(Math.round((a.factor-1)*100))+'%</span></div>';});}
   html+='<div class="cc-so-depth">История: '+depth+' дней</div></div>';
   block.innerHTML=html;
 }
@@ -7058,7 +7058,7 @@ function renderScenarioEvolution(data,caps){
       html+='<div class="cc-ase-pathway">'
         +'<span class="cc-ase-pw-name" style="color:#a78bfa">◎ '+_esc(s.name||s.id||'')+'</span>'
         +'<span class="cc-ase-pw-prob" style="color:#a78bfa">'+( s.probability||0)+'%</span>'
-        +'<span class="cc-ase-pw-status" style="color:#a78bfa">emerging</span>'
+        +'<span class="cc-ase-pw-status" style="color:#a78bfa">формируется</span>'
         +'</div>';});}
 
   if(access==='summary'){html+='</div>';block.innerHTML=html;return;}
@@ -9841,7 +9841,11 @@ function grdfPopulateCountriesList(countries) {
     h += '<div style="flex:1"><div style="font-size:12px;font-weight:500;color:#e2e8f0">'+esc(c.country_name||c.country)
        + (dev?' <span style="font-size:7.5px;letter-spacing:.05em;text-transform:uppercase;color:#a78bfa;border:1px solid rgba(167,139,250,.4);border-radius:4px;padding:1px 5px;vertical-align:middle">в разработке</span>':'')
        + '</div>';
-    h += '<div style="font-size:10px;color:#3d5068;margin-top:1px">GRI '+gri+' · EWS '+fr(c.ews_score||gri)+'</div></div>';
+    var _st = getStatus(gri);
+    var _vel = parseFloat(c.velocity||0);
+    var _modelOnly = (_st==='ELEVATED'||_st==='ESCALATING'||_st==='CRITICAL') && Math.abs(parseFloat(c.delta||0))<0.05 && _vel<1;
+    h += '<div style="font-size:10px;color:#3d5068;margin-top:1px">GRI '+gri+' · EWS '+fr(c.ews_score||gri)
+       + (_modelOnly?' · <span style="color:#7a6a3a">модельная оценка</span>':'')+'</div></div>';
     h += '<div style="text-align:right"><div style="font-size:10px;color:'+sc+';font-weight:500">'+STATUS_RU[getStatus(gri)]+'</div>';
     h += '<div style="font-size:9px;color:'+(delta>0?'#f97316':'#10b981')+';margin-top:1px">'+(delta>0?'+':'')+delta.toFixed(1)+'</div></div>';
     h += '</div>';
