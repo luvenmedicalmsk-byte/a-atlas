@@ -9255,7 +9255,7 @@ window._atlasAbout = function(d, nCountries, gc){
   var upd=''; try{ if(typeof _todayData!=='undefined'&&_todayData&&_todayData.generated_at) upd=String(_todayData.generated_at).replace('T',' ').replace(/\..*$/,'').slice(0,19)+' UTC'; }catch(e){}
   if(!upd){ try{ upd=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC'; }catch(e){ upd='\u2014'; } }
   function row(l,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid rgba(184,151,58,0.08);font-size:12px"><span style="color:rgba(148,163,184,0.72)">'+esc(l)+'</span><span style="color:rgba(232,224,208,0.9);font-weight:500;text-align:right">'+esc(v)+'</span></div>'; }
-  return '<div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;font-family:\'Montserrat\',sans-serif">О платформе Atlas</div>'
+  return '<div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;font-family:\'Montserrat\',sans-serif">О платформе Атлас</div>'
     +row('Модель','Atlas Intelligence Engine')
     +row('Версия','Core Revision 37')
     +row('Дата создания','2026.06.07')
