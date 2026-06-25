@@ -9832,6 +9832,15 @@ function grdfPopulateCountriesList(countries) {
   }
   var READY = (typeof _GRDF_READY!=='undefined') ? _GRDF_READY : {RU:1};
   var sorted = countries.slice().sort(function(a,b){ return (b.risk_score||0)-(a.risk_score||0); });
+  // Sprint1-fix: реальное число событий страны из ленты (честный признак "нет событий")
+  var _evCount = {};
+  try {
+    var _allEv = (typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS : [];
+    _allEv.forEach(function(e){
+      var cc = (e.event_country||e.primary_country||'').toUpperCase();
+      if(cc) _evCount[cc] = (_evCount[cc]||0)+1;
+    });
+  } catch(_e){}
   function row(c, dev){
     var gri = fr(c.risk_score);
     var sc  = STATUS_COLORS[getStatus(gri)]||'#888';
@@ -9842,8 +9851,8 @@ function grdfPopulateCountriesList(countries) {
        + (dev?' <span style="font-size:7.5px;letter-spacing:.05em;text-transform:uppercase;color:#a78bfa;border:1px solid rgba(167,139,250,.4);border-radius:4px;padding:1px 5px;vertical-align:middle">в разработке</span>':'')
        + '</div>';
     var _st = getStatus(gri);
-    var _vel = parseFloat(c.velocity||0);
-    var _modelOnly = (_st==='ELEVATED'||_st==='ESCALATING'||_st==='CRITICAL') && Math.abs(parseFloat(c.delta||0))<0.05 && _vel<1;
+    var _nev = _evCount[(c.country||'').toUpperCase()]||0;
+    var _modelOnly = (_st==='ELEVATED'||_st==='ESCALATING'||_st==='CRITICAL') && _nev===0;
     h += '<div style="font-size:10px;color:#3d5068;margin-top:1px">GRI '+gri+' · EWS '+fr(c.ews_score||gri)
        + (_modelOnly?' · <span style="color:#7a6a3a">модельная оценка</span>':'')+'</div></div>';
     h += '<div style="text-align:right"><div style="font-size:10px;color:'+sc+';font-weight:500">'+STATUS_RU[getStatus(gri)]+'</div>';
