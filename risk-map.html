@@ -8606,10 +8606,10 @@ function _grdfContextHtml(c){
     var _gline=_AD.map(function(d){return '<span style="color:'+(DOM_COLORS[d]||'#888')+'">'+(DOM_LABELS[d]||d)+'</span> '+(window._COV_TOTALS.global[d]||0);}).join(' · ');
     _statInner+='<div style="font-size:11px;color:#6f88ab;margin-bottom:2px">Обработано'+(_since?' с '+_since:'')+'</div>'
       +'<div style="font-size:17px;color:#e8eef5;font-weight:700;margin-bottom:5px">'+_gtot.toLocaleString('ru-RU')+' сигналов</div>'
-      +'<div style="font-size:11px;color:#94a3b8;line-height:1.7;margin-bottom:10px">'+_gline+'</div>';
+      +'<div style="font-size:11px;color:rgba(232,224,208,0.6);line-height:1.7;margin-bottom:10px">'+_gline+'</div>';
   }
   var _covLine=_AD.slice().sort(function(a,b){ return (_covSrc[b]||0)-(_covSrc[a]||0); }).map(function(d){ var _cn=_covSrc[d]||0;
-    return '<div style="display:flex;justify-content:space-between;font-size:11px;color:'+(_cn?'#94a3b8':'#6f88ab')+';padding:2px 0"><span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[d]||'#888')+';margin-right:6px;opacity:'+(_cn?'1':'.4')+'"></span>'+(DOM_LABELS[d]||d)+'</span><span style="color:'+(_cn?'#cbd5e1':'#6f88ab')+';font-weight:600">'+_cn+'</span></div>'; }).join('');
+    return '<div style="display:flex;justify-content:space-between;font-size:11px;color:'+(_cn?'rgba(232,224,208,0.6)':'#6f88ab')+';padding:2px 0"><span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[d]||'#888')+';margin-right:6px;opacity:'+(_cn?'1':'.4')+'"></span>'+(DOM_LABELS[d]||d)+'</span><span style="color:'+(_cn?'rgba(232,224,208,0.9)':'#6f88ab')+';font-weight:600">'+_cn+'</span></div>'; }).join('');
   _statInner+='<div style="font-size:10px;color:#6f88ab;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Покрытие · '+esc(c.country_name||c.country)+'</div>'+_covLine;
   H+=cardS('Статистика обработки сигналов', _statInner);
   // ── 9. Уверенность оценки ──
@@ -8623,12 +8623,12 @@ function _grdfContextHtml(c){
     '<div style="font-size:20px;font-family:\'Cormorant Garamond\',serif;color:'+(conf>=75?'#10b981':conf>=55?'#eab308':'#f97316')+';line-height:1">'+conf+'%</div>'
     +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">'+n+' сигналов · '+nsrc+' источников · '+_act.length+' активных доменов'+(hrs!=null?' · обновление '+hrs+' ч назад':'')+'</div>');
   var dt2=(typeof _todayData!=='undefined'&&_todayData&&_todayData.date)?_todayData.date:'';
-  if(dt2) H+=cardS('Обновлено', '<div style="font-size:11px;color:#cbd5e1">'+esc(dt2)+(hrs!=null?' · '+hrs+' ч назад':'')+'</div>');
+  if(dt2) H+=cardS('Обновлено', '<div style="font-size:11px;color:rgba(232,224,208,0.9)">'+esc(dt2)+(hrs!=null?' · '+hrs+' ч назад':'')+'</div>');
   // ── 10. Методология оценки ──
-  function _mc(col,lab,txt,src){ return '<div><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+col+';margin-right:7px;vertical-align:middle"></span><b style="color:#cbd5e1">'+lab+'</b> — '+txt+(src?'<div style="color:#6f88ab;font-size:11px;margin-top:3px;margin-left:14px">Источники: '+src+'</div>':'')+'</div>'; }
+  function _mc(col,lab,txt,src){ return '<div><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+col+';margin-right:7px;vertical-align:middle"></span><b style="color:rgba(232,224,208,0.9)">'+lab+'</b> — '+txt+(src?'<div style="color:#6f88ab;font-size:11px;margin-top:3px;margin-left:14px">Источники: '+src+'</div>':'')+'</div>'; }
   H+=cardS('Методология оценки',
-    '<details style="font-size:12px;color:#94a3b8">'
-    +'<summary style="cursor:pointer;color:#cbd5e1;list-style:none">ⓘ Как отбираются сигналы — критерии и источники</summary>'
+    '<details style="font-size:12px;color:rgba(232,224,208,0.6)">'
+    +'<summary style="cursor:pointer;color:rgba(232,224,208,0.9);list-style:none">ⓘ Как отбираются сигналы — критерии и источники</summary>'
     +'<div style="margin-top:10px;display:flex;flex-direction:column;gap:11px;line-height:1.55">'
     +_mc('#22c55e','Климат','спутниковый и геофизический мониторинг — природные пожары, паводки и наводнения, аномальная жара и холод, сейсмика. Отбор по порогу серьёзности и охвату территории.','NASA FIRMS, GDACS, USGS, EMSC, Copernicus EMS, NASA EONET, Росгидромет, The Watchers')
     +_mc('#ff7a00','Геополитика','события из первичных источников — вооружённые конфликты, политическая нестабильность, безопасность, международные ограничения.','UN News, Foreign Affairs, Foreign Policy, Politico, France24, The Diplomat, SCMP, War on the Rocks и др.')
@@ -8641,7 +8641,7 @@ function _grdfContextHtml(c){
 window._spRenderCountryLocal = function(el, d, cname){
   function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function ul(arr){ return '<ul class="sp-ul">'+(arr||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'; }
-  function subL(t,arr){ return (arr&&arr.length)?('<details class="grdf-acc" style="margin:6px 0 0"><summary class="grdf-acc-h" style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f1f5f9;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+esc(t)+'<span class="grdf-acc-cv">›</span></summary>'+ul(arr)+'</details>'):''; }
+  function subL(t,arr){ return (arr&&arr.length)?('<details class="grdf-acc" style="margin:6px 0 0"><summary class="grdf-acc-h" style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#E8E0D0;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+esc(t)+'<span class="grdf-acc-cv">›</span></summary>'+ul(arr)+'</details>'):''; }
   function blk(h,body){ return '<details class="sp-block grdf-acc"><summary class="sp-block-h grdf-acc-h" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+esc(h)+'<span class="grdf-acc-cv">›</span></summary>'+body+'</details>'; }
   if(!el) return;
   if(d && d.locked){
@@ -8662,27 +8662,27 @@ window._spRenderCountryLocal = function(el, d, cname){
   function lvlCol(lv){ return /Критическ|Высок/.test(lv)?'#ef4444':(/Повышен/.test(lv)?'#ff7a00':(/Умерен/.test(lv)?'#eab308':'#22c55e')); }
   function lbadge(lv){ return lv?(' <span style="font-size:9px;font-weight:600;letter-spacing:.03em;padding:1px 7px;border-radius:999px;border:1px solid '+lvlCol(lv)+';color:'+lvlCol(lv)+'">'+esc(lv)+'</span>'):''; }
   function gapCol(g){ return /высок/.test(g)?'#ef4444':(/умерен/.test(g)?'#eab308':'#22c55e'); }
-  function arr(st){ return st==='up'?'<span style="color:#ff7a00">↑</span>':(st==='down'?'<span style="color:#22c55e">↓</span>':'<span style="color:rgba(203,213,225,.4)">→</span>'); }
+  function arr(st){ return st==='up'?'<span style="color:#ff7a00">↑</span>':(st==='down'?'<span style="color:#22c55e">↓</span>':'<span style="color:rgba(232,224,208,0.4)">→</span>'); }
   var mixTag = L.mixed?(' <span style="font-size:9px;font-weight:600;letter-spacing:.03em;padding:1px 7px;border-radius:999px;border:1px solid #ff7a00;color:#ff7a00">смешанное</span>'):'';
   var focus=blk('Стратегический фокус',
-     '<div class="sp-dyn"><span class="sp-dyn-d">По объёму сигналов</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(L.data_lead))+(L.data_score!=null?(' · '+L.data_score):'')+'</span></div>'
-    +'<div class="sp-dyn"><span class="sp-dyn-d">По стратегическому влиянию</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(L.strat_lead))+lbadge(L.strat_level)+mixTag+'</span></div>'
-    +(L.forward?('<div class="sp-dyn"><span class="sp-dyn-d">Прогнозный лидер (30 дней)</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(L.forward.forecast_lead))+'</span></div>'):'')
-    +(L.forward&&L.forward.direction?('<div class="sp-dyn"><span class="sp-dyn-d">Направление</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(L.forward.direction)+'</span></div>'):'')
-    +(L.watch_lead?('<div class="sp-dyn"><span class="sp-dyn-d">Под наблюдением</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(L.watch_lead))+lbadge(L.watch_level)+'</span></div>'):'')
+     '<div class="sp-dyn"><span class="sp-dyn-d">По объёму сигналов</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(L.data_lead))+(L.data_score!=null?(' · '+L.data_score):'')+'</span></div>'
+    +'<div class="sp-dyn"><span class="sp-dyn-d">По стратегическому влиянию</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(L.strat_lead))+lbadge(L.strat_level)+mixTag+'</span></div>'
+    +(L.forward?('<div class="sp-dyn"><span class="sp-dyn-d">Прогнозный лидер (30 дней)</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(L.forward.forecast_lead))+'</span></div>'):'')
+    +(L.forward&&L.forward.direction?('<div class="sp-dyn"><span class="sp-dyn-d">Направление</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(L.forward.direction)+'</span></div>'):'')
+    +(L.watch_lead?('<div class="sp-dyn"><span class="sp-dyn-d">Под наблюдением</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(L.watch_lead))+lbadge(L.watch_level)+'</span></div>'):'')
     +(L.data_strategy_gap?('<div class="sp-dyn"><span class="sp-dyn-d">Расхождение данные/стратегия</span><span class="sp-dyn-v" style="color:'+gapCol(L.data_strategy_gap)+'">'+esc(L.data_strategy_gap)+'</span></div>'):'')
     +(L.strat_note?'<p class="sp-note">'+esc(L.strat_note)+'</p>':''));
   var traj='';
   if(L.trajectory){
     var T=L.trajectory;
-    function cell(lab,dom,col){ return '<div style="flex:1"><div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(203,213,225,.45);margin-bottom:3px">'+esc(lab)+'</div><div style="font-size:12px;color:'+col+';font-weight:600">'+esc(dlc(dom))+'</div></div>'; }
+    function cell(lab,dom,col){ return '<div style="flex:1"><div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(232,224,208,0.45);margin-bottom:3px">'+esc(lab)+'</div><div style="font-size:12px;color:'+col+';font-weight:600">'+esc(dlc(dom))+'</div></div>'; }
     traj=blk('Траектория стратегического давления',
        '<div style="display:flex;justify-content:space-between;gap:6px;text-align:center;margin-bottom:6px">'
-      +cell('Сегодня',T.today,'#cbd5e1')+'<div style="align-self:center;color:rgba(255,255,255,.3)">→</div>'
-      +cell('7 дней',T.d7,'#cbd5e1')+'<div style="align-self:center;color:rgba(255,255,255,.3)">→</div>'
-      +cell('30 дней',T.d30,(T.shift?'#ff7a00':'#cbd5e1'))
+      +cell('Сегодня',T.today,'rgba(232,224,208,0.9)')+'<div style="align-self:center;color:rgba(255,255,255,.3)">→</div>'
+      +cell('7 дней',T.d7,'rgba(232,224,208,0.9)')+'<div style="align-self:center;color:rgba(255,255,255,.3)">→</div>'
+      +cell('30 дней',T.d30,(T.shift?'#ff7a00':'rgba(232,224,208,0.9)'))
       +'</div>'
-      +(T.confidence!=null?'<div class="sp-dyn"><span class="sp-dyn-d">Уверенность модели</span><span class="sp-dyn-v" style="color:#cbd5e1">'+T.confidence+'%</span></div>':'')
+      +(T.confidence!=null?'<div class="sp-dyn"><span class="sp-dyn-d">Уверенность модели</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+T.confidence+'%</span></div>':'')
       +(T.shift_note?'<p class="sp-note">'+esc(T.shift_note)+'</p>':''));
   }
   var nextp='';
@@ -8690,13 +8690,13 @@ window._spRenderCountryLocal = function(el, d, cname){
     var NP=L.next_pressure;
     nextp=blk('Каскадное распространение давления',
        '<p class="sp-note" style="margin-top:0;opacity:.72">Куда давление ведущего домена распространяется в первую очередь.</p><div class="sp-dyn"><span class="sp-dyn-d">Домен</span><span class="sp-dyn-v" style="color:#ff7a00;font-weight:600">'+esc(dlc(NP.domain))+'</span></div>'
-      +'<div class="sp-dyn"><span class="sp-dyn-d">Источник давления</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(NP.source))+'</span></div>'
-      +(NP.confidence!=null?'<div class="sp-dyn"><span class="sp-dyn-d">Уверенность</span><span class="sp-dyn-v" style="color:#cbd5e1">'+NP.confidence+'%</span></div>':'')
+      +'<div class="sp-dyn"><span class="sp-dyn-d">Источник давления</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(NP.source))+'</span></div>'
+      +(NP.confidence!=null?'<div class="sp-dyn"><span class="sp-dyn-d">Уверенность</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+NP.confidence+'%</span></div>':'')
       +(NP.cause?'<p class="sp-note">'+esc(NP.cause)+'</p>':''));
   }
   var trans='';
   if(L.pressure_transitions && L.pressure_transitions.length){
-    var bandCol=function(b){ return b==='high'?'#ff7a00':(b==='medium'?'#eab308':'rgba(203,213,225,.5)'); };
+    var bandCol=function(b){ return b==='high'?'#ff7a00':(b==='medium'?'#eab308':'rgba(232,224,208,0.5)'); };
     var bandLab=function(b){ return b==='high'?'Высокая вероятность':(b==='medium'?'Средняя вероятность':'Низкая вероятность'); };
     var groups={high:[],medium:[],low:[]};
     L.pressure_transitions.forEach(function(x){ (groups[x.band]||groups.low).push(x); });
@@ -8712,10 +8712,10 @@ window._spRenderCountryLocal = function(el, d, cname){
   if(L.ranking&&L.ranking.length){
     rk=L.ranking.map(function(r){ var col=lvlCol(r.level); var sf=sfiMap[r.domain];
       return '<div style="margin:0 0 9px">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:12px;color:#cbd5e1">'+esc(dlc(r.domain))+(sf?(' '+arr(sf.status)):'')+'</span><span style="font-size:11px;color:'+col+';font-weight:600">'+r.sis+' · '+esc(r.level)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-size:12px;color:rgba(232,224,208,0.9)">'+esc(dlc(r.domain))+(sf?(' '+arr(sf.status)):'')+'</span><span style="font-size:11px;color:'+col+';font-weight:600">'+r.sis+' · '+esc(r.level)+'</span></div>'
         +'<div style="height:4px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden"><div style="height:100%;width:'+Math.max(2,r.sis)+'%;background:'+col+';border-radius:3px"></div></div>'
-        +(sf?'<div style="font-size:10px;color:#94a3b8;margin-top:3px">сейчас '+sf.now+' · 7д '+sf.d7+' · 30д '+sf.d30+'</div>':'')
-        +(r.reason&&r.reason.length?'<div style="font-size:10px;color:rgba(203,213,225,.5);margin-top:2px;line-height:1.4">'+esc(r.reason.join(' · '))+'</div>':'')
+        +(sf?'<div style="font-size:10px;color:rgba(232,224,208,0.6);margin-top:3px">сейчас '+sf.now+' · 7д '+sf.d7+' · 30д '+sf.d30+'</div>':'')
+        +(r.reason&&r.reason.length?'<div style="font-size:10px;color:rgba(232,224,208,0.5);margin-top:2px;line-height:1.4">'+esc(r.reason.join(' · '))+'</div>':'')
         +'</div>'; }).join('');
     rk=blk('Рейтинг стратегического влияния (0–100)', rk);
   }
@@ -8723,7 +8723,7 @@ window._spRenderCountryLocal = function(el, d, cname){
   if(L.pressure_balance){
     var P=L.pressure_balance;
     function pbar(lab,val,col){ var v=Math.max(2,Math.min(100,val||0));
-      return '<div style="margin:0 0 9px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:#cbd5e1">'+esc(lab)+'</span><span style="font-size:11px;color:'+col+';font-weight:600">'+Math.round(val||0)+'</span></div>'
+      return '<div style="margin:0 0 9px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:rgba(232,224,208,0.9)">'+esc(lab)+'</span><span style="font-size:11px;color:'+col+';font-weight:600">'+Math.round(val||0)+'</span></div>'
         +'<div style="height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden"><div style="height:100%;width:'+v+'%;background:'+col+';border-radius:3px"></div></div></div>'; }
     pb=blk('Баланс факторов давления',
        pbar('Фактическое давление', P.actual, '#1faacc')
@@ -8734,7 +8734,7 @@ window._spRenderCountryLocal = function(el, d, cname){
   var why='';
   if(L.strat_factors){
     var sfc=L.strat_factors; var wd=sfc.domain||L.strat_lead;
-    function frow(lab,val){ return '<div class="sp-dyn"><span class="sp-dyn-d">'+esc(lab)+'</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(val)+'</span></div>'; }
+    function frow(lab,val){ return '<div class="sp-dyn"><span class="sp-dyn-d">'+esc(lab)+'</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(val)+'</span></div>'; }
     var wq=(sfc.country_weight_base&&sfc.country_weight&&sfc.country_weight_base!=sfc.country_weight)?('×'+sfc.country_weight+' (база ×'+sfc.country_weight_base+')'):('×'+sfc.country_weight);
     why=blk('Почему система считает этот домен стратегическим',
        '<p class="sp-p" style="margin-bottom:8px">'+esc(dlc(wd))+'</p>'
@@ -8771,17 +8771,17 @@ window._renderCountryArchive = function(el, cc, cname, ds){
     .then(function(r){return r.json();})
     .then(function(a){
       if(!a || a.locked){ if(box.parentNode) box.parentNode.removeChild(box); return; }
-      function subL(t,body){ return body?('<details class="grdf-acc" style="margin:8px 0 0"><summary class="grdf-acc-h" style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f1f5f9;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+esc(t)+'<span class="grdf-acc-cv">›</span></summary>'+body+'</details>'):''; }
+      function subL(t,body){ return body?('<details class="grdf-acc" style="margin:8px 0 0"><summary class="grdf-acc-h" style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#E8E0D0;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+esc(t)+'<span class="grdf-acc-cv">›</span></summary>'+body+'</details>'):''; }
       function mats(arr){ arr=arr||[]; if(!arr.length) return ''; return arr.map(function(m){
         var u=m.url||''; var open=u?(' · <a href="'+esc(u)+'" target="_blank" rel="noopener" style="color:#1faacc;text-decoration:none">Открыть в Архиве</a>'):'';
         var _DM={climate:'климат',economy:'экономика',geopolitics:'геополитика',technology:'технологии',social:'социум'};
         var _dl=(m.domains&&m.domains.length)?((typeof m.domains==='string'?[m.domains]:m.domains).map(function(x){return _DM[x]||x;})):[];
         var dd=_dl.length?(' · '+esc(_dl.join(', '))):'';
-        return '<div style="margin:0 0 9px"><div style="font-size:12px;color:#cbd5e1;line-height:1.3">'+esc(m.title)+'</div><div style="font-size:10px;color:rgba(148,163,184,.6)">'+esc(m.date||'')+dd+open+'</div></div>'; }).join(''); }
+        return '<div style="margin:0 0 9px"><div style="font-size:12px;color:rgba(232,224,208,0.9);line-height:1.3">'+esc(m.title)+'</div><div style="font-size:10px;color:rgba(148,163,184,.6)">'+esc(m.date||'')+dd+open+'</div></div>'; }).join(''); }
       function ul(arr){ return '<ul class="sp-ul">'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'; }
       var CURATED={"RU": {"research": [{"g": "2026", "items": [{"date": "2026-05-18", "title": "Валютная диверсификация по юрисдикциям", "domains": ["экономика", "геополитика"], "url": "https://t.me/c/1501982282/4120"}, {"date": "2026-05-11", "title": "Санкции как оружие двойного действия", "domains": ["экономика", "геополитика", "технологии"], "url": "https://t.me/c/1501982282/4100"}, {"date": "2026-05-11", "title": "Союзники: сильные на бумаге, ограниченные на практике", "domains": ["экономика", "геополитика", "технологии"], "url": "https://t.me/c/1501982282/4099"}, {"date": "2026-03-09", "title": "Системные риски для стран", "domains": ["экономика", "геополитика"], "url": "https://t.me/c/1501982282/3990"}, {"date": "2026-03-09", "title": "Кризис гегемонии", "domains": ["геополитика", "социум"], "url": "https://t.me/c/1501982282/3988"}, {"date": "2026-03-06", "title": "Протокол принятия решений", "domains": ["климат", "геополитика", "технологии", "социум"], "url": "https://t.me/c/1501982282/3927"}, {"date": "2026-02-05", "title": "Новые критерии ценности недвижимости", "domains": ["климат", "экономика", "социум"], "url": "https://t.me/c/1501982282/3931"}, {"date": "2026-01-29", "title": "Водные риски", "domains": ["климат", "экономика", "социум"], "url": "https://t.me/c/1501982282/3922"}, {"date": "2026-01-22", "title": "Социальные риски", "domains": ["технологии", "социум"], "url": "https://t.me/c/1501982282/3911"}, {"date": "2026-01-21", "title": "Региональные риски · миграция", "domains": ["климат", "экономика", "геополитика", "социум"], "url": "https://t.me/c/1501982282/3907"}, {"date": "2026-01-20", "title": "Региональные риски · безработица", "domains": ["экономика", "технологии", "социум"], "url": "https://t.me/c/1501982282/3905"}, {"date": "2026-01-08", "title": "12 технологических прогнозов на 2026 год", "domains": ["геополитика", "технологии", "социум"], "url": "https://t.me/c/1501982282/3877"}, {"date": "2026-01-06", "title": "Финансы под давлением", "domains": ["экономика", "геополитика", "технологии"], "url": "https://t.me/c/1501982282/3868"}, {"date": "2026-01-06", "title": "Новая эра", "domains": ["геополитика", "технологии", "социум"], "url": "https://t.me/c/1501982282/3867"}, {"date": "2026-01-06", "title": "Экономика всё чаще используется как инструмент выживания режима, а не роста", "domains": ["экономика", "геополитика", "технологии"], "url": "https://t.me/c/1501982282/3866"}, {"date": "2026-01-05", "title": "Глобальный прогноз 2026", "domains": ["климат", "экономика", "геополитика", "социум"], "url": "https://t.me/c/1501982282/3859"}, {"date": "2026-01-05", "title": "Как проявится?", "domains": ["климат", "экономика", "геополитика", "социум"], "url": "https://t.me/c/1501982282/3860"}]}, {"g": "Сценарии", "items": [{"date": "2026-05-19", "title": "Сценарий C — Системный кризис (~30–35%)", "domains": ["экономика", "геополитика"], "url": "https://t.me/c/1501982282/4135"}, {"date": "2026-05-19", "title": "Сценарий B — Фрагментированный (~50-55%)", "domains": ["экономика", "геополитика"], "url": "https://t.me/c/1501982282/4133"}, {"date": "2026-05-19", "title": "Сценарий A — Адаптивный (~15%)", "domains": ["экономика", "геополитика"], "url": "https://t.me/c/1501982282/4132"}, {"date": "2026-01-06", "title": "Сценарии", "domains": ["экономика", "геополитика", "технологии", "социум"], "url": "https://t.me/c/1501982282/3873"}, {"date": "", "title": "Сценарий 2030 года", "domains": [], "url": "https://t.me/c/1501982282/3756"}, {"date": "", "title": "Сценарий 2100 года", "domains": [], "url": "https://t.me/c/1501982282/3785"}]}, {"g": "План энергетической готовности", "items": [{"date": "", "title": "Что означает дефицит энергии в XXI?", "domains": [], "url": "https://t.me/c/1501982282/3824"}, {"date": "", "title": "Почему каждому нужен план энергетической готовности?", "domains": [], "url": "https://t.me/c/1501982282/3830"}, {"date": "", "title": "Энергетическая готовность — расширенный практический план", "domains": [], "url": "https://t.me/c/1501982282/3834"}]}, {"g": "Климат и будущее", "items": [{"date": "", "title": "Климат будущего", "domains": ["климат"], "url": "https://t.me/c/1501982282/2989"}, {"date": "", "title": "Критерии выбора безопасного места и стратегическое планирование", "domains": [], "url": "https://t.me/c/1501982282/2986"}, {"date": "", "title": "Аналитика катаболического коллапса", "domains": [], "url": "https://t.me/c/1501982282/3794"}, {"date": "", "title": "Оптимистичный и более напряжённый вектор будущего", "domains": [], "url": "https://t.me/c/1501982282/3802"}]}, {"g": "Обзоры по России", "items": [{"date": "", "title": "Россия", "domains": [], "url": "https://t.me/c/1501982282/2942"}, {"date": "", "title": "Россия", "domains": [], "url": "https://t.me/c/1501982282/3504"}]}]}};
       var top=Object.keys(ds||{}).map(function(d){return {d:d,s:parseFloat((ds||{})[d])||0};}).filter(function(x){return DLc[x.d];}).sort(function(p,q){return q.s-p.s;}).slice(0,3);
-      var risks=top.map(function(x){ return '<div class="sp-dyn"><span class="sp-dyn-d">'+esc(DLc[x.d])+'</span><span class="sp-dyn-v" style="color:#cbd5e1">'+Math.round(x.s)+'</span></div>'; }).join('');
+      var risks=top.map(function(x){ return '<div class="sp-dyn"><span class="sp-dyn-d">'+esc(DLc[x.d])+'</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+Math.round(x.s)+'</span></div>'; }).join('');
       var drivers=top.map(function(x){return DRV[x.d];}).filter(Boolean);
       var recent=(a.related||[]).slice().sort(function(p,q){return (q.date||'').localeCompare(p.date||'');}).slice(0,3);
       var ctxBody=
@@ -8791,7 +8791,7 @@ window._renderCountryArchive = function(el, cc, cname, ds){
         +subL('Временные всплески', mats(recent));
       var rgroups=(CURATED[cc]&&CURATED[cc].research)?CURATED[cc].research:null;
       var research=rgroups?Array.prototype.concat.apply([],rgroups.map(function(x){return x.items||[];})):((CURATED[cc]&&CURATED[cc].length)?CURATED[cc]:(a.related||[]).slice(0,6));
-      var krStyle='<style>.kr-g{border:0.5px solid rgba(255,255,255,.08);border-radius:8px;margin:0 0 7px;padding:0 12px;background:rgba(255,255,255,.025)}.kr-g summary{cursor:pointer;padding:11px 0;font-size:12px;color:#cbd5e1;display:flex;align-items:center;gap:8px;list-style:none}.kr-g summary::-webkit-details-marker{display:none}.kr-g .kr-chev{color:rgba(203,213,225,.5);transition:transform .15s;display:inline-block;font-size:10px}.kr-g[open] .kr-chev{transform:rotate(90deg)}.kr-g .kr-n{font-size:10px;color:rgba(148,163,184,.55)}</style>';
+      var krStyle='<style>.kr-g{border:0.5px solid rgba(255,255,255,.08);border-radius:8px;margin:0 0 7px;padding:0 12px;background:rgba(255,255,255,.025)}.kr-g summary{cursor:pointer;padding:11px 0;font-size:12px;color:rgba(232,224,208,0.9);display:flex;align-items:center;gap:8px;list-style:none}.kr-g summary::-webkit-details-marker{display:none}.kr-g .kr-chev{color:rgba(232,224,208,0.5);transition:transform .15s;display:inline-block;font-size:10px}.kr-g[open] .kr-chev{transform:rotate(90deg)}.kr-g .kr-n{font-size:10px;color:rgba(148,163,184,.55)}</style>';
       function krGroups(){ if(!rgroups) return mats(research); return rgroups.map(function(gr){ if(!gr.items||!gr.items.length) return ''; return '<details class="kr-g"><summary><span class="kr-chev">&#9658;</span><span style="flex:1">'+esc(gr.g)+'</span><span class="kr-n">'+gr.items.length+'</span></summary><div style="padding:2px 0 10px">'+mats(gr.items)+'</div></details>'; }).join(''); }
       var hist=(a.historical||[]).slice(0,4);
       var GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'};
@@ -8813,13 +8813,13 @@ window._renderCountryArchive = function(el, cc, cname, ds){
       var keyDesc='<div style="font-size:10px;color:rgba(148,163,184,.6);margin:-1px 0 8px;line-height:1.4">Ручная выборка наиболее значимых материалов из архива исследований по '+esc(gname)+'.</div>';
       var html='<div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:14px">'
         +'<div class="sp-head"><span class="sp-badge" style="color:#b8973a">СТРАТЕГИЧЕСКИЙ КОНТЕКСТ</span></div>'
-        +'<div class="sp-sub" style="color:rgba(203,213,225,.62)">Долгосрочные факторы и структурные причины давления</div>'
+        +'<div class="sp-sub" style="color:rgba(232,224,208,0.62)">Долгосрочные факторы и структурные причины давления</div>'
         +'<div class="sp-body"><div class="sp-blocks">'+(ctxBody||'<div class="sp-p" style="opacity:.5">Недостаточно материалов по стране.</div>')+'</div></div>'
         + (function(){var _PADJ={geopolitics:'геополитическом',economy:'экономическом',climate:'климатическом',technology:'технологическом',social:'социальном'};var _tp=(top||[]).slice(0,2).map(function(x){return _PADJ[x.d]||x.d;}).filter(Boolean);var _sum='Система фиксирует устойчивое давление'+(_tp.length?(' в '+_tp.join(' и ')+' контур'+(_tp.length>1?'ах':'е')):'')+'.';if(top&&top[0]&&_PADJ[top[0].d])_sum+=' Наиболее выраженное — в '+_PADJ[top[0].d]+' домене.';return '<div style="border:0.5px solid rgba(184,151,58,.28);border-radius:10px;padding:14px 15px;margin-top:20px;background:linear-gradient(180deg,rgba(184,151,58,.07),rgba(184,151,58,.02))">'+'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin-bottom:8px">Сводка системы</div>'+'<div style="font-size:12.5px;line-height:1.6;color:#dbe3ec">'+_sum+'</div></div>';})() +'<div class="sp-head" style="margin-top:22px;padding-top:14px;border-top:0.5px solid rgba(184,151,58,.22)"><span class="sp-badge" style="color:#b8973a">АРХИВ ИССЛЕДОВАНИЙ</span></div>'
         +'<div class="sp-body">'+fundCard
           +'<div class="sp-blocks" style="margin-top:14px">'
           +subL('Ключевые исследования', keyDesc+krStyle+krGroups())
-          +((hist.length||conclusion)?subL('Исторические параллели', mats(hist)+(conclusion?'<div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f1f5f9;margin:12px 0 4px">Стратегический вывод</div><div style="border-left:2px solid rgba(255,255,255,.18);padding:7px 0 7px 13px;font-size:13px;line-height:1.55;color:#cbd5e1">'+esc(conclusion)+'</div>':'')):'')
+          +((hist.length||conclusion)?subL('Исторические параллели', mats(hist)+(conclusion?'<div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#E8E0D0;margin:12px 0 4px">Стратегический вывод</div><div style="border-left:2px solid rgba(255,255,255,.18);padding:7px 0 7px 13px;font-size:13px;line-height:1.55;color:rgba(232,224,208,0.9)">'+esc(conclusion)+'</div>':'')):'')
         +'<details class="grdf-acc" style="margin-top:20px"><summary class="grdf-acc-h" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer"><span class="sp-badge">СТРАТЕГИЧЕСКИЕ АКТИВЫ</span><span class="grdf-acc-cv">›</span></summary>'
         +'<div class="sp-sub" style="margin-bottom:10px">Активы, сохраняющие стратегическую ценность при различных сценариях.</div>'
         +(function(){
@@ -8901,7 +8901,7 @@ window._renderCountryArchive = function(el, cc, cname, ds){
   var cat={metals:'Металл',real:'Реальный актив',human:'Человеческий актив'};
   var pl={high:'Высокий',mid:'Средний',low:'Низкий'},pc={high:'#34d399',mid:'#eab308',low:'#64748b'};
   function bdg(y,p){return '<div style="flex:1;text-align:center;padding:5px 4px;border-radius:6px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.07)"><div style="font-size:7px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">'+y+'</div><div style="font-size:9px;font-weight:600;color:'+pc[p]+'">'+pl[p]+'</div></div>';}
-  return A.map(function(a){var c=(cat[a.group[0]]||'Актив').toUpperCase();return '<div style="border:0.5px solid rgba(255,255,255,.07);border-radius:10px;padding:13px;margin-bottom:8px;background:rgba(255,255,255,.02)"><div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8;margin-bottom:6px">'+e(c)+'</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:#e2e8f0;line-height:1.15">'+e(a.name)+'</div><div style="font-size:10px;color:#94a3b8;margin:2px 0 4px">'+e(a.sub)+'</div><div style="display:flex;gap:6px;margin:9px 0">'+bdg('2 года',a.p2)+bdg('5 лет',a.p5)+bdg('10 лет',a.p10)+'</div><div style="font-size:11.5px;line-height:1.5;color:#cbd5e1">'+e(a.logic)+'</div></div>';}).join('');
+  return A.map(function(a){var c=(cat[a.group[0]]||'Актив').toUpperCase();return '<div style="border:0.5px solid rgba(255,255,255,.07);border-radius:10px;padding:13px;margin-bottom:8px;background:rgba(255,255,255,.02)"><div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,224,208,0.6);margin-bottom:6px">'+e(c)+'</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:#e2e8f0;line-height:1.15">'+e(a.name)+'</div><div style="font-size:10px;color:rgba(232,224,208,0.6);margin:2px 0 4px">'+e(a.sub)+'</div><div style="display:flex;gap:6px;margin:9px 0">'+bdg('2 года',a.p2)+bdg('5 лет',a.p5)+bdg('10 лет',a.p10)+'</div><div style="font-size:11.5px;line-height:1.5;color:rgba(232,224,208,0.9)">'+e(a.logic)+'</div></div>';}).join('');
 })()+'</details>'
         
         +'</div>';
@@ -8986,18 +8986,18 @@ function grdfRenderCountryPanel(cc) {
   function _miniDelta(v){ if(v==null) return '<div style="font-size:9px;color:#6f88ab;margin-top:3px">накапл.</div>'; var cl=v>0?'#f97316':v<0?'#10b981':'#6f88ab',ar=v>0?'▲':v<0?'▼':'→'; return '<div style="font-size:9px;color:'+cl+';margin-top:3px">'+ar+' '+(v>0?'+':'')+v+'</div>'; }
   var _adN=['climate','geopolitics','economy','technology','social'].filter(function(d){return ((c.domain_scores||{})[d]||0)>=60;}).length;
   var _miniCri='<div style="font-size:9px;color:#6f88ab;margin-top:3px">'+_adN+'/5 доменов</div>';
-  html += '<div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#f1f5f9;padding:0 14px 0 26px;margin:0 0 7px">Текущая оценка риска</div>';
+  html += '<div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#E8E0D0;padding:0 14px 0 26px;margin:0 0 7px">Текущая оценка риска</div>';
   var _lvl=function(v){ v=+v||0; if(v>=71)return 'Высокое давление'; if(v>=51)return 'Повышенное давление'; if(v>=26)return 'Умеренное давление'; return 'Низкое давление'; };
   html += '<div class="grdf-metrics">';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'GRI\')"><div class="grdf-metric-val" style="color:'+statusCol+'">'+gri+'</div><div class="grdf-metric-lbl">GRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(203,213,225,.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(gri)+'</div>'+_miniDelta(c.gri_delta_7d)+'</div>';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'EWS\')"><div class="grdf-metric-val" style="color:'+(ews>=80?'#ef4444':ews>=65?'#f97316':'#eab308')+'">'+ews+'</div><div class="grdf-metric-lbl">EWS <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(203,213,225,.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(ews)+'</div>'+_miniDelta(c.ews_delta_7d)+'</div>';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(203,213,225,.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(cri)+'</div>'+_miniCri+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'GRI\')"><div class="grdf-metric-val" style="color:'+statusCol+'">'+gri+'</div><div class="grdf-metric-lbl">GRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(gri)+'</div>'+_miniDelta(c.gri_delta_7d)+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'EWS\')"><div class="grdf-metric-val" style="color:'+(ews>=80?'#ef4444':ews>=65?'#f97316':'#eab308')+'">'+ews+'</div><div class="grdf-metric-lbl">EWS <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(ews)+'</div>'+_miniDelta(c.ews_delta_7d)+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(cri)+'</div>'+_miniCri+'</div>';
   html += '</div>';
   html += '<div id="grdf-idx-info" class="grdf-idx-info"></div>';
   try{ html += _nowSummary(c, gri, ews, cri, dom, isSig); }catch(_e){}
   try{ html += _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig); }catch(_e){}
   if(isSig){
-  html += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Ближе всего к порогу риска — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:#cbd5e1">'+s+'</div>';})();
+  html += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Ближе всего к порогу риска — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:rgba(232,224,208,0.9)">'+s+'</div>';})();
 
 
   // GRI formation — index is assembled from 5 domain models (V1–V34)
@@ -9148,7 +9148,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
   function blk(h,b){return '<div class="sp-block"><div class="sp-block-h">'+esc(h)+'</div>'+b+'</div>';}
   function lvlCol(lv){return /Критическ|Высок/.test(lv)?'#ef4444':(/Повышен/.test(lv)?'#ff7a00':(/Умерен/.test(lv)?'#eab308':'#22c55e'));}
   function lbadge(lv){return lv?(' <span style="font-size:9px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid '+lvlCol(lv)+';color:'+lvlCol(lv)+'">'+esc(lv)+'</span>'):'';}
-  function arrow(st){return st==='up'?'<span style="color:#ff7a00">↑</span>':(st==='down'?'<span style="color:#22c55e">↓</span>':'<span style="color:rgba(203,213,225,.4)">→</span>');}
+  function arrow(st){return st==='up'?'<span style="color:#ff7a00">↑</span>':(st==='down'?'<span style="color:#22c55e">↓</span>':'<span style="color:rgba(232,224,208,0.4)">→</span>');}
   if(!bEl) return;
   if(mEl) mEl.innerHTML='';
   if(!d){ bEl.innerHTML=''; if(dEl)dEl.innerHTML=''; return; }
@@ -9162,9 +9162,9 @@ window._atlasRender = function(bEl, mEl, dEl, d){
     var h24t=(h24r!=null)?((h24r>=0?'+':'')+h24r+' п./сутки'):(ch.h24?ch.h24.text:'—');
     var d7t=(d7d!=null)?(d7d===0?'давление без изменений':((d7d>0?'+':'−')+Math.abs(d7d)+' п. за 7д')):(ch.d7?ch.d7.text:'—');
     var d30t=(d30p!=null)?('прогноз '+d30p+'/100'):(ch.d30?ch.d30.text:'—');
-    var changesHtml='<div class="sp-dyn"><span class="sp-dyn-d">24ч</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(h24t)+'</span></div>'
-      +'<div class="sp-dyn"><span class="sp-dyn-d">7д</span><span class="sp-dyn-v" style="color:'+((d7d!=null&&d7d>0)?'#ff7a00':(d7d!=null&&d7d<0?'#22c55e':'#cbd5e1'))+'">'+esc(d7t)+'</span></div>'
-      +'<div class="sp-dyn"><span class="sp-dyn-d">30д</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(d30t)+'</span></div>';
+    var changesHtml='<div class="sp-dyn"><span class="sp-dyn-d">24ч</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(h24t)+'</span></div>'
+      +'<div class="sp-dyn"><span class="sp-dyn-d">7д</span><span class="sp-dyn-v" style="color:'+((d7d!=null&&d7d>0)?'#ff7a00':(d7d!=null&&d7d<0?'#22c55e':'rgba(232,224,208,0.9)'))+'">'+esc(d7t)+'</span></div>'
+      +'<div class="sp-dyn"><span class="sp-dyn-d">30д</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(d30t)+'</span></div>';
     var leadDom=(d.brief_free&&d.brief_free.lead_strategic)||'';
     var leadHtml=leadDom?('<div class="sp-dyn"><span class="sp-dyn-d">Текущий ведущий домен</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(leadDom))+'</span></div>'):'';
     var nextHtml=(FB.next_pressure&&FB.next_pressure.domain)?('<div class="sp-dyn"><span class="sp-dyn-d">Каскадное распространение давления</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(FB.next_pressure.domain))+'</span></div>'):'';
@@ -9173,22 +9173,22 @@ window._atlasRender = function(bEl, mEl, dEl, d){
     var domHtml=(DY.by_domain||[]).map(function(x){
       var moved=(x.d30!==x.now||x.d7!==x.now);
       var sfiLine=moved?('SFI: сейчас '+x.now+' · 7д '+x.d7+' · 30д '+x.d30):'проекция стабильна';
-      return '<div style="margin:0 0 8px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:#cbd5e1">'+esc(dlc(x.domain))+' '+arrow(x.status)+'</span><span style="font-size:11px;color:#D4AF5A;font-weight:600">GSP '+x.gsp+'</span></div>'
+      return '<div style="margin:0 0 8px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:12px;color:rgba(232,224,208,0.9)">'+esc(dlc(x.domain))+' '+arrow(x.status)+'</span><span style="font-size:11px;color:#D4AF5A;font-weight:600">GSP '+x.gsp+'</span></div>'
         +'<div style="height:4px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden"><div style="height:100%;width:'+Math.max(2,x.gsp)+'%;background:#D4AF5A;border-radius:3px"></div></div>'
         +'<div style="font-size:10px;color:rgba(212,175,90,.55);margin-top:2px">'+sfiLine+'</div></div>'; }).join('');
     var gspNote='<p class="sp-note">GSP — глобальное стратегическое давление домена (в среднем по миру). Не сопоставляется напрямую с SIS отдельной страны.</p>';
-    var regHtml=(DY.by_region||[]).slice(0,8).map(function(r){ var dc=r.delta>0?'#ff7a00':(r.delta<0?'#22c55e':'#cbd5e1');
+    var regHtml=(DY.by_region||[]).slice(0,8).map(function(r){ var dc=r.delta>0?'#ff7a00':(r.delta<0?'#22c55e':'rgba(232,224,208,0.9)');
       return '<div class="sp-dyn"><span class="sp-dyn-d">'+esc(r.region)+'</span><span class="sp-dyn-v"><span style="color:rgba(232,224,208,0.9)">'+r.gri+'</span> <span style="color:'+dc+';font-size:10px">'+(r.delta>0?'+':'')+r.delta+'</span></span></div>'; }).join('');
-    var trHtml=(DY.transitions||[]).slice(0,5).map(function(t){ var col=t.band==='high'?'#ff7a00':(t.band==='medium'?'#eab308':'rgba(203,213,225,.5)');
+    var trHtml=(DY.transitions||[]).slice(0,5).map(function(t){ var col=t.band==='high'?'#ff7a00':(t.band==='medium'?'#eab308':'rgba(232,224,208,0.5)');
       return '<div class="sp-dyn"><span class="sp-dyn-d" style="color:rgba(232,224,208,0.9)">'+esc(dlc(t.source))+' → '+esc(dlc(t.target))+'</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9);font-weight:600">'+t.pts+'</span></div>'; }).join('');
     var AR=d._archive||{};
     var scenHtml='';
     if(AR.scenarios && AR.scenarios.length){
       scenHtml=AR.scenarios.slice(0,3).map(function(s){
-        var col=s.match_pct>=70?'#ff7a00':(s.match_pct>=45?'#eab308':'rgba(203,213,225,.6)');
+        var col=s.match_pct>=70?'#ff7a00':(s.match_pct>=45?'#eab308':'rgba(232,224,208,0.6)');
         var mh=(s.matching&&s.matching.length)?('<div style="font-size:10px;color:rgba(148,163,184,.78);margin-top:3px">Совпадает: '+esc(s.matching.join(', '))+'</div>'):'';
         var dh=(s.differences&&s.differences.length)?('<div style="font-size:10px;color:rgba(148,163,184,.55);margin-top:1px">Отличия: '+esc(s.differences.join('; '))+'</div>'):'';
-        return '<div style="margin:0 0 11px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;color:#cbd5e1">'+esc(s.name)+'</span><span style="font-size:13px;font-weight:700;color:'+col+'">'+s.match_pct+'%</span></div>'+mh+dh+'</div>';
+        return '<div style="margin:0 0 11px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;color:rgba(232,224,208,0.9)">'+esc(s.name)+'</span><span style="font-size:13px;font-weight:700;color:'+col+'">'+s.match_pct+'%</span></div>'+mh+dh+'</div>';
       }).join('')+'<p class="sp-note">'+esc(AR.scenario_disclaimer||'Сценарное соответствие отражает степень сходства с историческими паттернами и не является прогнозом вероятности событий.')+'</p>';
     }
     var synthHtml=(function(){
@@ -9232,13 +9232,13 @@ window._atlasRender = function(bEl, mEl, dEl, d){
   // ===== FREE =====
   var BF=d.brief_free||null;
   if(BF){
-    var dirCol=BF.d7>0?'#ff7a00':(BF.d7<0?'#22c55e':'#cbd5e1');
+    var dirCol=BF.d7>0?'#ff7a00':(BF.d7<0?'#22c55e':'rgba(232,224,208,0.9)');
     var dirTxt=BF.d7>0?('▲ +'+Math.abs(BF.d7)):(BF.d7<0?('▼ '+Math.abs(BF.d7)):'→ 0');
     var freeBlocks=
        blk('Мир сейчас',
-          '<div class="sp-dyn"><span class="sp-dyn-d">Мировое стратегическое давление</span><span class="sp-dyn-v" style="color:#cbd5e1">'+(BF.global_pressure!=null?(BF.global_pressure+'/100'):'—')+'</span></div>'
+          '<div class="sp-dyn"><span class="sp-dyn-d">Мировое стратегическое давление</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+(BF.global_pressure!=null?(BF.global_pressure+'/100'):'—')+'</span></div>'
          +'<div class="sp-dyn"><span class="sp-dyn-d">Изменение за 7 дней</span><span class="sp-dyn-v" style="color:'+dirCol+'">'+dirTxt+' п.</span></div>'
-         +'<div class="sp-dyn"><span class="sp-dyn-d">Ведущий стратегический домен</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(BF.lead_strategic))+lbadge(BF.lead_strategic_level)+'</span></div>')
+         +'<div class="sp-dyn"><span class="sp-dyn-d">Ведущий стратегический домен</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(BF.lead_strategic))+lbadge(BF.lead_strategic_level)+'</span></div>')
       +(BF.summary?blk('Обзор','<p class="sp-p">'+esc(BF.summary)+'</p>'):'');
     bEl.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">МИРОВАЯ СИТУАЦИЯ</span></div><div class="sp-sub">Открытый обзор стратегической обстановки'+(BF.countries_count?(' · '+BF.countries_count+' стран'):'')+'</div><div class="sp-body"><div class="sp-blocks">'+freeBlocks+'</div></div></div>';
   } else bEl.innerHTML='';
@@ -9252,7 +9252,7 @@ window._atlasAbout = function(d, nCountries, gc){
   var nSig=0; try{ var o=gc||{}; for(var k in o){ nSig+=(parseInt(o[k],10)||0); } }catch(e){}
   var upd=''; try{ if(typeof _todayData!=='undefined'&&_todayData&&_todayData.generated_at) upd=String(_todayData.generated_at).replace('T',' ').replace(/\..*$/,'').slice(0,19)+' UTC'; }catch(e){}
   if(!upd){ try{ upd=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC'; }catch(e){ upd='\u2014'; } }
-  function row(l,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid rgba(184,151,58,0.08);font-size:12px"><span style="color:rgba(148,163,184,0.72)">'+esc(l)+'</span><span style="color:#cbd5e1;font-weight:500;text-align:right">'+esc(v)+'</span></div>'; }
+  function row(l,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid rgba(184,151,58,0.08);font-size:12px"><span style="color:rgba(148,163,184,0.72)">'+esc(l)+'</span><span style="color:rgba(232,224,208,0.9);font-weight:500;text-align:right">'+esc(v)+'</span></div>'; }
   return '<div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;font-family:\'Montserrat\',sans-serif">О платформе Atlas</div>'
     +row('Модель','Atlas Intelligence Engine')
     +row('Версия','Core Revision 37')
@@ -9535,17 +9535,17 @@ window._radarSell = function(){
   var calc=['вероятные сценарии развития','скрытые связи между сигналами','точки усиления давления','вероятные переходы риска','стратегические последствия','формирующиеся тенденции'];
   var sysd=['главный источник текущего давления','критические сигналы наблюдения','системно значимые изменения','наиболее вероятные последствия','направления распространения давления','прогноз развития ситуации'];
   var h='';
-  h+='<div style="margin:18px 14px 0;padding:16px;border:0.5px solid rgba(184,151,58,.18);border-radius:12px;background:rgba(184,151,58,.05)"><div style="font-size:13px;font-weight:600;color:#f1f5f9">Анализ сигналов завершён</div><div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">Система обработала сигналы, выявила основные драйверы давления, оценила каскадные связи и определила вероятные направления развития ситуации.</div></div>';
-  h+='<div style="margin:20px 14px 0;padding:16px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)"><div style="font-size:10px;color:'+GOLD+';text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:10px">Выявлено</div>'+det.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.85);padding:4px 0;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'</div>';
-  h+='<div style="margin:20px 14px 12px;padding:16px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:rgba(184,151,58,.04)"><div style="font-size:10px;color:#b8973a;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px">Что остаётся скрытым</div>'+hid.map(function(t){return '<div style="font-size:12px;color:rgba(203,213,225,.82);padding:6px 0;border-top:0.5px solid rgba(255,255,255,.04);display:flex;gap:8px"><span>🔒</span><span>'+e(t)+'</span></div>';}).join('')+'</div>';
+  h+='<div style="margin:18px 14px 0;padding:16px;border:0.5px solid rgba(184,151,58,.18);border-radius:12px;background:rgba(184,151,58,.05)"><div style="font-size:13px;font-weight:600;color:#E8E0D0">Анализ сигналов завершён</div><div style="font-size:11.5px;color:rgba(232,224,208,0.78);line-height:1.55;margin-top:8px">Система обработала сигналы, выявила основные драйверы давления, оценила каскадные связи и определила вероятные направления развития ситуации.</div></div>';
+  h+='<div style="margin:20px 14px 0;padding:16px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)"><div style="font-size:10px;color:'+GOLD+';text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:10px">Выявлено</div>'+det.map(function(t){return '<div style="font-size:12px;color:rgba(232,224,208,0.85);padding:4px 0;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'</div>';
+  h+='<div style="margin:20px 14px 12px;padding:16px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:rgba(184,151,58,.04)"><div style="font-size:10px;color:#b8973a;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px">Что остаётся скрытым</div>'+hid.map(function(t){return '<div style="font-size:12px;color:rgba(232,224,208,0.82);padding:6px 0;border-top:0.5px solid rgba(255,255,255,.04);display:flex;gap:8px"><span>🔒</span><span>'+e(t)+'</span></div>';}).join('')+'</div>';
   h+='<div style="margin:18px 14px 8px;padding:22px 18px;border:1px solid rgba(227,178,60,.42);border-radius:16px;background:linear-gradient(180deg,rgba(227,178,60,.11),rgba(255,255,255,.012));text-align:left">'
-    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#f1f5f9;line-height:1.22">Система завершила стратегический анализ сигналов</div>'
-    +'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.6;margin-top:11px">На основе междоменного анализа, каскадных связей и сценарного моделирования.</div>'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#E8E0D0;line-height:1.22">Система завершила стратегический анализ сигналов</div>'
+    +'<div style="font-size:11.5px;color:rgba(232,224,208,0.78);line-height:1.6;margin-top:11px">На основе междоменного анализа, каскадных связей и сценарного моделирования.</div>'
     +'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.12em;font-weight:700;font-family:Montserrat,sans-serif;margin-top:20px;margin-bottom:11px">Рассчитаны</div>'
-    +'<div>'+calc.map(function(t){return '<div style="font-size:12.5px;color:rgba(203,213,225,.88);padding:4px 0;line-height:1.35"><span style="color:'+GOLD+';font-weight:700">•</span> '+e(t)+'</div>';}).join('')+'</div>'
+    +'<div>'+calc.map(function(t){return '<div style="font-size:12.5px;color:rgba(232,224,208,0.88);padding:4px 0;line-height:1.35"><span style="color:'+GOLD+';font-weight:700">•</span> '+e(t)+'</div>';}).join('')+'</div>'
     +'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.12em;font-weight:700;font-family:Montserrat,sans-serif;margin-top:20px;margin-bottom:11px">Система определила</div>'
-    +'<div>'+sysd.map(function(t){return '<div style="font-size:12.5px;color:rgba(203,213,225,.88);padding:4px 0;line-height:1.35;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'</div>'
-    +'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.6;margin-top:16px">Полный анализ содержит интерпретацию сигналов, сценарии развития и стратегические выводы системы.</div>'
+    +'<div>'+sysd.map(function(t){return '<div style="font-size:12.5px;color:rgba(232,224,208,0.88);padding:4px 0;line-height:1.35;display:flex;align-items:center">'+CHK+e(t)+'</div>';}).join('')+'</div>'
+    +'<div style="font-size:11.5px;color:rgba(232,224,208,0.78);line-height:1.6;margin-top:16px">Полный анализ содержит интерпретацию сигналов, сценарии развития и стратегические выводы системы.</div>'
     +'<div style="font-size:11.5px;color:rgba(184,151,58,.95);font-weight:600;line-height:1.5;margin-top:20px">Стратегические выводы и прогнозы доступны в полном анализе.</div>'
     +'<div style="margin-top:20px"><button onclick="openAccess()" style="display:block;-webkit-appearance:none;appearance:none;outline:none;box-sizing:border-box;width:100%;text-align:center;font-size:13.5px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:15px 24px;cursor:pointer;font-family:Montserrat,sans-serif">Открыть полный анализ сигналов →</button></div>'
   +'</div>';
@@ -9587,19 +9587,19 @@ window._radarPressDetail = function(){
     '<div class="grdf-pd-foot">Системных сигналов: '+M.systemic+' &middot; критических: '+M.critical+' &middot; междоменных связей: '+M.crossLinks+'</div></div>';
   try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(_e){}
 };
-(function(){var s=document.createElement('style');s.textContent="#grdf-signalpro{padding:4px 14px 22px}.sp-section{margin-top:6px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:16px}.sp-head{display:flex;align-items:center;gap:8px}.sp-badge{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:.1em;color:#E8E0D0}.sp-sub{font-size:10px;color:rgba(232,224,208,0.45);letter-spacing:.04em;margin:3px 0 12px;font-family:'Montserrat',sans-serif}.sp-body{position:relative}.sp-blocks{display:flex;flex-direction:column;gap:8px}.sp-block{background:rgba(255,255,255,.025);border:0.5px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 13px}.sp-block-h{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E8E0D0;margin-bottom:7px;font-family:'Montserrat',sans-serif}.sp-p{font-size:12px;line-height:1.5;color:rgba(232,224,208,0.9);margin:0;font-family:'Montserrat',sans-serif}.sp-key{color:#f1e8d0}.sp-lead{font-size:11px;color:rgba(232,224,208,0.6);margin:0 0 6px;font-family:'Montserrat',sans-serif}.sp-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}.sp-ul li{font-size:12px;color:#cbd5e1;padding-left:13px;position:relative;font-family:'Montserrat',sans-serif;line-height:1.4}.sp-ul li:before{content:'';position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#64748b}.sp-dyn{display:flex;align-items:center;gap:8px;padding:3px 0;font-family:'Montserrat',sans-serif}.sp-dyn-ar{font-size:13px;width:12px;text-align:center}.sp-dyn-d{font-size:12px;color:rgba(232,224,208,0.9);flex:1}.sp-dyn-v{font-size:12px;font-weight:600}.sp-note{font-size:11px;color:rgba(232,224,208,0.6);margin:8px 0 0;font-style:italic;font-family:'Montserrat',sans-serif}.sp-chain{font-size:12px;color:rgba(232,224,208,0.9);padding:4px 0;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.sp-arrow{color:#B8973A;font-weight:600}.sp-body.sp-locked .sp-blocks{filter:blur(6px);pointer-events:none;user-select:none;opacity:.55}.sp-overlay{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 16px;background:linear-gradient(180deg,rgba(6,5,10,.5),rgba(6,5,10,.82));border-radius:8px}.sp-lock-ico{font-size:22px;margin-bottom:6px}.sp-lock-h{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;letter-spacing:.2em;color:#D4AF5A;margin-bottom:8px}.sp-lock-t{font-size:11px;line-height:1.55;color:rgba(232,224,208,0.9);max-width:300px;margin-bottom:14px;font-family:'Montserrat',sans-serif}.sp-cta{background:transparent;color:#E3B23C;border:1px solid #E3B23C;border-radius:26px;padding:15px 24px;font-size:13.5px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;letter-spacing:.02em;width:100%}";document.head.appendChild(s);})();
+(function(){var s=document.createElement('style');s.textContent="#grdf-signalpro{padding:4px 14px 22px}.sp-section{margin-top:6px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:16px}.sp-head{display:flex;align-items:center;gap:8px}.sp-badge{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:.1em;color:#E8E0D0}.sp-sub{font-size:10px;color:rgba(232,224,208,0.45);letter-spacing:.04em;margin:3px 0 12px;font-family:'Montserrat',sans-serif}.sp-body{position:relative}.sp-blocks{display:flex;flex-direction:column;gap:8px}.sp-block{background:rgba(255,255,255,.025);border:0.5px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 13px}.sp-block-h{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E8E0D0;margin-bottom:7px;font-family:'Montserrat',sans-serif}.sp-p{font-size:12px;line-height:1.5;color:rgba(232,224,208,0.9);margin:0;font-family:'Montserrat',sans-serif}.sp-key{color:#f1e8d0}.sp-lead{font-size:11px;color:rgba(232,224,208,0.6);margin:0 0 6px;font-family:'Montserrat',sans-serif}.sp-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}.sp-ul li{font-size:12px;color:rgba(232,224,208,0.9);padding-left:13px;position:relative;font-family:'Montserrat',sans-serif;line-height:1.4}.sp-ul li:before{content:'';position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#64748b}.sp-dyn{display:flex;align-items:center;gap:8px;padding:3px 0;font-family:'Montserrat',sans-serif}.sp-dyn-ar{font-size:13px;width:12px;text-align:center}.sp-dyn-d{font-size:12px;color:rgba(232,224,208,0.9);flex:1}.sp-dyn-v{font-size:12px;font-weight:600}.sp-note{font-size:11px;color:rgba(232,224,208,0.6);margin:8px 0 0;font-style:italic;font-family:'Montserrat',sans-serif}.sp-chain{font-size:12px;color:rgba(232,224,208,0.9);padding:4px 0;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.sp-arrow{color:#B8973A;font-weight:600}.sp-body.sp-locked .sp-blocks{filter:blur(6px);pointer-events:none;user-select:none;opacity:.55}.sp-overlay{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 16px;background:linear-gradient(180deg,rgba(6,5,10,.5),rgba(6,5,10,.82));border-radius:8px}.sp-lock-ico{font-size:22px;margin-bottom:6px}.sp-lock-h{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;letter-spacing:.2em;color:#D4AF5A;margin-bottom:8px}.sp-lock-t{font-size:11px;line-height:1.55;color:rgba(232,224,208,0.9);max-width:300px;margin-bottom:14px;font-family:'Montserrat',sans-serif}.sp-cta{background:transparent;color:#E3B23C;border:1px solid #E3B23C;border-radius:26px;padding:15px 24px;font-size:13.5px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;letter-spacing:.02em;width:100%}";document.head.appendChild(s);})();
 window._spRender = function(el,d){
   var DL=(window._rDL?window._rDL():{climate:'Климат',geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум'});
   function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function ul(arr){ return '<ul class="sp-ul">'+(arr||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'; }
   function block(h,body){ return '<div class="sp-block"><div class="sp-block-h">'+esc(h)+'</div>'+body+'</div>'; }
   function badge(label){ var col=/Сильн|Высок/.test(label)?'#ef4444':(/Средн/.test(label)?'#eab308':'#22c55e'); return '<span style="font-size:9px;font-weight:600;letter-spacing:.04em;padding:1px 7px;border-radius:999px;border:1px solid '+col+';color:'+col+';margin-left:6px;white-space:nowrap">'+esc(label)+'</span>'; }
-  function subL(t,arr){ return (arr&&arr.length)?('<div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#f1f5f9;margin:8px 0 4px">'+esc(t)+'</div>'+ul(arr)):''; }
+  function subL(t,arr){ return (arr&&arr.length)?('<div style="font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#E8E0D0;margin:8px 0 4px">'+esc(t)+'</div>'+ul(arr)):''; }
   if(d && d.locked){ el.innerHTML=''; return;
   }
   if(!d || !d.interpretation){ el.innerHTML=''; return; }
   var rows=(d.change&&d.change.rows)||[];
-  var rowsHtml=rows.map(function(rw){ var dir=rw.dir||'flat'; var sym=dir==='up'?'↑':(dir==='down'?'↓':'→'); var col=dir==='up'?'#ef4444':(dir==='down'?'#22c55e':'rgba(203,213,225,.5)'); var p=rw.pct;
+  var rowsHtml=rows.map(function(rw){ var dir=rw.dir||'flat'; var sym=dir==='up'?'↑':(dir==='down'?'↓':'→'); var col=dir==='up'?'#ef4444':(dir==='down'?'#22c55e':'rgba(232,224,208,0.5)'); var p=rw.pct;
     // P1 capping: экстремальные проценты от низкой базы (молодая история) -> понятная формулировка, расчёт не меняется
     var _fmtPct=function(x){
       var ax=Math.abs(x);
@@ -9609,7 +9609,7 @@ window._spRender = function(el,d){
     };
     var val=dir==='flat'?'без изменений':_fmtPct(p);
     var line='<div class="sp-dyn"><span class="sp-dyn-ar" style="color:'+col+'">'+sym+'</span><span class="sp-dyn-d">'+esc(DL[rw.domain]||rw.domain)+'</span><span class="sp-dyn-v" style="color:'+col+'">'+esc(val)+'</span></div>';
-    if(rw.note) line+='<div style="font-size:10px;color:rgba(203,213,225,.5);margin:0 0 7px 20px;line-height:1.4">'+esc(rw.note)+'</div>';
+    if(rw.note) line+='<div style="font-size:10px;color:rgba(232,224,208,0.5);margin:0 0 7px 20px;line-height:1.4">'+esc(rw.note)+'</div>';
     return line; }).join('');
   var emHtml=''; if(d.emerging&&d.emerging.length){ emHtml='<ul class="sp-ul">'+d.emerging.map(function(e){ if(typeof e==='string') return '<li>'+esc(e)+'</li>'; return '<li>'+esc(e.text)+(e.level?badge(e.level):'')+'</li>'; }).join('')+'</ul>'; }
   var cascHtml=(d.cascades||[]).map(function(c){ var chain=Array.isArray(c)?c:(c.chain||[]); var imp=(!Array.isArray(c)&&c.impact)?c.impact:''; return '<div class="sp-chain">'+chain.map(esc).join(' <span class="sp-arrow">→</span> ')+(imp?badge(imp):'')+'</div>'; }).join('');
