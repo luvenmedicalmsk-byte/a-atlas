@@ -7989,7 +7989,7 @@ function _grdfFreeMirror(c){ try{
   var gname=GEN[cc]||(c.country_name||cc);
   var GOLD='#E3B23C', CTA_TXT='Разблокировать полный профиль страны';
   function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  var CHK='<svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:5px;flex-shrink:0"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#4ade80" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CHK='<svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:5px;flex-shrink:0"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#1faacc" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   var MAP={
     'Источники давления':['Выявлены факторы, оказывающие наибольшее влияние на текущую ситуацию.','Доступен главный источник риска'],
     'Главные драйверы риска':['Определены основные силы, формирующие текущий уровень риска.','Доступны ключевые выводы'],
@@ -8028,7 +8028,7 @@ function _grdfFreeMirror(c){ try{
             +'<div style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;line-height:1.3">'+esc(t)+'</div>'
             +'<div style="font-size:11.5px;color:rgba(203,213,225,.80);line-height:1.5;margin-top:6px">'+esc(m[0])+'</div>'
             +'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;align-items:center">'
-              +'<span style="font-size:10px;color:#4ade80;font-weight:600;display:inline-flex;align-items:center">'+CHK+'Анализ завершён</span>'
+              +'<span style="font-size:10px;color:#1faacc;font-weight:600;display:inline-flex;align-items:center">'+CHK+'Анализ завершён</span>'
               +'<span style="font-size:10px;color:rgba(184,151,58,.95);font-weight:600">🔒 '+esc(m[1])+'</span>'
             +'</div>'
           +'</div>'
@@ -9530,7 +9530,7 @@ window._rDC = function(){ return (typeof DC!=='undefined'&&DC)?DC:{climate:'#22c
 window._rDL = function(){ return (typeof DL!=='undefined'&&DL)?DL:{climate:'Климат',geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум'}; };
 window._radarSell = function(){
   var GOLD='#E3B23C';
-  var CHK='<svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:7px;flex-shrink:0"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#4ade80" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CHK='<svg width="11" height="11" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:7px;flex-shrink:0"><path d="M5 12.5 10 17.5 19 7" fill="none" stroke="#1faacc" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function e(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   var det=['определён ведущий драйвер давления','выявлены ключевые активные сигналы','рассчитаны наиболее значимые каскады','обнаружены точки усиления давления','определены доминирующие направления изменений','выделены критические сигналы наблюдения'];
   var hid=['Что означают текущие изменения','Какие риски усиливаются быстрее остальных','Какие каскадные сценарии наиболее вероятны','Какие сигналы являются системно важными','Как изменится структура давления','На что обратить внимание в ближайшие недели','Практические выводы для бизнеса и инвесторов','Локальная интерпретация для выбранной страны'];
