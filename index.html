@@ -9558,7 +9558,15 @@ window._spRender = function(el,d){
   }
   if(!d || !d.interpretation){ el.innerHTML=''; return; }
   var rows=(d.change&&d.change.rows)||[];
-  var rowsHtml=rows.map(function(rw){ var dir=rw.dir||'flat'; var sym=dir==='up'?'↑':(dir==='down'?'↓':'→'); var col=dir==='up'?'#ef4444':(dir==='down'?'#22c55e':'rgba(203,213,225,.5)'); var p=rw.pct; var val=dir==='flat'?'без изменений':(((p>0)?'+':'')+p+'%');
+  var rowsHtml=rows.map(function(rw){ var dir=rw.dir||'flat'; var sym=dir==='up'?'↑':(dir==='down'?'↓':'→'); var col=dir==='up'?'#ef4444':(dir==='down'?'#22c55e':'rgba(203,213,225,.5)'); var p=rw.pct;
+    // P1 capping: экстремальные проценты от низкой базы (молодая история) -> понятная формулировка, расчёт не меняется
+    var _fmtPct=function(x){
+      var ax=Math.abs(x);
+      if(ax>=1000) return (x>0?'резкий рост':'резкое снижение');
+      if(ax>=200)  return (x>0?'>200%':'<-200%');
+      return ((x>0)?'+':'')+x+'%';
+    };
+    var val=dir==='flat'?'без изменений':_fmtPct(p);
     var line='<div class="sp-dyn"><span class="sp-dyn-ar" style="color:'+col+'">'+sym+'</span><span class="sp-dyn-d">'+esc(DL[rw.domain]||rw.domain)+'</span><span class="sp-dyn-v" style="color:'+col+'">'+esc(val)+'</span></div>';
     if(rw.note) line+='<div style="font-size:10px;color:rgba(203,213,225,.5);margin:0 0 7px 20px;line-height:1.4">'+esc(rw.note)+'</div>';
     return line; }).join('');
