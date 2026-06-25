@@ -10060,49 +10060,7 @@ window.addEventListener('resize', function(){
 <button id="access-btn" onclick="openCabinet()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg>Кабинет</button>
 
 <!-- ACCESS MODAL -->
-<div id="access-modal">
-  <button class="am-close" onclick="closeAccess()">✕</button>
-  <div class="am-inner">
-    <div class="am-eyebrow">Atlas Intelligence</div>
-    <div class="am-title">Закрытый доступ<br>к <em>Atlas Intelligence</em></div>
-    <div class="am-sub">Профессиональная аналитическая система стратегических рисков, объединяющая прогнозирование, многодоменный анализ, сценарное моделирование и архив исследований.</div>
-
-    <div class="am-access-label">Что входит в закрытый доступ</div>
-    <div class="am-vlist">
-      <div class="am-vrow"><span class="am-vck">✓</span>Архив исследований и системных рисков</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Атлас сигналов в режиме реального времени</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Сигнал Про — прогноз развития ситуации на 7 дней</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Радар рисков и стратегические сценарии</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Граф взаимосвязей между событиями</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Полные профили стран и их аналитика</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Стратегические выводы системы</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Исторические параллели</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Матрица рисков</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Скрытые драйверы риска</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Все будущие обновления платформы</div>
-    </div>
-
-    <div class="am-contract">
-      <div class="am-contract-title">Контракт доступа</div>
-      <div class="am-contract-grid">
-        <div class="am-contract-item">Архив исследований</div>
-        <div class="am-contract-item">Атлас сигналов</div>
-        <div class="am-contract-item">Сигнал Про</div>
-        <div class="am-contract-item">Все обновления платформы</div>
-      </div>
-      <div class="am-contract-term">Срок действия контракта — 1 год</div>
-    </div>
-
-    <div class="am-divider"></div>
-    <div class="am-how-title">Как получить доступ</div>
-    <div class="am-step"><div class="am-step-num">1</div><div class="am-step-text">Отправьте заявку персональному менеджеру Atlas</div></div>
-    <div class="am-step"><div class="am-step-num">2</div><div class="am-step-text">Получите индивидуальную консультацию по платформе</div></div>
-    <div class="am-step"><div class="am-step-num">3</div><div class="am-step-text">Менеджер поможет выбрать формат подключения и ответит на вопросы</div></div>
-    <div class="am-step"><div class="am-step-num">4</div><div class="am-step-text">После подтверждения вы получите доступ к системе</div></div>
-
-    <a href="https://t.me/anirisao" target="_blank" class="am-btn-main">Запросить доступ →</a>
-  </div>
-</div>
+<!-- access-modal удалён: экран доступа вынесен в отдельную страницу access.html -->
 
 <script>
 function openAccess(){
@@ -10121,8 +10079,10 @@ window.addEventListener("message", function(e){
   }
 });
 function closeAccess(){
-  var _wasOpen=document.getElementById('access-modal').classList.contains('open');
-  document.getElementById('access-modal').classList.remove('open');
+  var _am=document.getElementById('access-modal');
+  if(!_am) return; // модалка вынесена в access.html
+  var _wasOpen=_am.classList.contains('open');
+  _am.classList.remove('open');
   document.body.style.overflow='';
   var bn=document.getElementById('grdf-bottom-nav');
   if(bn) bn.style.removeProperty('display');
