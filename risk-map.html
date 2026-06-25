@@ -10339,6 +10339,13 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         +'</div>';
       h+='<button class="cab-btn" onclick="closeCabinet();openAccess();">Разблокировать все возможности Атласа →</button>';
     }
+    h+='<div style="margin-top:20px;padding:20px 18px;border:0.5px solid rgba(184,151,58,.18);border-radius:14px;background:rgba(184,151,58,.025)">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:15px">🌙</span><span style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:300;letter-spacing:.02em;color:#D4AF5A">Режим Atlas Intelligence</span></div>'
+      +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.65;color:rgba(232,224,208,0.62)">'
+      +'<p style="margin:0 0 10px">Atlas создавался не для того, чтобы забирать ваше внимание весь день. Пока вы живёте своей жизнью, работаете, отдыхаете или проводите время с близкими, система непрерывно анализирует тысячи мировых сигналов, отсеивает информационный шум и формирует стратегическую картину происходящего.</p>'
+      +'<p style="margin:0 0 10px">Оптимальный режим работы с Atlas — одна вечерняя аналитическая сессия продолжительностью 30–60 минут. За это время вы увидите всё действительно важное, что изменилось за день, поймёте ключевые тенденции и получите целостное представление о ситуации — без необходимости следить за новостями каждый час.</p>'
+      +'<p style="margin:0;color:rgba(212,175,90,0.75);font-style:italic">Днём живите своей жизнью. Вечером посвятите час пониманию будущего.</p>'
+      +'</div></div>';
     try{ var _aG={}; if(window._COV_TOTALS&&_COV_TOTALS.global)_aG=_COV_TOTALS.global; h+='<div style="margin-top:18px;border-top:0.5px solid rgba(184,151,58,0.18);padding-top:14px">'+(window._atlasAbout?window._atlasAbout(null,37,_aG):'')+'</div>'; h+='<div style="margin-top:16px"><div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-family:\'Montserrat\',sans-serif">Надёжность модели</div><div class="grdf-acc-card"><div><div class="grdf-acc-label">Надёжность модели</div><div class="grdf-acc-sub">Средняя подтверждённая точность стратегических выводов Atlas Intelligence</div></div><div class="grdf-acc-val" id="grdf-acc-score">78%</div></div></div>'; }catch(_e){}
     body.innerHTML=h; try{ if(window.grdfLoadAccuracyData) window.grdfLoadAccuracyData(); }catch(_e){} if(typeof _mountTgLogin==='function') _mountTgLogin();
   }
