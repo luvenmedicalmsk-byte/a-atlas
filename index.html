@@ -10189,7 +10189,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
   };
   // Tier map — covers free/signal/strategic/elite so Strategic Pro / Elite plug in with no rework
   var CAB_TIER={
-    free:{label:'Free',full:'Бесплатный доступ',member:false},
+    free:{label:'Free',full:'Базовый профиль',member:false},
     signal:{label:'Signal Pro',full:'Архив + Signal Pro',member:true},
     strategic:{label:'Strategic Pro',full:'Strategic Pro',member:true},
     elite:{label:'Elite',full:'Elite',member:true}
@@ -10212,7 +10212,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
   function render(){
     var body=document.getElementById('cab-body'); if(!body) return;
     var tier=tierNow(), info=CAB_TIER[tier]||CAB_TIER.free, h='';
-    h+='<h2 class="cab-title">Личный кабинет</h2>';
+    h+='<h2 class="cab-title">Личный кабинет Atlas</h2>';
+      h+='<div class="cab-title-sub" style="font:400 12.5px Montserrat,sans-serif;color:rgba(203,213,225,.5);margin:-4px 0 16px;line-height:1.4">Управление доступом к системе Atlas Intelligence.</div>';
     if(info.member){
       var _spx=null; try{_spx=localStorage.getItem('cc_sp_exp')||null;}catch(_e){}
       var _MM=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -10271,7 +10272,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
       h+='</div>';
       h+='<div class="cab-logout"><button class="cab-btn" onclick="cabLogout()">Выйти</button></div>';
     } else {
-      h+='<div class="cab-statuscard"><div class="cab-sc-tier"><span class="cab-sc-dot" style="background:#6b7280;box-shadow:none"></span>Бесплатный доступ</div><div class="cab-sc-sub">Базовые сигналы и профили стран</div></div>';
+      h+='<div class="cab-statuscard"><div class="cab-sc-tier"><span class="cab-sc-dot" style="background:#6b7280;box-shadow:none"></span>Базовый профиль</div><div class="cab-sc-sub">Доступ к базовым сигналам и профилям стран</div></div>';
       h+='<div class="cab-seclabel">Вход в систему</div>';
       h+='<input id="cab-code" class="cab-input" placeholder="Код доступа" autocapitalize="off" autocomplete="off">';
       h+='<button class="cab-btn" onclick="cabLogin()">Войти</button>';
@@ -10280,13 +10281,14 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
       h+='<div id="cab-login-msg" class="cab-msg"></div>';
       
       h+='<div class="cab-divider"></div>';
-      h+='<div class="cab-seclabel">Расширенный доступ</div>';
+      h+='<div class="cab-seclabel" style="font:700 13px Montserrat,sans-serif;letter-spacing:.01em;text-transform:none;color:#E3B23C">Откройте полный потенциал Atlas</div>';
+      h+='<div style="font:400 12px Montserrat,sans-serif;color:rgba(203,213,225,.55);margin:6px 0 12px;line-height:1.5">Получите доступ к прогнозам системы, скрытым взаимосвязям, архиву исследований и стратегическим выводам, недоступным в открытой версии.</div>';
       h+='<div class="cab-value">'
         +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.signal+'</span>Signal Pro — прогноз 7 дней и риск-драйверы</div>'
         +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.archive+'</span>Архив системных рисков и Country Intelligence</div>'
         +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.sub+'</span>Risk Matrix и уверенность модели</div>'
         +'</div>';
-      h+='<button class="cab-btn" onclick="closeCabinet();openAccess();">Получить доступ →</button>';
+      h+='<button class="cab-btn" onclick="closeCabinet();openAccess();">Получить полный доступ →</button>';
     }
     try{ var _aG={}; if(window._COV_TOTALS&&_COV_TOTALS.global)_aG=_COV_TOTALS.global; h+='<div style="margin-top:18px;border-top:0.5px solid rgba(184,151,58,0.18);padding-top:14px">'+(window._atlasAbout?window._atlasAbout(null,37,_aG):'')+'</div>'; h+='<div style="margin-top:16px"><div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-family:\'Montserrat\',sans-serif">Надёжность модели</div><div class="grdf-acc-card"><div><div class="grdf-acc-label">Надёжность модели</div><div class="grdf-acc-sub">Средняя подтверждённая точность стратегических выводов Atlas Intelligence</div></div><div class="grdf-acc-val" id="grdf-acc-score">78%</div></div></div>'; }catch(_e){}
     body.innerHTML=h; try{ if(window.grdfLoadAccuracyData) window.grdfLoadAccuracyData(); }catch(_e){} if(typeof _mountTgLogin==='function') _mountTgLogin();
