@@ -4071,6 +4071,19 @@ function renderTimeline(hist, todayScore) {
 
   if (points.length < 2) return;
 
+  // Sprint 3 P0: сглаживание отображения («пила») — скользящее среднее окном 3.
+  // Убирает зрительные зубцы day-to-day (39->68->42), сохраняя форму тренда.
+  // Только ОТОБРАЖЕНИЕ линии графика; модель/GRI/risk_score не меняются.
+  if (points.length >= 4) {
+    var _sm = points.map(function(v, i, a){
+      var lo = Math.max(0, i-1), hi = Math.min(a.length-1, i+1);
+      var s = 0, n = 0;
+      for (var k=lo; k<=hi; k++){ s += a[k]; n++; }
+      return s / n;
+    });
+    points = _sm;
+  }
+
   const minV = Math.min(...points) - 5;
   const maxV = Math.max(...points) + 5;
   const scaleY = v => H - ((v - minV) / (maxV - minV)) * (H - 8) - 4;
