@@ -902,7 +902,7 @@ function _h(s){ return '<div style="font-family:Montserrat,sans-serif;font-size:
 function _lock(inner){
   if(PRO)return inner;
   return '<div style="position:relative">'
-    +'<div style="filter:blur(4.5px);opacity:0.5;pointer-events:none;user-select:none">'+inner+'</div>'
+    +'<div style="filter:blur(2.5px);opacity:0.72;pointer-events:none;user-select:none">'+inner+'</div>'
     +'<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center">'
     +'<div onclick="_goPro()" style="font-family:Montserrat,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:20px;padding:7px 13px;cursor:pointer;white-space:nowrap">\uD83D\uDD12 Signal Pro</div>'
     +'</div></div>';
@@ -1020,7 +1020,7 @@ function renderArchive(){
     if(cel) cel.textContent='Атлас обнаружил области, где реальное влияние риска на систему отличается от общепринятых оценок.';
     var bars='';
     for(var i=0;i<4;i++){ bars+='<div style="padding:11px 0;border-top:0.5px solid rgba(255,255,255,0.06)"><div style="height:11px;width:'+(50+i*9)+'%;background:rgba(232,224,208,0.18);border-radius:3px;margin-bottom:6px"></div><div style="height:9px;width:'+(80-i*7)+'%;background:rgba(232,224,208,0.08);border-radius:3px"></div></div>'; }
-    el.innerHTML='<div style="filter:blur(6px);opacity:0.4;pointer-events:none;user-select:none">'+bars+'</div>';
+    el.innerHTML='<div style="filter:blur(2.5px);opacity:0.72;pointer-events:none;user-select:none">'+bars+'</div>';
     return;
   }
   var fel=document.getElementById('atlas-findings'); if(fel) fel.style.display='none'; var sell=document.getElementById('atlas-diverge-sell'); if(sell) sell.style.display='none';
