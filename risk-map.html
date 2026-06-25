@@ -1392,10 +1392,11 @@ html,body{overscroll-behavior-y:contain}
 .am-contract-title{font-size:8px;color:#D4AF5A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;}
 .am-contract-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-bottom:14px;}
 .am-contract-rows{display:flex;flex-direction:column;gap:10px;}
-.am-contract-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-left:12px;position:relative;}
+.am-contract-row{padding-left:12px;position:relative;font-size:11.5px;line-height:1.5;}
 .am-contract-row::before{content:'';position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#D4AF5A;}
-.am-cr-name{font-size:11.5px;color:#e7d9ad;font-family:'Montserrat',sans-serif;}
-.am-cr-term{font-size:10px;color:#A09080;font-family:'Montserrat',sans-serif;letter-spacing:.04em;white-space:nowrap;flex:0 0 auto;}
+.am-cr-name{color:#e7d9ad;}
+.am-cr-dash{color:#A09080;}
+.am-cr-term{color:#A09080;}
 .am-contract-item{font-size:11px;color:#e7d9ad;font-family:'Montserrat',sans-serif;padding-left:12px;position:relative;}
 .am-contract-item::before{content:'';position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#D4AF5A;}
 .am-contract-term{font-size:9px;color:#A09080;letter-spacing:.06em;border-top:0.5px solid rgba(184,151,58,.15);padding-top:11px;}
@@ -10090,10 +10091,10 @@ window.addEventListener('resize', function(){
     <div class="am-contract">
       <div class="am-contract-title">Контракт доступа</div>
       <div class="am-contract-rows">
-        <div class="am-contract-row"><span class="am-cr-name">Архив исследований</span><span class="am-cr-term">постоянный доступ</span></div>
-        <div class="am-contract-row"><span class="am-cr-name">Сигнал Про</span><span class="am-cr-term">1 год</span></div>
-        <div class="am-contract-row"><span class="am-cr-name">Атлас сигналов</span><span class="am-cr-term">1 год</span></div>
-        <div class="am-contract-row"><span class="am-cr-name">Все обновления платформы</span><span class="am-cr-term">1 год</span></div>
+        <div class="am-contract-row"><span class="am-cr-name">Архив исследований</span> <span class="am-cr-dash">—</span> <span class="am-cr-term">постоянный доступ</span></div>
+        <div class="am-contract-row"><span class="am-cr-name">Сигнал Про</span> <span class="am-cr-dash">—</span> <span class="am-cr-term">1 год</span></div>
+        <div class="am-contract-row"><span class="am-cr-name">Атлас сигналов</span> <span class="am-cr-dash">—</span> <span class="am-cr-term">1 год</span></div>
+        <div class="am-contract-row"><span class="am-cr-name">Все обновления платформы</span> <span class="am-cr-dash">—</span> <span class="am-cr-term">1 год</span></div>
       </div>
     </div>
 
