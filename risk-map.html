@@ -7663,8 +7663,7 @@ function _evM(val, lbl, col) {
   <div class="grdf-analytics-screen-inner">
     <div id="grdf-sysa-intro" style="margin-bottom:16px">
       <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#D4AF5A;line-height:1.22;letter-spacing:0.05em;margin-bottom:8px">Системный анализ</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.7;letter-spacing:0.03em">Стратегическая аналитика Atlas Intelligence объединяет текущие изменения, глобальную динамику, исторические параллели и сценарное моделирование, позволяя увидеть не только происходящее сейчас, но и вероятные направления дальнейшего развития ситуации.</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.7;letter-spacing:0.03em;margin-top:9px">Система автоматически анализирует тысячи сигналов, сопоставляет их с историческими моделями и формирует стратегические выводы без участия человека. Ниже — результаты работы аналитических движков Atlas Intelligence.</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.7;letter-spacing:0.03em">Системный анализ объединяет результаты аналитических движков Atlas Intelligence. Система автоматически анализирует тысячи сигналов, сопоставляет их с историческими моделями и формирует стратегические выводы без участия человека. Ниже представлены результаты анализа текущей глобальной ситуации.</div>
     </div>
     <div id="grdf-atlas-brief"></div>
     <div id="grdf-atlas-market"></div>
@@ -9164,9 +9163,9 @@ window._atlasRender = function(bEl, mEl, dEl, d){
     var h24t=(h24r!=null)?((h24r>=0?'+':'')+h24r+' п./сутки'):(ch.h24?ch.h24.text:'—');
     var d7t=(d7d!=null)?(d7d===0?'давление без изменений':((d7d>0?'+':'−')+Math.abs(d7d)+' п. за 7д')):(ch.d7?ch.d7.text:'—');
     var d30t=(d30p!=null)?('прогноз '+d30p+'/100'):(ch.d30?ch.d30.text:'—');
-    var changesHtml='<div class="sp-dyn"><span class="sp-dyn-d">24ч</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(h24t)+'</span></div>'
-      +'<div class="sp-dyn"><span class="sp-dyn-d">7д</span><span class="sp-dyn-v" style="color:'+((d7d!=null&&d7d>0)?'#ff7a00':(d7d!=null&&d7d<0?'#22c55e':'rgba(232,224,208,0.9)'))+'">'+esc(d7t)+'</span></div>'
-      +'<div class="sp-dyn"><span class="sp-dyn-d">30д</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(d30t)+'</span></div>'
+    var changesHtml='<div class="sp-dyn"><span class="sp-dyn-d">24 часа</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(h24t)+'</span></div>'
+      +'<div class="sp-dyn"><span class="sp-dyn-d">7 дней</span><span class="sp-dyn-v" style="color:'+((d7d!=null&&d7d>0)?'#ff7a00':(d7d!=null&&d7d<0?'#22c55e':'rgba(232,224,208,0.9)'))+'">'+esc(d7t)+'</span></div>'
+      +'<div class="sp-dyn"><span class="sp-dyn-d">30 дней</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(d30t)+'</span></div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 0;padding-top:9px;border-top:0.5px solid rgba(184,151,58,.12);font-family:Montserrat,sans-serif;font-size:9.5px;color:rgba(232,224,208,0.55);letter-spacing:.02em"><span><span style="color:#ff7a00;font-weight:700">▲</span> рост давления</span><span><span style="color:#22c55e;font-weight:700">▼</span> снижение давления</span></div>';
     var leadDom=(d.brief_free&&d.brief_free.lead_strategic)||'';
     var leadHtml=leadDom?('<div class="sp-dyn"><span class="sp-dyn-d">Текущий ведущий домен</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9)">'+esc(dlc(leadDom))+'</span></div>'):'';
@@ -9202,10 +9201,10 @@ window._atlasRender = function(bEl, mEl, dEl, d){
       if(np && np!==sl) P.push('Давление смещается в сторону домена «'+esc(dlc(np))+'»: именно он с наибольшей вероятностью станет следующим источником напряжения.');
       if(tT) P.push('Распространение идёт по каналу «'+esc(dlc(tT.source))+'» → «'+esc(dlc(tT.target))+'»: усиление в первом домене переносится во второй.');
       if(tR) P.push('Среди регионов давление концентрируется в зоне «'+esc(tR.region)+'»'+(((tR.delta||0)>0)?', где оно продолжает нарастать.':'.'));
-      if(tS) P.push('По совокупности признаков ситуация ближе всего к паттерну «'+esc((window._noEsc?window._noEsc(tS.name):tS.name))+'» ('+tS.match_pct+'% сходства с историческим шаблоном).');
+      if(tS) P.push('По результатам анализа текущая ситуация наиболее близка к историческому сценарию «'+esc((window._noEsc?window._noEsc(tS.name):tS.name))+'» ('+tS.match_pct+'% совпадения).');
       return P.slice(0,5).map(function(t){return '<p class="sp-p" style="margin:0 0 8px">'+t+'</p>';}).join('');
     })();
-    return '<div class="sp-section"><div class="sp-head"><span class="sp-badge">СТРАТЕГИЧЕСКАЯ АНАЛИТИКА</span></div><div class="sp-sub">'+esc(sub)+'</div><div class="sp-body"><div class="sp-blocks">'
+    return '<div class="sp-section"><div class="sp-head"><span class="sp-badge">Результаты анализа</span></div><div class="sp-sub">'+esc(sub)+'</div><div class="sp-body"><div class="sp-blocks">'
       +blk('Изменения', changesHtml)
       +(focusHtml?blk('Стратегический фокус', focusHtml):'')
       +(FB.conclusion_day?blk('Главный вывод дня','<p class="sp-p sp-key">'+esc(clip(FB.conclusion_day,2))+'</p>'):'')
@@ -9214,7 +9213,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
       +(regHtml?blk('Давление по регионам', subLine('Рейтинг регионов по уровню совокупного стратегического давления на текущий момент — какие регионы сейчас формируют основную нестабильность мировой системы.')+regHtml):'')
       +(trHtml?blk('Передача давления между доменами', subLine('Показывает, из какой сферы риск с наибольшей вероятностью распространится дальше.')+trHtml):'')
       +(scenHtml?blk('Сценарное соответствие', subLine('Сравнение текущей мировой ситуации с историческими сценариями из Архива исследований Atlas Intelligence.')+scenHtml):'')
-      +(synthHtml?blk('Стратегический вывод системы', synthHtml):'')
+      +(synthHtml?('<details class="sp-block grdf-acc" open style="background:rgba(184,151,58,.07);border:1px solid rgba(184,151,58,.35);border-radius:10px;padding:14px 15px;margin-top:6px"><summary class="grdf-acc-h" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#D4AF5A;font-family:Montserrat,sans-serif;margin-bottom:9px">Стратегический вывод системы<span class="grdf-acc-cv" style="color:#D4AF5A">›</span></summary>'+synthHtml+'</details>'):'')
       +(_systConcl?blk('Системное заключение', _systConcl):'')
       +'</div></div></div>';
   }
