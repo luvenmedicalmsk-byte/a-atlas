@@ -7846,6 +7846,31 @@ var DOMS=['climate','geopolitics','economy','technology','social'];
 }catch(_e){ return {source:'', prof:[]}; } }
 
 function _plu(n,a,b,c){var m=n%100;if(m>=11&&m<=14)return c;var d=n%10;return d===1?a:((d>=2&&d<=4)?b:c);}
+function _nowSummary(c, gri, ews, cri, dom, isSig){ try{
+  var lvl = gri>=71?'высокого давления' : gri>=51?'повышенного давления' : gri>=26?'умеренного давления':'низкого давления';
+  var domL = (typeof DOM_LABELS!=='undefined' && DOM_LABELS[dom]) ? DOM_LABELS[dom] : '';
+  var cc=(c.country||'').toUpperCase(); var cnLc=(c.country_name||'').toLowerCase();
+  var hasEv=false;
+  try{
+    var _ev=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS?ALL_EVENTS:[]);
+    hasEv=_ev.some(function(e){
+      var ccs=(e.country_codes||[]).map(function(x){return String(x||'').toUpperCase();});
+      if(ccs.indexOf(cc)>=0) return true;
+      if(String(e.country_code||'').toUpperCase()===cc) return true;
+      if(cnLc){var t=((e.title||'')+' '+(e.region||'')).toLowerCase(); return t.indexOf(cnLc)>=0;}
+      return false;
+    });
+  }catch(_e){}
+  var tempo = ews>=60?'быстрый' : ews>=35?'умеренный':'низкий';
+  var s1 = 'Сейчас страна находится в зоне ' + lvl + (domL?('. Основной риск формируется в контуре «'+domL+'»'):'') + '.';
+  var s2;
+  if(hasEv){
+    s2 = ' Скорость нарастания ' + tempo + '. ' + (ews>=60?'Система фиксирует ускорение сигналов.':'Признаков резкого ухудшения система пока не фиксирует.');
+  } else {
+    s2 = ' Это модельная оценка: свежих событий по стране сейчас нет, рейтинг отражает структурный фон.';
+  }
+  return '<div style="margin:10px 14px 2px;padding:12px 13px;background:rgba(184,151,58,.06);border:1px solid rgba(184,151,58,.18);border-radius:11px;font-size:12px;line-height:1.5;color:rgba(226,232,240,.9)"><span style="color:#B8973A;font-weight:600">Что это значит сейчас. </span>'+s1+s2+'</div>';
+}catch(_e){ return ''; } }
 function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   var cc=String(c.country||'').toUpperCase(), cnLc=String(c.country_name||'').toLowerCase();
   var evs=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS?ALL_EVENTS:[]).filter(function(e){
@@ -8928,6 +8953,7 @@ function grdfRenderCountryPanel(cc) {
   html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(203,213,225,.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(cri)+'</div>'+_miniCri+'</div>';
   html += '</div>';
   html += '<div id="grdf-idx-info" class="grdf-idx-info"></div>';
+  try{ html += _nowSummary(c, gri, ews, cri, dom, isSig); }catch(_e){}
   try{ html += _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig); }catch(_e){}
   if(isSig){
   html += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Ближе всего к порогу риска — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:#cbd5e1">'+s+'</div>';})();
