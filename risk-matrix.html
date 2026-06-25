@@ -220,8 +220,8 @@ body.mode-graph #graph-hint{display:flex}
 
 <div id="main">
   <div id="intro">
-    <h1>Граф взаимосвязей рисков</h1>
-    <p>Визуализация показывает, как системные риски связаны между собой. Размер точки отражает относительную значимость риска, а положение показывает баланс краткосрочного и долгосрочного воздействия. Анализ доступен на горизонтах 2, 5 и 10 лет.</p>
+    <h1 id="intro-title">Матрица рисков</h1>
+    <p id="intro-desc">Положение каждого риска определяется двумя показателями: краткосрочной и долгосрочной тяжестью. Размер точки отражает авторский индекс риска. Доступны горизонты анализа: 2, 5 и 10 лет.</p>
   </div>
 
   <div id="mode-toggle">
@@ -1117,6 +1117,16 @@ function drawNetwork(){
 function render(){ try{_hidePopover();}catch(e){} if(mode==='graph') drawNetwork(); else draw(); }
 function _applyMode(m){
   mode=m; var graph=(mode==='graph');
+  try{
+    var _t=document.getElementById('intro-title'), _d=document.getElementById('intro-desc');
+    if(graph){
+      if(_t) _t.textContent='Граф взаимосвязей рисков';
+      if(_d) _d.textContent='Перед вами карта скрытых взаимосвязей между глобальными рисками. Линии отражают силу влияния, а размер узлов — относительную значимость риска в общей системе. Граф показывает, какие события становятся источниками каскадных изменений и какие риски способны запускать цепные реакции в мировой системе.';
+    } else {
+      if(_t) _t.textContent='Матрица рисков';
+      if(_d) _d.textContent='Положение каждого риска определяется двумя показателями: краткосрочной и долгосрочной тяжестью. Размер точки отражает авторский индекс риска. Доступны горизонты анализа: 2, 5 и 10 лет.';
+    }
+  }catch(e){}
   ['x-label','y-label','y-axis','x-axis','tabs','desc-bar','top-risks'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display=graph?'none':''; });
   try{ cv.style.border=graph?'none':''; }catch(e){}
   var _gg=document.getElementById('graph-guide'); if(_gg) _gg.style.display=graph?'block':'none';
