@@ -8646,7 +8646,7 @@ window._spRenderCountryLocal = function(el, d, cname){
       +'<div class="sp-sub" style="font-size:11.5px;color:#b8973a;font-weight:500;letter-spacing:.04em;margin:0 0 11px;font-family:Montserrat,sans-serif">Интерпретация текущих сигналов</div>'
       +'<div class="sp-body"><div class="sp-block">'
       +ul(['Рейтинг стратегического влияния по доменам (0–100)','Прогноз стратегического влияния на 7 и 30 дней','Траектория и смещение стратегического давления','Карта переходов давления между доменами','Баланс фактического, стратегического и прогнозного давления','Ключевой локальный вывод'])
-      +'<div class="sp-lock-t" style="margin:12px 0 14px;max-width:none">Signal Pro объясняет, что означают текущие сигналы и куда смещается давление.</div>'
+      +'<div class="sp-lock-t" style="margin:12px 0 14px;max-width:none">Закрытая аналитика объясняет, что означают текущие сигналы и куда смещается давление.</div>'
       +'<button class="sp-cta" onclick="openAccess()">Разблокировать возможности →</button>'
       +'</div></div></div></div>';
     return;
@@ -9221,7 +9221,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
     return '<p class="sp-p sp-key">'+t+'</p>';
   }catch(e){ return ''; } })();
   if(isPro){
-    bEl.innerHTML=renderFull('Полная интерпретация · ваш доступ Signal Pro');
+    bEl.innerHTML=renderFull('Полная интерпретация · Atlas Intelligence');
     if(dEl) dEl.innerHTML='';
     return;
   }
@@ -9236,10 +9236,10 @@ window._atlasRender = function(bEl, mEl, dEl, d){
          +'<div class="sp-dyn"><span class="sp-dyn-d">Изменение за 7 дней</span><span class="sp-dyn-v" style="color:'+dirCol+'">'+dirTxt+' п.</span></div>'
          +'<div class="sp-dyn"><span class="sp-dyn-d">Ведущий стратегический домен</span><span class="sp-dyn-v" style="color:#cbd5e1">'+esc(dlc(BF.lead_strategic))+lbadge(BF.lead_strategic_level)+'</span></div>')
       +(BF.summary?blk('Обзор','<p class="sp-p">'+esc(BF.summary)+'</p>'):'');
-    bEl.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">ATLAS BRIEF · ОБЗОР</span></div><div class="sp-sub">Открытый уровень'+(BF.countries_count?(' · '+BF.countries_count+' стран'):'')+'</div><div class="sp-body"><div class="sp-blocks">'+freeBlocks+'</div></div></div>';
+    bEl.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">МИРОВАЯ СИТУАЦИЯ</span></div><div class="sp-sub">Открытый обзор стратегической обстановки'+(BF.countries_count?(' · '+BF.countries_count+' стран'):'')+'</div><div class="sp-body"><div class="sp-blocks">'+freeBlocks+'</div></div></div>';
   } else bEl.innerHTML='';
   if(dEl){
-    dEl.innerHTML='<div class="sp-section" style="margin-top:14px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:14px"><div class="sp-head"><span class="sp-badge">🔒 SIGNAL PRO · СТРАТЕГИЧЕСКАЯ АНАЛИТИКА</span></div><div class="sp-sub">Закрытый уровень</div><div class="sp-body"><div class="sp-block"><ul class="sp-ul"><li>Полный Atlas Brief: изменения 24ч / 7д / 30д, выводы дня и недели</li><li>Глобальная динамика: GSP и SFI по доменам</li><li>Динамика по регионам мира</li><li>Карта передачи давления (PTS)</li><li>Прогнозные траектории и сравнение доменов</li></ul><div class="sp-lock-t" style="margin:12px 0 14px;max-width:none">Вся глубокая интерпретация, прогнозные траектории и глобальные взаимосвязи доступны в Signal Pro.</div><button class="sp-cta" onclick="grdfOpenUpgrade(\'signal_pro\')">Открыть Signal Pro</button></div></div></div>';
+    dEl.innerHTML='<div class="sp-section" style="margin-top:14px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:14px"><div class="sp-head"><span class="sp-badge">🔒 ЗАКРЫТАЯ АНАЛИТИКА</span></div><div class="sp-sub">Расширенный уровень Atlas Intelligence</div><div class="sp-body"><div class="sp-block"><ul class="sp-ul"><li>Изменения стратегической ситуации за 24 часа, 7 и 30 дней</li><li>Динамика по геополитике, экономике, климату, технологиям и социуму</li><li>Анализ передачи стратегического давления между сферами риска</li><li>Прогнозные сценарии развития ситуации</li><li>Сравнительный анализ доменов</li><li>Стратегические выводы Atlas Intelligence</li></ul><div class="sp-lock-t" style="margin:12px 0 14px;max-width:none">Полная аналитика, сценарное моделирование и стратегические выводы доступны только в закрытом доступе Atlas Intelligence.</div><button class="sp-cta" onclick="openAccess()">Запросить доступ →</button></div></div></div>';
   }
 };
 window._atlasAbout = function(d, nCountries, gc){
@@ -9617,7 +9617,7 @@ window._spRender = function(el,d){
     +block('Каскадные сценарии',cascHtml||'<p class="sp-p">Каскадные цепочки пока не формируются.</p>')
     +block('Ключевой вывод дня','<p class="sp-p sp-key">'+esc(d.key||'')+'</p>');
   var weekly = d.weekly ? ('<div class="sp-block" style="border-color:rgba(184,151,58,.32);background:rgba(184,151,58,.07);margin-top:10px"><div class="sp-block-h" style="color:#D4AF5A">Главный вывод недели</div><p class="sp-p sp-key">'+esc(d.weekly)+'</p></div>') : '';
-  el.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">SIGNAL PRO</span></div>'
+  el.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">АНАЛИТИКА СИГНАЛОВ</span></div>'
     +'<div class="sp-sub">Аналитическая интерпретация сигналов</div>'
     +'<div class="sp-body"><div class="sp-blocks">'+blocks+'</div>'+weekly+'</div></div>';
 };
@@ -9634,11 +9634,11 @@ window._renderSignalPro = function(M){
   var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
   var base=(typeof API!=='undefined'&&API)?API:'https://api.a-atlas.com';
   var h={'Content-Type':'application/json'}; if(tok) h['X-Snapshot-Token']=tok;
-  if(el.getAttribute('data-done')!=='1') el.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">SIGNAL PRO</span></div><div class="sp-sub">Аналитическая интерпретация сигналов</div><div class="sp-body"><div class="sp-blocks"><div class="sp-block"><div class="sp-p" style="opacity:.5">Загрузка аналитики…</div></div></div></div></div>';
+  if(el.getAttribute('data-done')!=='1') el.innerHTML='<div class="sp-section"><div class="sp-head"><span class="sp-badge">АНАЛИТИКА СИГНАЛОВ</span></div><div class="sp-sub">Аналитическая интерпретация сигналов</div><div class="sp-body"><div class="sp-blocks"><div class="sp-block"><div class="sp-p" style="opacity:.5">Загрузка аналитики…</div></div></div></div></div>';
   fetch(base+'/api/signal-pro',{method:'POST',headers:h,body:JSON.stringify(payload)})
     .then(function(r){ return r.json(); })
     .then(function(d){ if(el.getAttribute('data-sig')!==sig) return; window._spRender(el,d); el.setAttribute('data-done','1'); })
-    .catch(function(){ window._spRender(el,{locked:true,title:'Signal Pro',description:'Получите доступ к аналитической интерпретации сигналов, последствиям и каскадным сценариям.'}); });
+    .catch(function(){ window._spRender(el,{locked:true,title:'Закрытая аналитика',description:'Получите доступ к аналитической интерпретации сигналов, последствиям и каскадным сценариям.'}); });
 };
 window.grdfRenderRadar = function(force){
   var canvas = document.getElementById('grdf-radar-canvas');
