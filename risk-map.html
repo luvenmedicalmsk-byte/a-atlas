@@ -10212,7 +10212,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
   function render(){
     var body=document.getElementById('cab-body'); if(!body) return;
     var tier=tierNow(), info=CAB_TIER[tier]||CAB_TIER.free, h='';
-    h+='<h2 class="cab-title">Личный кабинет Atlas</h2>';
+    h+='<h2 class="cab-title">Личный кабинет</h2>';
       h+='<div class="cab-title-sub" style="font:400 12.5px Montserrat,sans-serif;color:rgba(203,213,225,.5);margin:-4px 0 16px;line-height:1.4">Управление доступом к системе Atlas Intelligence.</div>';
     if(info.member){
       var _spx=null; try{_spx=localStorage.getItem('cc_sp_exp')||null;}catch(_e){}
@@ -10241,7 +10241,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         +'<div class="cab-sc-sub">Полный доступ активен</div>'
         +(_since?'<div class="cab-since">Участник с '+_since+'</div>':'')
         +'</div>';
-      var _mods=['Архив исследований','Signal Pro','Атлас рисков','Карта взаимосвязей','Аналитика стран','Сценарии и прогнозы','Стратегические активы'];
+      var _mods=['Архив исследований','Сигнал Про','Атлас рисков','Карта взаимосвязей','Профили стран','Сценарии и прогнозы','Стратегические активы'];
       h+='<div class="cab-seclabel">Доступные модули</div><div class="cab-mods">';
       for(var _im=0;_im<_mods.length;_im++){ h+='<div class="cab-mod"><span class="cab-mod-ck">'+_CK+'</span>'+_mods[_im]+'</div>'; }
       h+='</div>';
@@ -10253,7 +10253,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
       }
       h+='<div class="cab-seclabel">Статус доступа</div><div class="cab-list">';
       h+=row('archive','Архив','<span style="color:#D4AF5A">Постоянный доступ</span>');
-      h+=row('signal','Signal Pro',_spDate?('до '+_spDate):'Активен');
+      h+=row('signal','Сигнал Про',_spDate?('до '+_spDate):'Активен');
       h+=row('history','Дата активации',_act?_fd(_act):'—');
       h+=row('access','Управление кодом доступа','', "cabAccess()");
       h+='</div>';
@@ -10281,14 +10281,17 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
       h+='<div id="cab-login-msg" class="cab-msg"></div>';
       
       h+='<div class="cab-divider"></div>';
-      h+='<div class="cab-seclabel" style="font:700 13px Montserrat,sans-serif;letter-spacing:.01em;text-transform:none;color:#E3B23C">Откройте полный потенциал Atlas</div>';
-      h+='<div style="font:400 12px Montserrat,sans-serif;color:rgba(203,213,225,.55);margin:6px 0 12px;line-height:1.5">Получите доступ к прогнозам системы, скрытым взаимосвязям, архиву исследований и стратегическим выводам, недоступным в открытой версии.</div>';
+      h+='<div class="cab-seclabel" style="font:700 13px Montserrat,sans-serif;letter-spacing:.01em;text-transform:none;color:#E3B23C">Откройте полный потенциал Атласа</div>';
+      h+='<div style="font:400 12px Montserrat,sans-serif;color:rgba(203,213,225,.55);margin:6px 0 12px;line-height:1.5">Получите доступ ко всем аналитическим возможностям Atlas Intelligence: прогнозам системы, радару рисков, графу взаимосвязей, архиву исследований, скрытым драйверам риска и стратегическим выводам, недоступным в открытой версии.</div>';
       h+='<div class="cab-value">'
-        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.signal+'</span>Signal Pro — прогноз 7 дней и риск-драйверы</div>'
-        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.archive+'</span>Архив системных рисков и Country Intelligence</div>'
-        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.sub+'</span>Risk Matrix и уверенность модели</div>'
+        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.signal+'</span>Сигнал Про — прогноз развития ситуации на 7 дней</div>'
+        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.signal+'</span>Радар рисков и стратегические сценарии</div>'
+        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.sub+'</span>Граф взаимосвязей между сферами риска</div>'
+        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.archive+'</span>Профили стран и архив системных исследований</div>'
+        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.sub+'</span>Матрица рисков и оценка уверенности модели</div>'
+        +'<div class="cab-value-item"><span class="cab-row-ic">'+CAB_IC.archive+'</span>Стратегические выводы и скрытые драйверы риска</div>'
         +'</div>';
-      h+='<button class="cab-btn" onclick="closeCabinet();openAccess();">Получить полный доступ →</button>';
+      h+='<button class="cab-btn" onclick="closeCabinet();openAccess();">Разблокировать все возможности Атласа →</button>';
     }
     try{ var _aG={}; if(window._COV_TOTALS&&_COV_TOTALS.global)_aG=_COV_TOTALS.global; h+='<div style="margin-top:18px;border-top:0.5px solid rgba(184,151,58,0.18);padding-top:14px">'+(window._atlasAbout?window._atlasAbout(null,37,_aG):'')+'</div>'; h+='<div style="margin-top:16px"><div style="font-size:11px;font-weight:600;color:rgba(212,175,90,0.75);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;font-family:\'Montserrat\',sans-serif">Надёжность модели</div><div class="grdf-acc-card"><div><div class="grdf-acc-label">Надёжность модели</div><div class="grdf-acc-sub">Средняя подтверждённая точность стратегических выводов Atlas Intelligence</div></div><div class="grdf-acc-val" id="grdf-acc-score">78%</div></div></div>'; }catch(_e){}
     body.innerHTML=h; try{ if(window.grdfLoadAccuracyData) window.grdfLoadAccuracyData(); }catch(_e){} if(typeof _mountTgLogin==='function') _mountTgLogin();
