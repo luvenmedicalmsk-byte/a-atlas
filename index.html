@@ -9849,7 +9849,7 @@ function grdfPopulateCountriesList(countries) {
   }
   function hdr(t,sub){ return '<div style="padding:11px 14px 5px"><div style="font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#9a7b2e;font-weight:600">'+t+'</div>'+(sub?'<div style="font-size:9px;color:#56708c;margin-top:2px">'+sub+'</div>':'')+'</div>'; }
   var ready = sorted.filter(function(c){ return READY[c.country]; });
-  var dev   = sorted.filter(function(c){ return !READY[c.country]; }).slice(0,30);
+  var dev   = sorted.filter(function(c){ return !READY[c.country]; });
   var html = '';
   if(ready.length){ html += hdr('Готово · национальные источники', 'полные данные'); ready.forEach(function(c){ html+=row(c,false); }); }
   if(dev.length){ html += hdr('В разработке', 'предварительная оценка'); dev.forEach(function(c){ html+=row(c,true); }); }
