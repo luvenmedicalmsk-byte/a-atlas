@@ -10106,13 +10106,8 @@ window.addEventListener('resize', function(){
 
 <script>
 function openAccess(){
-  document.getElementById('access-modal').classList.add('open');
-  document.body.style.overflow='hidden';
-  var bn=document.getElementById('grdf-bottom-nav');
-  if(bn) bn.style.display='none';
-  var sb=document.getElementById('grdf-signals-bar');
-  if(sb) sb.style.display='none';
-  try{ if(!window._accessHist){ history.pushState({atlasAccess:1},''); window._accessHist=true; } }catch(_){}
+  // Независимая страница доступа (отвязана от risk-matrix/iframe Связей)
+  location.href='access.html';
 }
 window.addEventListener("message", function(e){
   try{ if(e.origin!==location.origin) return; }catch(_){ return; }
