@@ -7664,6 +7664,7 @@ function _evM(val, lbl, col) {
     <div id="grdf-sysa-intro" style="margin-bottom:16px">
       <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#D4AF5A;line-height:1.22;letter-spacing:0.05em;margin-bottom:8px">Системный анализ</div>
       <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.7;letter-spacing:0.03em">Стратегическая аналитика Atlas Intelligence объединяет текущие изменения, глобальную динамику, исторические параллели и сценарное моделирование, позволяя увидеть не только происходящее сейчас, но и вероятные направления дальнейшего развития ситуации.</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.7;letter-spacing:0.03em;margin-top:9px">Система автоматически анализирует тысячи сигналов, сопоставляет их с историческими моделями и формирует стратегические выводы без участия человека. Ниже — результаты работы аналитических движков Atlas Intelligence.</div>
     </div>
     <div id="grdf-atlas-brief"></div>
     <div id="grdf-atlas-market"></div>
@@ -9208,11 +9209,11 @@ window._atlasRender = function(bEl, mEl, dEl, d){
       +(focusHtml?blk('Стратегический фокус', focusHtml):'')
       +(FB.conclusion_day?blk('Главный вывод дня','<p class="sp-p sp-key">'+esc(clip(FB.conclusion_day,2))+'</p>'):'')
       +(FB.conclusion_week?blk('Главный вывод недели','<p class="sp-p sp-key">'+esc(clip(FB.conclusion_week,2))+'</p>'):'')
-      +blk('Глобальная динамика по доменам (GSP)', subLine('Среднее глобальное давление по стратегическим доменам')+domHtml+gspNote)
-      +(regHtml?blk('Давление по регионам', subLine('Регионы с наибольшим стратегическим давлением')+regHtml):'')
-      +(trHtml?blk('Передача давления между доменами', subLine('Наиболее вероятные направления передачи стратегического давления между доменами')+trHtml):'')
-      +(scenHtml?blk('Сценарное соответствие', scenHtml):'')
-      +(synthHtml?blk('Стратегический синтез', synthHtml):'')
+      +blk('Глобальная динамика по доменам (GSP)', subLine('Распределение стратегического давления по ключевым сферам мировой системы. Чем выше показатель, тем сильнее влияние соответствующего домена на текущую глобальную ситуацию.')+domHtml+gspNote)
+      +(regHtml?blk('Давление по регионам', subLine('Рейтинг регионов по уровню совокупного стратегического давления на текущий момент — какие регионы сейчас формируют основную нестабильность мировой системы.')+regHtml):'')
+      +(trHtml?blk('Передача давления между доменами', subLine('Показывает, из какой сферы риск с наибольшей вероятностью распространится дальше.')+trHtml):'')
+      +(scenHtml?blk('Сценарное соответствие', subLine('Сравнение текущей мировой ситуации с историческими сценариями из Архива исследований Atlas Intelligence.')+scenHtml):'')
+      +(synthHtml?blk('Стратегический вывод системы', synthHtml):'')
       +(_systConcl?blk('Системное заключение', _systConcl):'')
       +'</div></div></div>';
   }
