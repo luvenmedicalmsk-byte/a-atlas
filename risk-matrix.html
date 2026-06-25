@@ -99,7 +99,7 @@ body.mode-graph #graph-hint{display:flex}
 #hz-lock .hzl-ic{width:28px;height:28px;color:var(--gold-light);margin:0 auto 12px;display:block}
 #hz-lock .hzl-title{font-family:'Cormorant Garamond',serif;font-size:21px;color:var(--text);margin-bottom:8px;line-height:1.25}
 #hz-lock .hzl-sub{font-family:'Montserrat',sans-serif;font-size:11.5px;color:var(--text2);line-height:1.55;margin-bottom:15px}
-#hz-lock .hzl-btn{display:inline-block;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#06050A;background:var(--gold-light);border:none;border-radius:8px;padding:11px 18px;cursor:pointer}
+#hz-lock .hzl-btn{display:inline-block;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;letter-spacing:.02em;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:13px 24px;cursor:pointer}
 #y-axis{
   position:absolute;left:0;top:0;bottom:28px;width:36px;
   display:flex;flex-direction:column;justify-content:space-between;
@@ -1156,9 +1156,9 @@ function _applyHorizonLock(){
   if(!locked){ lk.style.display='none'; return; }
   var ic='<svg class="hzl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>';
   if(curH==='10y'){
-    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-sub">Долгосрочная аналитика основана на исследованиях Архива 2023\u20132026.</div><button class="hzl-btn" onclick="_openArchive()">Открыть Архив</button></div>';
+    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-sub">Долгосрочные прогнозы, исторические параллели и стратегические сценарии формируются на основе Архива исследований Atlas Intelligence.</div><button class="hzl-btn" onclick="_goPro()">Запросить доступ \u2192</button></div>';
   } else {
-    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-title">Доступно в Signal Pro</div><div class="hzl-sub">Горизонт 5 лет: точки и аналитика открываются в подписке Signal Pro.</div><button class="hzl-btn" onclick="_goPro()">Открыть Signal Pro \u2192</button></div>';
+    lk.innerHTML='<div class="hzl-card">'+ic+'<div class="hzl-title">Доступно в расширенной версии</div><div class="hzl-sub">Матрица рисков на горизонте 5 лет, полная аналитика и стратегические взаимосвязи доступны в закрытом доступе Atlas Intelligence.</div><button class="hzl-btn" onclick="_goPro()">Разблокировать возможности \u2192</button></div>';
   }
   lk.style.display='flex';
 }
