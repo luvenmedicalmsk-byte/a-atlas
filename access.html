@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Закрытый доступ — Atlas Intelligence</title>
+<meta property="og:url" content="https://a-atlas.com/access.html">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#06050A;color:#cbd5e1;font-family:'Montserrat',sans-serif;-webkit-font-smoothing:antialiased}
+#access-modal{
+  position:relative;min-height:100vh;
+  background:rgba(6,5,10,0.92);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:20px 16px 40px;
+}
+
+.am-close{
+  position:absolute;top:14px;right:14px;
+  width:28px;height:28px;
+  background:transparent;
+  border:1px solid rgba(184,151,58,.2);border-radius:0;
+  color:#A89878;font-size:14px;cursor:pointer;transition:all .2s;
+}
+.am-close:hover{border-color:#B8973A;color:#D4AF5A;}
+.am-inner{max-width:400px;margin:0 auto;padding-top:10px;}
+.am-eyebrow{font-size:8px;color:#B8973A;letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.am-eyebrow::before{content:'';width:18px;height:0.5px;background:#D4AF5A;}
+.am-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#cbd5e1;line-height:1.2;margin-bottom:6px;}
+.am-sub{font-size:10px;color:#cbd5e1;line-height:1.65;margin-bottom:18px;}
+.am-price-blk{border:1px solid rgba(184,151,58,.2);padding:14px 16px;margin-bottom:16px;position:relative;}
+.am-price-old{font-size:10px;color:#a09080;text-decoration:line-through;letter-spacing:.06em;margin-bottom:3px;}
+.am-price-main{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:#D4AF5A;letter-spacing:.02em;}
+.am-price-note{font-size:8px;color:#cbd5e1;letter-spacing:.1em;margin-top:4px;text-transform:uppercase;}
+.am-save{position:absolute;top:12px;right:12px;font-size:8px;color:#B8973A;border:1px solid rgba(184,151,58,.2);padding:2px 7px;letter-spacing:.08em;}
+.am-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;}
+.am-item{border:1px solid rgba(184,151,58,.08);padding:8px 10px;display:flex;align-items:flex-start;gap:7px;}
+.am-item-icon{font-size:13px;flex-shrink:0;margin-top:1px;}
+.am-item-text{font-size:9px;color:#C8BEA8;line-height:1.35;}
+.am-btn-main{
+  width:100%;padding:15px 24px;margin-bottom:8px;
+  background:transparent;
+  border:1px solid #E3B23C;border-radius:26px;
+  color:#E3B23C;font-family:'Montserrat',sans-serif;
+  font-size:13px;font-weight:700;letter-spacing:.02em;
+  cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  text-decoration:none;
+  transition:background .25s;
+}
+.am-btn-main:hover{background:rgba(227,178,60,.12);}
+.am-btn-sec{
+  width:100%;padding:10px;margin-bottom:8px;
+  background:transparent;
+  border:1px solid rgba(184,151,58,.3);border-radius:0;
+  color:#cbd5e1;font-family:'Montserrat',sans-serif;
+  font-size:11px;font-weight:300;letter-spacing:0.15em;
+  text-transform:uppercase;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  text-decoration:none;transition:all .3s;
+}
+.am-btn-sec:hover{border-color:#D4AF5A;color:#D4AF5A;}
+.am-btn-usdt{
+  width:100%;padding:10px;
+  background:transparent;
+  border:1px solid rgba(0,212,255,.5);border-radius:0;
+  color:#00D4FF;font-family:'Montserrat',sans-serif;
+  font-size:11px;font-weight:300;letter-spacing:0.15em;
+  text-transform:uppercase;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  text-decoration:none;transition:all .3s;
+}
+.am-btn-usdt:hover{border-color:#00D4FF;background:rgba(0,212,255,.06);color:#7ae8ff;}
+.am-access-label{font-size:8px;color:#D4AF5A;letter-spacing:.15em;text-transform:uppercase;margin:18px 0 12px;}
+.am-vlist{display:flex;flex-direction:column;gap:9px;margin-bottom:18px;}
+.am-vrow{display:flex;align-items:flex-start;gap:9px;font-size:11.5px;color:#cbd5e1;line-height:1.45;font-family:'Montserrat',sans-serif;}
+.am-vck{color:#D4AF5A;font-size:11px;flex:0 0 auto;margin-top:1px;}
+.am-contract{border:0.5px solid rgba(184,151,58,.25);border-radius:12px;padding:16px;margin-bottom:18px;background:rgba(184,151,58,.04);}
+.am-contract-title{font-size:8px;color:#D4AF5A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;}
+.am-contract-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-bottom:14px;}
+.am-contract-item{font-size:11px;color:#e7d9ad;font-family:'Montserrat',sans-serif;padding-left:12px;position:relative;}
+.am-contract-item::before{content:'';position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#D4AF5A;}
+.am-contract-term{font-size:9px;color:#A09080;letter-spacing:.06em;border-top:0.5px solid rgba(184,151,58,.15);padding-top:11px;}
+.am-divider{height:1px;background:rgba(184,151,58,.15);margin:16px 0;}
+.am-how-title{font-size:8px;color:#cbd5e1;letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px;}
+.am-step{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;}
+.am-step-num{width:20px;height:20px;border:1px solid rgba(184,151,58,.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:#D4AF5A;flex-shrink:0;margin-top:1px;}
+.am-step-text{font-size:10px;color:#C8BEA8;line-height:1.5;}
+.am-foot{text-align:center;font-size:8px;color:#A09080;margin-top:14px;letter-spacing:.08em;}
+#access-modal,
+#access-modal *,
+.free-lock-block,
+.free-lock-block * {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+}
+.am-price-main {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.02em;
+}
+.am-price-old {
+  font-family: 'Montserrat', sans-serif !important;
+  font-weight: 300 !important;
+}
+.am-btn-usdt {
+  font-weight: 300 !important;
+}
+</style>
+</head>
+<body>
+<div id="access-modal">
+  <button class="am-close" onclick="history.length>1?history.back():location.href='/'">✕</button>
+  <div class="am-inner">
+    <div class="am-eyebrow">Atlas Intelligence</div>
+    <div class="am-title">Закрытый доступ<br>к <em>Atlas Intelligence</em></div>
+    <div class="am-sub">Профессиональная аналитическая система стратегических рисков, объединяющая прогнозирование, многодоменный анализ, сценарное моделирование и архив исследований.</div>
+
+    <div class="am-access-label">Что входит в закрытый доступ</div>
+    <div class="am-vlist">
+      <div class="am-vrow"><span class="am-vck">✓</span>Архив исследований и системных рисков</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Атлас сигналов в режиме реального времени</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Сигнал Про — прогноз развития ситуации на 7 дней</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Радар рисков и стратегические сценарии</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Граф взаимосвязей между событиями</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Полные профили стран и их аналитика</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Стратегические выводы системы</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Исторические параллели</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Матрица рисков</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Скрытые драйверы риска</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Все будущие обновления платформы</div>
+    </div>
+
+    <div class="am-contract">
+      <div class="am-contract-title">Контракт доступа</div>
+      <div class="am-contract-grid">
+        <div class="am-contract-item">Архив исследований</div>
+        <div class="am-contract-item">Атлас сигналов</div>
+        <div class="am-contract-item">Сигнал Про</div>
+        <div class="am-contract-item">Все обновления платформы</div>
+      </div>
+      <div class="am-contract-term">Срок действия контракта — 1 год</div>
+    </div>
+
+    <div class="am-divider"></div>
+    <div class="am-how-title">Как получить доступ</div>
+    <div class="am-step"><div class="am-step-num">1</div><div class="am-step-text">Отправьте заявку персональному менеджеру Atlas</div></div>
+    <div class="am-step"><div class="am-step-num">2</div><div class="am-step-text">Получите индивидуальную консультацию по платформе</div></div>
+    <div class="am-step"><div class="am-step-num">3</div><div class="am-step-text">Менеджер поможет выбрать формат подключения и ответит на вопросы</div></div>
+    <div class="am-step"><div class="am-step-num">4</div><div class="am-step-text">После подтверждения вы получите доступ к системе</div></div>
+
+    <a href="https://t.me/anirisao" target="_blank" class="am-btn-main">Запросить доступ →</a>
+  </div>
+</div>
+
+<script>
+function openAccess(){
+  document.getElementById('access-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+  var bn=document.getElementById('grdf-bottom-nav');
+  if(bn) bn.style.display='none';
+  var sb=document.getElementById('grdf-signals-bar');
+  if(sb) sb.style.display='none';
+  try{ if(!window._accessHist){ history.pushState({atlasAccess:1},''); window._accessHist=true; } }catch(_){}
+}
+window.addEventListener("message", function(e){
+  try{ if(e.origin!==location.origin) return; }catch(_){ return; }
+  if(e.data && e.data.type==="atlas-open-access"){
+    try{ grdfNavTo("map"); }catch(_){}
+    if(typeof openAccess==="function") openAccess();
+  }
+  if(e.data && e.data.type==="atlas-open-archive"){
+    try{ grdfNavTo("matrix"); }catch(_){}
+    try{ connSetMode("analysis"); }catch(_){}
+  }
+});
+function closeAccess(){
+  var _wasOpen=document.getElementById('access-modal').classList.contains('open');
+  document.getElementById('access-modal').classList.remove('open');
+  document.body.style.overflow='';
+  var bn=document.getElementById('grdf-bottom-nav');
+  if(bn) bn.style.removeProperty('display');
+  var sb=document.getElementById('grdf-signals-bar');
+  if(sb) sb.style.removeProperty('display');
+  try{ if(window._accessHist){ window._accessHist=false; if(_wasOpen && history.state && history.state.atlasAccess) history.back(); } }catch(_){}
+}
+window.addEventListener('popstate', function(){
+  var m=document.getElementById('access-modal');
+  if(m && m.classList.contains('open')){
+    window._accessHist=false;
+    m.classList.remove('open');
+    document.body.style.overflow='';
+    var bn=document.getElementById('grdf-bottom-nav'); if(bn) bn.style.removeProperty('display');
+    var sb=document.getElementById('grdf-signals-bar'); if(sb) sb.style.removeProperty('display');
+  }
+});
+
+
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess();});
+</script>
+</body>
+</html>
