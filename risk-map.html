@@ -1751,7 +1751,7 @@ function setBaseMap(kind){
   [_baseDark,_labelsDark,_baseSat,_labelsSat].forEach(function(l){ if(map.hasLayer(l)) map.removeLayer(l); });
   var attr='© CARTO · © OpenStreetMap';
   if(kind==='sat'){ _baseSat.addTo(map); if(!_satHasLabels) _labelsSat.addTo(map); attr=MAPTILER_KEY?'© MapTiler · © OpenStreetMap, Maxar':'© Esri · Maxar'; }
-  else { kind='dark'; _baseDark.addTo(map); _labelsDark.addTo(map); }
+  else { kind='dark'; _baseDark.addTo(map); _labelsSat.addTo(map); }  // англоязычные подписи Esri вместо мультиязычных CartoDB (AFRIKA/أفريقا)
   var at=document.getElementById('map-attr-text'); if(at) at.textContent=attr;
   var _mc=document.getElementById('map'); if(_mc) _mc.classList.toggle('sat-active', kind==='sat');
   try{ localStorage.setItem('grdf_base', kind); }catch(_){}
