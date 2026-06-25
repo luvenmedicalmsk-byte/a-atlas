@@ -7869,7 +7869,7 @@ function _nowSummary(c, gri, ews, cri, dom, isSig){ try{
   } else {
     s2 = ' Это модельная оценка: свежих событий по стране сейчас нет, рейтинг отражает структурный фон.';
   }
-  return '<div style="margin:10px 14px 2px;padding:12px 13px;background:rgba(184,151,58,.06);border:1px solid rgba(184,151,58,.18);border-radius:11px;font-size:12px;line-height:1.5;color:rgba(226,232,240,.9)"><span style="color:#B8973A;font-weight:600">Что это значит сейчас. </span>'+s1+s2+'</div>';
+  return '<div style="margin:10px 14px 14px;padding:12px 13px;background:rgba(184,151,58,.06);border:1px solid rgba(184,151,58,.18);border-radius:11px;font-size:12px;line-height:1.5;color:rgba(226,232,240,.9)"><span style="color:#B8973A;font-weight:600">Что это значит сейчас. </span>'+s1+s2+'</div>';
 }catch(_e){ return ''; } }
 function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   var cc=String(c.country||'').toUpperCase(), cnLc=String(c.country_name||'').toLowerCase();
