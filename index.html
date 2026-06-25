@@ -9188,7 +9188,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
         var col=s.match_pct>=70?'#ff7a00':(s.match_pct>=45?'#eab308':'rgba(232,224,208,0.6)');
         var mh=(s.matching&&s.matching.length)?('<div style="font-size:10px;color:rgba(148,163,184,.78);margin-top:3px">Совпадает: '+esc(s.matching.join(', '))+'</div>'):'';
         var dh=(s.differences&&s.differences.length)?('<div style="font-size:10px;color:rgba(148,163,184,.55);margin-top:1px">Отличия: '+esc(s.differences.join('; '))+'</div>'):'';
-        return '<div style="margin:0 0 11px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;color:rgba(232,224,208,0.9)">'+esc(s.name)+'</span><span style="font-size:13px;font-weight:700;color:'+col+'">'+s.match_pct+'%</span></div>'+mh+dh+'</div>';
+        return '<div style="margin:0 0 11px"><div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;color:rgba(232,224,208,0.9)">'+esc(_noEsc(s.name))+'</span><span style="font-size:13px;font-weight:700;color:'+col+'">'+s.match_pct+'%</span></div>'+mh+dh+'</div>';
       }).join('')+'<p class="sp-note">'+esc(AR.scenario_disclaimer||'Сценарное соответствие отражает степень сходства с историческими паттернами и не является прогнозом вероятности событий.')+'</p>';
     }
     var synthHtml=(function(){
@@ -9199,7 +9199,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
       if(np && np!==sl) P.push('Давление смещается в сторону домена «'+esc(dlc(np))+'»: именно он с наибольшей вероятностью станет следующим источником напряжения.');
       if(tT) P.push('Распространение идёт по каналу «'+esc(dlc(tT.source))+'» → «'+esc(dlc(tT.target))+'»: усиление в первом домене переносится во второй.');
       if(tR) P.push('Среди регионов давление концентрируется в зоне «'+esc(tR.region)+'»'+(((tR.delta||0)>0)?', где оно продолжает нарастать.':'.'));
-      if(tS) P.push('По совокупности признаков ситуация ближе всего к паттерну «'+esc(tS.name)+'» ('+tS.match_pct+'% сходства с историческим шаблоном).');
+      if(tS) P.push('По совокупности признаков ситуация ближе всего к паттерну «'+esc(_noEsc(tS.name))+'» ('+tS.match_pct+'% сходства с историческим шаблоном).');
       return P.slice(0,5).map(function(t){return '<p class="sp-p" style="margin:0 0 8px">'+t+'</p>';}).join('');
     })();
     return '<div class="sp-section"><div class="sp-head"><span class="sp-badge">СТРАТЕГИЧЕСКАЯ АНАЛИТИКА · ATLAS</span></div><div class="sp-sub">'+esc(sub)+'</div><div class="sp-body"><div class="sp-blocks">'
