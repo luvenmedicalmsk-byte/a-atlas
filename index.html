@@ -1386,6 +1386,17 @@ html,body{overscroll-behavior-y:contain}
 .am-btn-usdt:hover{border-color:#00D4FF;background:rgba(0,212,255,.06);color:#7ae8ff;}
 
 /* How it works */
+/* Экран закрытого доступа */
+.am-access-label{font-size:8px;color:#D4AF5A;letter-spacing:.15em;text-transform:uppercase;margin:18px 0 12px;}
+.am-vlist{display:flex;flex-direction:column;gap:9px;margin-bottom:18px;}
+.am-vrow{display:flex;align-items:flex-start;gap:9px;font-size:11.5px;color:#cbd5e1;line-height:1.45;font-family:'Montserrat',sans-serif;}
+.am-vck{color:#D4AF5A;font-size:11px;flex:0 0 auto;margin-top:1px;}
+.am-contract{border:0.5px solid rgba(184,151,58,.25);border-radius:12px;padding:16px;margin-bottom:18px;background:rgba(184,151,58,.04);}
+.am-contract-title{font-size:8px;color:#D4AF5A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;}
+.am-contract-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-bottom:14px;}
+.am-contract-item{font-size:11px;color:#e7d9ad;font-family:'Montserrat',sans-serif;padding-left:12px;position:relative;}
+.am-contract-item::before{content:'';position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#D4AF5A;}
+.am-contract-term{font-size:9px;color:#A09080;letter-spacing:.06em;border-top:0.5px solid rgba(184,151,58,.15);padding-top:11px;}
 .am-divider{height:1px;background:rgba(184,151,58,.15);margin:16px 0;}
 .am-how-title{font-size:8px;color:#cbd5e1;letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px;}
 .am-step{display:flex;align-items:flex-start;gap:9px;margin-bottom:8px;}
@@ -10055,39 +10066,46 @@ window.addEventListener('resize', function(){
 <div id="access-modal">
   <button class="am-close" onclick="closeAccess()">✕</button>
   <div class="am-inner">
-    <div class="am-eyebrow">Архив — Карта сигналов</div>
-    <div class="am-title">Архив +<br><em>Signal Pro</em></div>
-    <div class="am-sub">Аналитическая платформа системных рисков.<br>Сигналы до обострения — с вероятностью и рекомендацией.</div>
+    <div class="am-eyebrow">Atlas Intelligence</div>
+    <div class="am-title">Закрытый доступ<br>к <em>Atlas Intelligence</em></div>
+    <div class="am-sub">Профессиональная аналитическая система стратегических рисков, объединяющая прогнозирование, многодоменный анализ, сценарное моделирование и архив исследований.</div>
 
-    <div class="am-price-blk">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:3px;"><div class="am-price-old">250 000 ₽</div><div style="font-size:8px;padding:2px 8px;background:rgba(239,68,68,.12);border:0.5px solid rgba(239,68,68,.35);color:#f87171;letter-spacing:.08em;border-radius:3px;font-weight:600;">⏱ ТОЛЬКО 48 ЧАСОВ</div></div>
-      <div class="am-price-main">212 000 ₽</div>
-      <div class="am-price-note">Полный доступ · Тариф «Навсегда»</div>
-
+    <div class="am-access-label">Что входит в закрытый доступ</div>
+    <div class="am-vlist">
+      <div class="am-vrow"><span class="am-vck">✓</span>Архив исследований и системных рисков</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Атлас сигналов в режиме реального времени</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Сигнал Про — прогноз развития ситуации на 7 дней</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Радар рисков и стратегические сценарии</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Граф взаимосвязей между событиями</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Полные профили стран и их аналитика</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Стратегические выводы системы</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Исторические параллели</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Матрица рисков</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Скрытые драйверы риска</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Еженедельные аналитические брифинги</div>
+      <div class="am-vrow"><span class="am-vck">✓</span>Все будущие обновления платформы</div>
     </div>
 
-    <div class="am-grid">
-      <div class="am-item"><span class="am-item-icon">📚</span><div class="am-item-text"><strong>Архив</strong>системных рисков «Великое пробуждение»</div></div>
-      <div class="am-item"><span class="am-item-icon">⚡</span><div class="am-item-text"><strong>Signal Pro</strong>15 сигналов · горизонт 7д</div></div>
-      <div class="am-item"><span class="am-item-icon">🗺️</span><div class="am-item-text"><strong>Risk Matrix 2Y</strong>История 2 года</div></div>
-      <div class="am-item"><span class="am-item-icon">📊</span><div class="am-item-text"><strong>Risk Matrix 5Y</strong>Долгосрочный тренд</div></div>
-      <div class="am-item"><span class="am-item-icon">🌍</span><div class="am-item-text"><strong>Country Intel</strong>180+ стран</div></div>
-      <div class="am-item"><span class="am-item-icon">🔔</span><div class="am-item-text"><strong>EWS</strong>Раннее предупреждение</div></div>
-      <div class="am-item"><span class="am-item-icon">📋</span><div class="am-item-text"><strong>Брифинги</strong>Еженедельно</div></div>
-      <div class="am-item"><span class="am-item-icon">📈</span><div class="am-item-text"><strong>Прогнозы</strong>7д · 30д</div></div>
+    <div class="am-contract">
+      <div class="am-contract-title">Контракт доступа</div>
+      <div class="am-contract-grid">
+        <div class="am-contract-item">Архив исследований</div>
+        <div class="am-contract-item">Атлас сигналов</div>
+        <div class="am-contract-item">Сигнал Про</div>
+        <div class="am-contract-item">Все обновления платформы</div>
+      </div>
+      <div class="am-contract-term">Срок действия контракта — 1 год</div>
     </div>
-
-    <a href="https://payform.ru/bebmpSh/" target="_blank" class="am-btn-main">ОФОРМИТЬ ДОСТУП · 212 000 ₽ →</a>
-    <a href="https://t.me/anirisao" target="_blank" class="am-btn-sec">📋 Оформить рассрочку → Telegram</a>
-    <a href="https://t.me/anirisao" target="_blank" class="am-btn-usdt">₮ Оплатить в USDT → Telegram</a>
 
     <div class="am-divider"></div>
     <div class="am-how-title">Как получить доступ</div>
-    <div class="am-step"><div class="am-step-num">1</div><div class="am-step-text">Нажмите «Оформить доступ» — откроется страница оплаты Prodamus</div></div>
-    <div class="am-step"><div class="am-step-num">2</div><div class="am-step-text">После оплаты на ваш email придёт <strong>инструкция по подключению</strong></div></div>
+    <div class="am-step"><div class="am-step-num">1</div><div class="am-step-text">Отправьте заявку персональному менеджеру Atlas</div></div>
+    <div class="am-step"><div class="am-step-num">2</div><div class="am-step-text">Получите индивидуальную консультацию по платформе</div></div>
+    <div class="am-step"><div class="am-step-num">3</div><div class="am-step-text">Менеджер поможет выбрать формат подключения и ответит на вопросы</div></div>
+    <div class="am-step"><div class="am-step-num">4</div><div class="am-step-text">После подтверждения вы получите доступ к системе</div></div>
 
-
-    <div class="am-foot">Prodamus · Безопасная оплата</div>
+    <a href="https://t.me/anirisao" target="_blank" class="am-btn-main">Обсудить подключение с персональным менеджером →</a>
+    <div class="am-foot">Персональное сопровождение Atlas Intelligence</div>
   </div>
 </div>
 
