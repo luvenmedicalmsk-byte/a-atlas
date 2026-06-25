@@ -1213,10 +1213,10 @@ html,body{overscroll-behavior-y:contain}
   #grdf-warnings-screen,#grdf-countries-screen,#grdf-analytics-screen,#grdf-signals-screen,#grdf-alerts-screen{display:block;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
   #grdf-warnings-screen.visible,#grdf-countries-screen.visible,#grdf-analytics-screen.visible,#grdf-signals-screen.visible,#grdf-alerts-screen.visible{transform:translateX(0);pointer-events:all}
 }
-#grdf-matrix-screen{display:none;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:56px;z-index:120;background:rgba(6,5,10,0.97);backdrop-filter:blur(20px);padding-top:42px;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
-#grdf-matrix-screen.visible{display:flex;transform:translateX(0);pointer-events:all}
-#grdf-radar-screen{display:none;position:fixed;top:0;left:0;right:0;bottom:56px;z-index:120;background:rgba(6,5,10,0.97);backdrop-filter:blur(20px);overflow-y:auto;overscroll-behavior-y:contain;padding-top:42px;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
-#grdf-radar-screen.visible{display:block;transform:translateX(0);pointer-events:all}
+#grdf-matrix-screen{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:56px;z-index:120;background:rgba(6,5,10,0.97);backdrop-filter:blur(20px);padding-top:42px;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
+#grdf-matrix-screen.visible{transform:translateX(0);pointer-events:all}
+#grdf-radar-screen{display:block;position:fixed;top:0;left:0;right:0;bottom:56px;z-index:120;background:rgba(6,5,10,0.97);backdrop-filter:blur(20px);overflow-y:auto;overscroll-behavior-y:contain;padding-top:42px;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
+#grdf-radar-screen.visible{transform:translateX(0);pointer-events:all}
 #grdf-radar-canvas{display:flex;justify-content:center;padding:10px 10px 4px}
 .grdf-radar-legend{display:flex;flex-wrap:wrap;gap:7px 14px;justify-content:center;padding:8px 16px 12px;font-family:'Montserrat',sans-serif}
 .grdf-radar-lg{display:flex;align-items:center;gap:5px;font-size:10px;color:rgba(203,213,225,.82)}
