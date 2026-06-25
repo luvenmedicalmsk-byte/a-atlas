@@ -10124,12 +10124,12 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
 .cab-close svg{width:15px;height:15px}
 .cab-inner{max-width:540px;margin:0 auto;padding:54px 20px 70px}
 .cab-eyebrow{font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:rgba(184,151,58,.65);margin-bottom:6px}
-.cab-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#cbd5e1;margin:0 0 22px;line-height:1}
-.cab-statuscard{background:linear-gradient(160deg,rgba(184,151,58,.1),rgba(184,151,58,.02));border:0.5px solid rgba(184,151,58,.32);border-radius:13px;padding:15px 16px;margin-bottom:6px}
+.cab-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:#cbd5e1;margin:0 0 12px;line-height:1}
+.cab-statuscard{background:linear-gradient(160deg,rgba(184,151,58,.1),rgba(184,151,58,.02));border:0.5px solid rgba(184,151,58,.32);border-radius:13px;padding:12px 16px;margin-bottom:6px}
 .cab-sc-tier{display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif;font-size:21px;color:#E8C766;font-weight:600}
 .cab-sc-dot{width:7px;height:7px;border-radius:50%;background:#27AE60;box-shadow:0 0 7px #27AE60;flex-shrink:0}
 .cab-sc-sub{font-size:11px;color:rgba(203,213,225,.55);margin-top:4px;letter-spacing:.02em}
-.cab-seclabel{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(203,213,225,.3);margin:20px 0 8px}
+.cab-seclabel{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(203,213,225,.3);margin:12px 0 6px}
 .cab-list{display:flex;flex-direction:column;border:0.5px solid rgba(184,151,58,.13);border-radius:11px;overflow:hidden}
 .cab-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:0.5px solid rgba(184,151,58,.08)}
 .cab-row:last-child{border-bottom:none}
@@ -10142,17 +10142,18 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
 .cab-row-val.ok{color:#27AE60}
 .cab-chev{width:13px;height:13px;color:rgba(203,213,225,.28);flex-shrink:0;display:inline-flex}
 .cab-chev svg{width:100%;height:100%}
-.cab-input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.03);border:0.5px solid rgba(184,151,58,.25);border-radius:8px;padding:12px 13px;color:#cbd5e1;font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:.04em;outline:none}
+.cab-input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.03);border:0.5px solid rgba(184,151,58,.25);border-radius:8px;padding:10px 13px;color:#cbd5e1;font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:.04em;outline:none}
 .cab-input:focus{border-color:rgba(184,151,58,.6)}
 .cab-input::placeholder{color:rgba(203,213,225,.3)}
 .cab-btn{display:block;width:100%;box-sizing:border-box;padding:15px 24px;border:none;border-radius:26px;background:#E3B23C;color:#06050A;font-family:'Montserrat',sans-serif;font-size:13.5px;font-weight:700;letter-spacing:.02em;cursor:pointer;margin-top:10px;box-shadow:0 6px 22px rgba(227,178,60,.32)}
+.cab-btn-sm{padding:11px 24px;font-size:12.5px;box-shadow:none}
 .cab-btn:active{background:#d4a032}
 .cab-btn.ghost{background:transparent;border:0.5px solid rgba(184,151,58,.35);color:#C9A961}
 .cab-msg{font-size:11px;color:rgba(203,213,225,.5);margin-top:9px;min-height:14px;text-align:center}
 .cab-note{font-size:10.5px;color:rgba(203,213,225,.4);margin-top:9px;line-height:1.5;text-align:center}
 .cab-divider{height:0.5px;background:rgba(184,151,58,.14);margin:6px 0}
 .cab-tk{font-family:'Courier New',monospace;font-size:13px;color:rgba(203,213,225,.7);letter-spacing:.06em}
-.cab-value{display:flex;flex-direction:column;gap:10px;margin:12px 0 4px}
+.cab-value{display:flex;flex-direction:column;gap:10px;margin:8px 0 2px}
 .cab-value-item{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:rgba(203,213,225,.72);line-height:1.4}
 .cab-value-item .cab-row-ic{margin-top:1px}
 .cab-logout{margin-top:26px}
@@ -10275,8 +10276,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
       h+='<div class="cab-statuscard"><div class="cab-sc-tier"><span class="cab-sc-dot" style="background:#6b7280;box-shadow:none"></span>Базовый профиль</div><div class="cab-sc-sub">Доступ к базовым сигналам и профилям стран</div></div>';
       h+='<div class="cab-seclabel">Вход в систему</div>';
       h+='<input id="cab-code" class="cab-input" placeholder="Код доступа" autocapitalize="off" autocomplete="off">';
-      h+='<button class="cab-btn" onclick="cabLogin()">Войти</button>';
-      h+='<div class="cab-tg-or" style="text-align:center;color:#6b7280;font:400 11px Montserrat,sans-serif;margin:14px 0 8px;letter-spacing:.1em">— ИЛИ —</div>';
+      h+='<button class="cab-btn cab-btn-sm" onclick="cabLogin()">Войти</button>';
+      h+='<div class="cab-tg-or" style="text-align:center;color:#6b7280;font:400 11px Montserrat,sans-serif;margin:8px 0 6px;letter-spacing:.1em">— ИЛИ —</div>';
       h+='<div id="cab-tg-login" style="display:flex;justify-content:center;min-height:44px"></div>';
       h+='<div id="cab-login-msg" class="cab-msg"></div>';
       
