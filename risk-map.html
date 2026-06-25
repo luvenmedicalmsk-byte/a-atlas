@@ -8703,7 +8703,7 @@ window._spRenderCountryLocal = function(el, d, cname){
     var tinner='';
     ['high','medium','low'].forEach(function(b){ if(!groups[b].length) return;
       tinner+='<div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:'+bandCol(b)+';margin:8px 0 4px">'+bandLab(b)+'</div>';
-      tinner+=groups[b].map(function(x){ return '<div class="sp-dyn"><span class="sp-dyn-d" style="color:#cbd5e1">'+esc(dlc(x.source))+' → '+esc(dlc(x.target))+'</span><span class="sp-dyn-v" style="color:'+bandCol(x.band)+';font-weight:600">'+x.pts+'</span></div>'; }).join('');
+      tinner+=groups[b].map(function(x){ return '<div class="sp-dyn"><span class="sp-dyn-d" style="color:rgba(232,224,208,0.9)">'+esc(dlc(x.source))+' → '+esc(dlc(x.target))+'</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9);font-weight:600">'+x.pts+'</span></div>'; }).join('');
     });
     trans=blk('Вероятные переходы давления', tinner);
   }
@@ -9180,7 +9180,7 @@ window._atlasRender = function(bEl, mEl, dEl, d){
     var regHtml=(DY.by_region||[]).slice(0,8).map(function(r){ var dc=r.delta>0?'#ff7a00':(r.delta<0?'#22c55e':'#cbd5e1');
       return '<div class="sp-dyn"><span class="sp-dyn-d">'+esc(r.region)+'</span><span class="sp-dyn-v"><span style="color:rgba(232,224,208,0.9)">'+r.gri+'</span> <span style="color:'+dc+';font-size:10px">'+(r.delta>0?'+':'')+r.delta+'</span></span></div>'; }).join('');
     var trHtml=(DY.transitions||[]).slice(0,5).map(function(t){ var col=t.band==='high'?'#ff7a00':(t.band==='medium'?'#eab308':'rgba(203,213,225,.5)');
-      return '<div class="sp-dyn"><span class="sp-dyn-d" style="color:#cbd5e1">'+esc(dlc(t.source))+' → '+esc(dlc(t.target))+'</span><span class="sp-dyn-v" style="color:'+col+';font-weight:600">'+t.pts+'</span></div>'; }).join('');
+      return '<div class="sp-dyn"><span class="sp-dyn-d" style="color:rgba(232,224,208,0.9)">'+esc(dlc(t.source))+' → '+esc(dlc(t.target))+'</span><span class="sp-dyn-v" style="color:rgba(232,224,208,0.9);font-weight:600">'+t.pts+'</span></div>'; }).join('');
     var AR=d._archive||{};
     var scenHtml='';
     if(AR.scenarios && AR.scenarios.length){
