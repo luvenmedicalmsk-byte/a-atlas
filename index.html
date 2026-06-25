@@ -10079,7 +10079,6 @@ window.addEventListener('resize', function(){
       <div class="am-vrow"><span class="am-vck">✓</span>Исторические параллели</div>
       <div class="am-vrow"><span class="am-vck">✓</span>Матрица рисков</div>
       <div class="am-vrow"><span class="am-vck">✓</span>Скрытые драйверы риска</div>
-      <div class="am-vrow"><span class="am-vck">✓</span>Еженедельные аналитические брифинги</div>
       <div class="am-vrow"><span class="am-vck">✓</span>Все будущие обновления платформы</div>
     </div>
 
@@ -10113,6 +10112,7 @@ function openAccess(){
   if(bn) bn.style.display='none';
   var sb=document.getElementById('grdf-signals-bar');
   if(sb) sb.style.display='none';
+  try{ if(!window._accessHist){ history.pushState({atlasAccess:1},''); window._accessHist=true; } }catch(_){}
 }
 window.addEventListener("message", function(e){
   try{ if(e.origin!==location.origin) return; }catch(_){ return; }
@@ -10126,13 +10126,25 @@ window.addEventListener("message", function(e){
   }
 });
 function closeAccess(){
+  var _wasOpen=document.getElementById('access-modal').classList.contains('open');
   document.getElementById('access-modal').classList.remove('open');
   document.body.style.overflow='';
   var bn=document.getElementById('grdf-bottom-nav');
   if(bn) bn.style.removeProperty('display');
   var sb=document.getElementById('grdf-signals-bar');
   if(sb) sb.style.removeProperty('display');
+  try{ if(window._accessHist){ window._accessHist=false; if(_wasOpen && history.state && history.state.atlasAccess) history.back(); } }catch(_){}
 }
+window.addEventListener('popstate', function(){
+  var m=document.getElementById('access-modal');
+  if(m && m.classList.contains('open')){
+    window._accessHist=false;
+    m.classList.remove('open');
+    document.body.style.overflow='';
+    var bn=document.getElementById('grdf-bottom-nav'); if(bn) bn.style.removeProperty('display');
+    var sb=document.getElementById('grdf-signals-bar'); if(sb) sb.style.removeProperty('display');
+  }
+});
 
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess();});
