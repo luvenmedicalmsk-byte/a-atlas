@@ -10341,12 +10341,29 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         +'</div>';
       h+='<button class="cab-btn" onclick="closeCabinet();openAccess();">Разблокировать все возможности Атласа →</button>';
     }
-    try{ var _ct=(localStorage.getItem('cc_ctype')||'').toUpperCase(); var _curTier=(window.CC&&CC.tier?CC.tier():'free'); if(_ct==='LEGACY_ARCHIVE' && _curTier==='free'){
-      h+='<div style="margin-top:20px;padding:20px 18px;border:1px solid rgba(212,175,90,0.45);border-radius:14px;background:linear-gradient(160deg,rgba(184,151,58,.12),rgba(184,151,58,.03))">'
-        +'<div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#D4AF5A;margin-bottom:10px;font-family:Montserrat,sans-serif">Персональное предложение</div>'
-        +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:300;color:#E8E0D0;line-height:1.3;margin-bottom:10px">Вы являетесь владельцем Архива</div>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.6;color:rgba(232,224,208,0.7);margin-bottom:14px">Для вас действует персональное предложение на подключение Atlas Signal Pro сроком на 1 год за <span style="color:#D4AF5A;font-weight:600">69 000 ₽</span>.</div>'
-        +'<a href="https://t.me/anirisao" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:13px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:13px 24px;font-family:Montserrat,sans-serif;text-decoration:none">Подключить Signal Pro →</a>'
+    try{ var _curTier=(window.CC&&CC.tier?CC.tier():'free'); if(_curTier==='free'){
+      h+='<div style="margin-top:20px;padding:22px 18px;border:1px solid rgba(212,175,90,0.45);border-radius:14px;background:linear-gradient(160deg,rgba(184,151,58,.12),rgba(184,151,58,.03))">'
+        +'<div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#D4AF5A;margin-bottom:12px;font-family:Montserrat,sans-serif">Для владельцев Архива</div>'
+        +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.7;color:rgba(232,224,208,0.72);margin-bottom:14px">С 2023 года вы были частью моего исследовательского проекта и поддерживали его развитие. Именно благодаря вам появилась возможность создать следующий этап — Atlas Intelligence.</div>'
+        +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.7;color:rgba(232,224,208,0.72);margin-bottom:16px">Поэтому для владельцев Архива, которые приобрели доступ до марта 2026 года, я открываю персональное предложение.</div>'
+        +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:300;color:#D4AF5A;line-height:1.25;margin-bottom:4px">Atlas · Сигнал Про</div>'
+        +'<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.6);margin-bottom:14px">Полный доступ сроком на 1 год</div>'
+        +'<div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,224,208,0.45);margin-bottom:9px;font-family:Montserrat,sans-serif">Что входит</div>'
+        +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.9;color:rgba(232,224,208,0.72);margin-bottom:16px">'
+          +'• ежедневная аналитика Atlas Intelligence<br>'
+          +'• прогнозы системы на 7 дней<br>'
+          +'• интеллектуальный анализ мировых рисков<br>'
+          +'• граф взаимосвязей<br>'
+          +'• Risk Matrix<br>'
+          +'• Country Intelligence<br>'
+          +'• тысячи сигналов и работа 37 аналитических движков<br>'
+          +'• все обновления Signal Pro в течение года'
+        +'</div>'
+        +'<div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,224,208,0.45);margin-bottom:6px;font-family:Montserrat,sans-serif">Персональная стоимость для владельцев Архива</div>'
+        +'<div style="font-family:\'Cormorant Garamond\',serif;margin-bottom:16px"><span style="font-size:34px;font-weight:300;color:#D4AF5A">69 000 ₽</span> <span style="font-size:17px;color:rgba(232,224,208,0.4);text-decoration:line-through;margin-left:6px">119 000 ₽</span></div>'
+        +'<a href="https://t.me/anirisao" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:13px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:13px 24px;font-family:Montserrat,sans-serif;text-decoration:none;margin-bottom:14px">Подключить Signal Pro →</a>'
+        +'<div style="font-family:Montserrat,sans-serif;font-size:10.5px;line-height:1.6;color:rgba(232,224,208,0.45)">Это предложение доступно только владельцам Архива, которые приобрели его в период с 2023 года по март 2026 года. Для новых клиентов действует текущая стоимость и условия.</div>'
+        +'<div style="font-family:Montserrat,sans-serif;font-size:11px;line-height:1.6;color:rgba(232,224,208,0.55);margin-top:12px;font-style:italic">Спасибо за ваше доверие и за то, что были частью проекта с самого начала.</div>'
         +'</div>';
     } }catch(_lo){}
     h+='<div style="margin-top:20px;padding:20px 18px;border:0.5px solid rgba(184,151,58,.18);border-radius:14px;background:rgba(184,151,58,.025)">'
