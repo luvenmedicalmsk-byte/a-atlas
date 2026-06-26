@@ -10239,7 +10239,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
     free:{label:'Free',full:'Базовый профиль',member:false},
     signal:{label:'Signal Pro',full:'Архив + Signal Pro',member:true},
     strategic:{label:'Strategic Pro',full:'Strategic Pro',member:true},
-    elite:{label:'Elite',full:'Elite',member:true}
+    elite:{label:'Elite',full:'Elite',member:true},
+      admin:{label:'Admin',full:'Полный доступ · Admin',member:true}
   };
   function tierNow(){ try{ return (window.CC&&CC.tier&&CC.tier())||'free'; }catch(e){ return 'free'; } }
   function row(ic,lbl,val,act){
