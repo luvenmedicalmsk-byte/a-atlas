@@ -9615,7 +9615,7 @@ window._radarRenderPanels = function(M){
   var pEl=document.getElementById('grdf-radar-panel');
   if(pEl){ var cells=DOMS.map(function(d){ return '<div class="grdf-rp-cell"><b style="color:'+DC2[d]+'">'+M.perDom[d].n+'</b><span>'+(DL2[d]||d)+'</span></div>'; });
     cells.push('<div class="grdf-rp-cell"><b>'+M.new24+'</b><span>новых за 24ч</span></div>');
-    cells.push('<div class="grdf-rp-cell"><b style="color:#ef4444">'+M.critical+'</b><span>критических</span></div>');
+    cells.push('<div class="grdf-rp-cell"><b style="color:#E24A3B">'+M.critical+'</b><span>критических</span></div>');
     cells.push('<div class="grdf-rp-cell"><b style="color:'+window._pressColor(M.pressure)+'">'+M.pressure+'</b><span>сист. давление</span></div>');
     var grid='<div class="grdf-rpanel">'+cells.join('')+'</div>';
     var drv='<div class="grdf-rsec"><div class="grdf-rsec-t">Основные драйверы давления</div>'+
