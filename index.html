@@ -3017,6 +3017,9 @@ window._grdfDisasterEnsure=function(){
       if(!r.ok) return;
       var j=await r.json();
       window.NEWS_EVENTS=_newsToEv((j&&j.items)||[]);
+      // унификация счётчиков: новости пришли асинхронно -> пересчитать шапку и радар, чтобы Главная/Радар сошлись
+      try{ if(typeof updateStats==='function') updateStats(); }catch(_eu){}
+      try{ var _rsc=document.getElementById('grdf-radar-screen'); if(_rsc && _rsc.classList.contains('visible') && window.grdfRenderRadar) window.grdfRenderRadar(true); }catch(_er){}
       var sc=document.getElementById('grdf-signals-screen');
       if(sc && sc.classList.contains('visible') && (sc.scrollTop||0)<200){
         var p=document.querySelector('#grdf-sig-filters .grdf-sig-pill.active'); if(p) p.click();
