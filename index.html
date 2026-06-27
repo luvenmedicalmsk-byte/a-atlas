@@ -1879,11 +1879,12 @@ function fd(iso){ return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric'
 
 function updateStats() {
   // Счётчик шапки = реально загруженные сигналы; критичные — severity > 80 (локальный расчёт, без /api/stats)
-  var ev = (typeof ALL_EVENTS !== 'undefined' && ALL_EVENTS) ? ALL_EVENTS : [];
-  var _st = document.getElementById('s-t'); if(_st) _st.textContent = ev.length;
-  var _sc = document.getElementById('s-c'); if(_sc) _sc.textContent = ev.filter(function(e){ return e.severity > 80; }).length;
-  const avg = ev.length ? Math.round(ev.reduce((s,e)=>s+e.severity,0)/ev.length) : 0;
-  var _sa=document.getElementById('s-a'); if(_sa) _sa.textContent = avg;  // s-a заменён на CRI
+  // Унифицировано: единый источник _signalMetrics() (дедуп+фильтр как Радар). Порог Главной не изменён — critical80 = severity>80.
+  var M; try{ M = (typeof window._signalMetrics==='function') ? window._signalMetrics() : null; }catch(_e){ M=null; }
+  if(!M){ var _ev=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; var _st0=document.getElementById('s-t'); if(_st0)_st0.textContent=_ev.length; return; }
+  var _st = document.getElementById('s-t'); if(_st) _st.textContent = M.total;
+  var _sc = document.getElementById('s-c'); if(_sc) _sc.textContent = M.critical80;
+  var _sa = document.getElementById('s-a'); if(_sa) _sa.textContent = M.avgSev;  // s-a = CRI/avg
 }
 
 function renderList() {
@@ -9517,6 +9518,51 @@ window._radarMetrics = function(ded){
   return {total:total,active:active,systemic:systemic,critical:critical,avgSev:Math.round(avgSev),new24:new24,
           crossLinks:crossLinks,pressure:pressure,perDom:perDom,dyn:dyn,contrib:contrib,drivers:drivers,pairs:pairs.slice(0,3)};
 };;
+window._signalDataset = function(){
+  var src = (typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : [];
+  if(typeof NEWS_EVENTS!=='undefined' && NEWS_EVENTS && NEWS_EVENTS.length) src = src.concat(NEWS_EVENTS);
+  if(typeof _fixDomain==='function') src.forEach(function(e){ var nd=_fixDomain(e); if(nd) e.domain=nd; });
+  // unify with «События»: same source-blocklist + clickbait filters
+  if(typeof FEED_SRC_BLOCK!=='undefined') src = src.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
+  src = src.filter(function(e){ var _t=String(e.title||'').trim().toLowerCase(); return !(_t.indexOf('смотри')===0||_t.indexOf('видео:')===0||_t.indexOf('watch:')===0||_t.indexOf('фото:')===0||_t.indexOf('look:')===0); });
+  var DOMS = ['climate','geopolitics','economy','technology','social'];
+  // dedup (domain|title|region), keep highest severity
+  var seen={}, ded=[];
+  src.forEach(function(e){
+    if(!e || DOMS.indexOf(e.domain)<0) return;
+    var sev = (typeof e.severity==='number') ? e.severity : parseInt(e.severity,10);
+    if(!(sev>0)) return;
+    e._sev = sev;
+    var k=(e.domain||'')+'|'+(e.title||'')+'|'+(e.region||'');
+    if(seen[k]===undefined){ seen[k]=ded.length; ded.push(e); }
+    else { var p=ded[seen[k]]; if((e._sev||0)>(p._sev||0)) ded[seen[k]]=e; }
+  });
+  // C2 — collapse reworded reposts (parity with События): stem-overlap, same domain, near date
+  (function(){
+    function _stems(t){ var out=[],sn={}; String(t||'').toLowerCase().replace(/[^0-9a-zа-яё ]/gi,' ').split(/\s+/).forEach(function(w){ if(w.length>=4){ var p=w.slice(0,4); if(!sn[p]){sn[p]=1;out.push(p);} } }); return out; }
+    function _ovl(a,b){ if(!a.length||!b.length) return [0,0]; var sa={}; a.forEach(function(p){sa[p]=1;}); var inter=0; b.forEach(function(p){ if(sa[p]) inter++; }); return [inter, inter/Math.min(a.length,b.length)]; }
+    var _kept=[], _d2=[];
+    ded.forEach(function(e){
+      var ew=_stems(e.title), et=(Date.parse(String(e.date||'').slice(0,10))||0), dup=-1;
+      for(var i=0;i<_kept.length;i++){ var k=_kept[i];
+        if(k.dom!==(e.domain||'')) continue;
+        if(et&&k.t&&Math.abs(et-k.t)>2592000000/10) continue;
+        var ov=_ovl(ew,k.words); if(ov[0]>=4 && ov[1]>=0.6){ dup=i; break; }
+      }
+      if(dup<0){ _kept.push({dom:(e.domain||''),t:et,words:ew,idx:_d2.length}); _d2.push(e); }
+      else { var pi=_kept[dup].idx; if((e._sev||0)>(_d2[pi]._sev||0)){ _d2[pi]=e; _kept[dup].words=ew; } }
+    });
+    ded=_d2;
+  })();
+  return ded;
+};
+window._signalMetrics = function(){
+  var ded = window._signalDataset();
+  var M = window._radarMetrics(ded);
+  M.critical80 = ded.filter(function(e){ return (e._sev||0) > 80; }).length;
+  M._ded = ded;
+  return M;
+};
 window._radarLevel = function(lvl){
   var mp={all:0,active:40,systemic:60,critical:75};
   window._radarLvlMin=(lvl!=='all' && window._radarLvlMin===mp[lvl])?0:mp[lvl];
@@ -9646,47 +9692,15 @@ window._renderSignalPro = function(M){
 window.grdfRenderRadar = function(force){
   var canvas = document.getElementById('grdf-radar-canvas');
   if(!canvas) return;
-  var src = (typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : [];
-  if(typeof NEWS_EVENTS!=='undefined' && NEWS_EVENTS && NEWS_EVENTS.length) src = src.concat(NEWS_EVENTS);
-  if(typeof _fixDomain==='function') src.forEach(function(e){ var nd=_fixDomain(e); if(nd) e.domain=nd; });
-  // unify with «События»: same source-blocklist + clickbait filters
-  if(typeof FEED_SRC_BLOCK!=='undefined') src = src.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
-  src = src.filter(function(e){ var _t=String(e.title||'').trim().toLowerCase(); return !(_t.indexOf('смотри')===0||_t.indexOf('видео:')===0||_t.indexOf('watch:')===0||_t.indexOf('фото:')===0||_t.indexOf('look:')===0); });
   var DOMS = ['climate','geopolitics','economy','technology','social'];
   var DC2 = (typeof DC!=='undefined' && DC) ? DC : {climate:'#22c55e',geopolitics:'#ff7a00',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'};
   var DL2 = (typeof DL!=='undefined' && DL) ? DL : {climate:'\u041a\u043b\u0438\u043c\u0430\u0442',geopolitics:'\u0413\u0435\u043e\u043f\u043e\u043b\u0438\u0442\u0438\u043a\u0430',economy:'\u042d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0430',technology:'\u0422\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438',social:'\u0421\u043e\u0446\u0438\u0443\u043c'};
-  // dedup (domain|title|region), keep highest severity
-  var seen={}, ded=[];
-  src.forEach(function(e){
-    if(!e || DOMS.indexOf(e.domain)<0) return;
-    var sev = (typeof e.severity==='number') ? e.severity : parseInt(e.severity,10);
-    if(!(sev>0)) return;
-    e._sev = sev;
-    var k=(e.domain||'')+'|'+(e.title||'')+'|'+(e.region||'');
-    if(seen[k]===undefined){ seen[k]=ded.length; ded.push(e); }
-    else { var p=ded[seen[k]]; if((e._sev||0)>(p._sev||0)) ded[seen[k]]=e; }
-  });
-  // C2 — collapse reworded reposts (parity with События): stem-overlap, same domain, near date
-  (function(){
-    function _stems(t){ var out=[],sn={}; String(t||'').toLowerCase().replace(/[^0-9a-zа-яё ]/gi,' ').split(/\s+/).forEach(function(w){ if(w.length>=4){ var p=w.slice(0,4); if(!sn[p]){sn[p]=1;out.push(p);} } }); return out; }
-    function _ovl(a,b){ if(!a.length||!b.length) return [0,0]; var sa={}; a.forEach(function(p){sa[p]=1;}); var inter=0; b.forEach(function(p){ if(sa[p]) inter++; }); return [inter, inter/Math.min(a.length,b.length)]; }
-    var _kept=[], _d2=[];
-    ded.forEach(function(e){
-      var ew=_stems(e.title), et=(Date.parse(String(e.date||'').slice(0,10))||0), dup=-1;
-      for(var i=0;i<_kept.length;i++){ var k=_kept[i];
-        if(k.dom!==(e.domain||'')) continue;
-        if(et&&k.t&&Math.abs(et-k.t)>2592000000/10) continue;
-        var ov=_ovl(ew,k.words); if(ov[0]>=4 && ov[1]>=0.6){ dup=i; break; }
-      }
-      if(dup<0){ _kept.push({dom:(e.domain||''),t:et,words:ew,idx:_d2.length}); _d2.push(e); }
-      else { var pi=_kept[dup].idx; if((e._sev||0)>(_d2[pi]._sev||0)){ _d2[pi]=e; _kept[dup].words=ew; } }
-    });
-    ded=_d2;
-  })();
+  var M = window._signalMetrics();
+  var ded = M._ded;
   var byDom={}; DOMS.forEach(function(d){ byDom[d]=[]; });
   ded.forEach(function(e){ if((e._sev||0)>=(window._radarLvlMin||0)) byDom[e.domain].push(e); });
   DOMS.forEach(function(d){ byDom[d].sort(function(a,b){ return (b._sev||0)-(a._sev||0); }); byDom[d]=byDom[d].slice(0,12); });
-  var M = window._radarMetrics(ded); try{ window._radarRenderPanels(M); }catch(_e){} try{ window._renderSignalPro(M); }catch(_e3){}
+  try{ window._radarRenderPanels(M); }catch(_e){} try{ window._renderSignalPro(M); }catch(_e3){}
   var _sig = DOMS.map(function(d){ return byDom[d].map(function(e){ return (e.title||'')+'~'+e._sev; }).join(','); }).join('|') + '|P'+M.pressure+'|L'+(window._radarLvlMin||0);
   if(!force && _sig===window._radarSig){ return; }
   window._radarSig = _sig;
