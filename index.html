@@ -2793,8 +2793,7 @@ window.grdfRenderRiskPulse = function(){
   var sbars=''; sdays.forEach(function(c){ var bh=Math.max(2,(c/smax)*26); sbars+='<i style="width:10px;height:'+bh.toFixed(0)+'px;background:#38bdf8;opacity:'+(0.35+0.65*(c/smax)).toFixed(2)+'"></i>'; });
   var stotal=qc.filter(function(q){ return q.time>=now-7*DAY; }).length;
   el.innerHTML =
-    '<div class="rp-num"><span class="rp-big">'+total+'</span><span class="rp-lbl">природных событий · 7 дней</span></div>'
-    +'<div class="rp-graphs">'
+    '<div class="rp-graphs">'
     +'<div class="rp-g"><div class="rp-spark">'+bars+'</div><span class="rp-gl">природные</span><span class="rp-gm" style="color:'+dirCol+'">'+arrow+' '+dirTxt+'</span></div>'
     +'<div class="rp-g"><div class="rp-spark">'+sbars+'</div><span class="rp-gl" style="color:#38bdf8">сейсмика '+stotal+'</span></div>'
     +'</div>';
@@ -2870,7 +2869,7 @@ function renderDisaster(){
   var PLAY='<svg class="dn-play" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(0,0,0,.55)"/><path d="M9.6 7.4 16 12l-6.4 4.6z" fill="#fff"/></svg>';
   function _dnProx(u){ return PROXY+encodeURIComponent(String(u)); }
   box.innerHTML=dnCache.map(function(it,ci){
-    var raw=(it.text||'').trim();
+    var raw=(it.text||'').replace(/[\u{1F1E6}-\u{1F1FF}]/gu,'').replace(/ {2,}/g,' ').replace(/ +([.,!?)\u2026])/g,'$1').trim();
     var _nl=raw.indexOf('\n'); var ttl, bdy;
     if(_nl>0){ ttl=raw.slice(0,_nl).trim(); bdy=raw.slice(_nl+1).trim(); }
     else { var _m=raw.match(/^([\s\S]{12,90}?[.!?\u2026])\s+([\s\S]+)$/); if(_m){ ttl=_m[1].trim(); bdy=_m[2].trim(); } else { ttl=raw; bdy=''; } }
