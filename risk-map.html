@@ -1827,7 +1827,7 @@ const FALLBACK = [
 // ── РЕНДЕР МАРКЕРОВ ──────────────────────────────────────────────────────────
 function createMarkerIcon(color, severity) {
   const r = Math.round(4 + (severity - 50) * 0.09);
-  const pulse = severity >= 80;
+  const pulse = severity >= 75;  // единый порог критичности (severity≥75) — как у счётчиков
   const html = pulse
     ? `<div style="position:relative;width:${r*2+12}px;height:${r*2+12}px">
         <div class="risk-pulse" style="position:absolute;top:0;left:0;width:${r*2+12}px;height:${r*2+12}px;background:${color};opacity:0.25;border-radius:50%"></div>
@@ -1878,14 +1878,13 @@ function sc(s){ return s>=90?'#cc5a3a':s>=75?'#cf9a3a':s>=60?'#b8973a':s>=40?'#9
 function fd(iso){ return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) }
 
 function updateStats() {
-  // Счётчик шапки = реально загруженные сигналы; критичные — severity > 80 (локальный расчёт, без /api/stats)
-  // Унифицировано: единый источник _signalMetrics() (дедуп+фильтр как Радар). Порог Главной не изменён — critical80 = severity>80.
+  // Унифицировано: единый источник _signalMetrics(); единый порог критичности — severity ≥ 75 (M.critical), как в Радаре и Signal Pro.
   var M; try{ M = (typeof window._signalMetrics==='function') ? window._signalMetrics() : null; }catch(_e){ M=null; }
   if(!M) return;
   // Не показываем промежуточное значение до прихода новостей — убирает «вспышку» 118 на старте.
   if(!window._newsReady && !window._statsTimeout) return;
   var _st = document.getElementById('s-t'); if(_st) _st.textContent = M.total;
-  var _sc = document.getElementById('s-c'); if(_sc) _sc.textContent = M.critical80;
+  var _sc = document.getElementById('s-c'); if(_sc) _sc.textContent = M.critical;
   var _sa = document.getElementById('s-a'); if(_sa) _sa.textContent = M.avgSev;  // s-a = CRI/avg
 }
 
@@ -2080,7 +2079,7 @@ async function fetchStats() {
     const r = await fetch(API_BASE + '/api/stats', { signal: AbortSignal.timeout(3000) });
     if (!r.ok) return;
     const s = await r.json();
-    // Счётчиком шапки теперь владеет updateStats() (загруженные сигналы + severity>80). Здесь только метка кнопки.
+    // Счётчиком шапки владеет updateStats() (унифиц. _signalMetrics, критич. severity≥75). Здесь только метка кнопки.
     var lb = document.getElementById('list-btn');
     if(lb) lb.textContent = '◆ Список сигналов';
   } catch(_) {}
@@ -9566,7 +9565,6 @@ window._signalDataset = function(){
 window._signalMetrics = function(){
   var ded = window._signalDataset();
   var M = window._radarMetrics(ded);
-  M.critical80 = ded.filter(function(e){ return (e._sev||0) > 80; }).length;
   M._ded = ded;
   return M;
 };
