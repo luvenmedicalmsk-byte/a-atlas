@@ -1849,8 +1849,7 @@ let _lastRenderedCount = -1;  // skip redundant redraws
 function renderMarkers() {
   const now = Date.now();
   const cutoff = now - MAX_EVENT_AGE_MS;
-  const _rep = (window.REPORT_EVENTS||[]).filter(e => filter==='all' || e.domain===filter);
-  const fresh = filtered.concat(_rep).filter(ev => {
+  const fresh = filtered.filter(ev => {
     if (!ev.lat || !ev.lng || isNaN(ev.lat) || isNaN(ev.lng)) return false;
     if (!ev.date) return true;  // no date = keep
     const age = new Date(ev.date).getTime();
@@ -2089,8 +2088,7 @@ async function fetchStats() {
 }
 
 function applyEvents(events, updatedIso) {
-  var _cls=(typeof window._classifyEvents==='function')?window._classifyEvents(events):{live:events,report:[]};
-  ALL_EVENTS = _cls.live; window.REPORT_EVENTS = _cls.report;
+  ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents(events) : events;
   try{ window._ARCHIVE_UPDATED = updatedIso || window._ARCHIVE_UPDATED || null; }catch(_e){}
   filtered = filter === 'all' ? [...ALL_EVENTS] : ALL_EVENTS.filter(e => e.domain === filter);
   updateStats(); renderList(); renderMarkers();
@@ -2102,8 +2100,7 @@ function applyEvents(events, updatedIso) {
 }
 
 function loadFallback() {
-  var _clsF=(typeof window._classifyEvents==='function')?window._classifyEvents(FALLBACK):{live:FALLBACK,report:[]};
-  ALL_EVENTS = _clsF.live; window.REPORT_EVENTS = _clsF.report;
+  ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents(FALLBACK) : FALLBACK;
   filtered = [...ALL_EVENTS];
   updateStats(); renderList(); renderMarkers();
 }
@@ -9410,19 +9407,23 @@ var _grdfSigFilter = 'all';
 // Лента «События»: скрытые источники (точное совпадение ярлыка источника). Редактируется здесь.
 var FEED_SRC_BLOCK = ['киев','київ','kyiv','kiev','рбк','rbc'];
 var REPORT_SRC_BLOCK = ['copernicus ems']; // report/пост-картирование — не live-сигнал, остаётся только в analysis-слое (карта)
-// EVENT CLASSIFICATION (до агрегации): делит входящий поток на LIVE и REPORT/ARCHIVE.
-// LIVE -> ALL_EVENTS (агрегация/радар/счётчики/индекс риска). REPORT -> REPORT_EVENTS (только analysis-слой/карта).
+// EVENT CLASSIFICATION LAYER: проставляет lifecycle_type, НО НЕ редуцирует universe.
+// ALL_EVENTS остаётся полным master-набором (источник истины). LIVE/REPORT/ARCHIVE — производные view.
 window._classifyEvents = function(arr){
-  var live=[], report=[];
+  var rep=0;
   (arr||[]).forEach(function(e){
     var src=String(e&&e.source||'').trim().toLowerCase();
     var t=(REPORT_SRC_BLOCK.indexOf(src)>=0)?'REPORT':'LIVE';
     try{ e.lifecycle_type=t; }catch(_){}
-    if(t==='LIVE') live.push(e); else report.push(e);
+    if(t!=='LIVE') rep++;
   });
-  try{ if(report.length) console.debug('[ingest] lifecycle: REPORT routed out of LIVE x'+report.length, report.map(function(r){return (r.source||'')+' | '+(r.title||'');})); }catch(_){}
-  return {live:live, report:report};
+  try{ if(rep) console.debug('[ingest] lifecycle: '+rep+' REPORT помечены (остаются в ALL_EVENTS, идут в analysis-слой, не в LIVE-агрегацию)'); }catch(_){}
+  return arr; // ПОЛНЫЙ universe, только с тегами — НЕ фильтруется и НЕ редуцируется
 };
+// Производные VIEW-слои (фильтрация view, не data): источник — ALL_EVENTS.
+window._liveEvents   = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return (e&&e.lifecycle_type||'LIVE')==='LIVE'; }); };
+window._reportEvents = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='REPORT'; }); };
+window._archiveEvents= function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='ARCHIVE'; }); };
 // Лента «События»: стоп-слова промо-хвостов (телеграм-приписки). Редактируется здесь.
 var FEED_PROMO_WORDS = ['подпи','subscribe','follow us','follow','наш канал','читайте в','t\\.me/'];
 function _stripPromo(t){
@@ -9542,7 +9543,7 @@ window._radarMetrics = function(ded){
           crossLinks:crossLinks,pressure:pressure,perDom:perDom,dyn:dyn,contrib:contrib,drivers:drivers,pairs:pairs.slice(0,3)};
 };;
 window._signalDataset = function(){
-  var src = (typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : [];
+  var src = (typeof window._liveEvents==='function') ? window._liveEvents() : ((typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : []);
   if(typeof NEWS_EVENTS!=='undefined' && NEWS_EVENTS && NEWS_EVENTS.length) src = src.concat(NEWS_EVENTS);
   if(typeof _fixDomain==='function') src.forEach(function(e){ var nd=_fixDomain(e); if(nd) e.domain=nd; });
   // unify with «События»: same source-blocklist + clickbait filters
@@ -9837,7 +9838,7 @@ function grdfRenderSignals(dom){
   var feed = document.getElementById('grdf-sig-feed');
   var cnt  = document.getElementById('grdf-sig-count');
   if(!feed) return;
-  var src = (typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : [];
+  var src = (typeof window._liveEvents==='function') ? window._liveEvents() : ((typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : []);
   if(typeof NEWS_EVENTS!=='undefined' && NEWS_EVENTS && NEWS_EVENTS.length) src = src.concat(NEWS_EVENTS);
   // safety net: re-bin obvious military/conflict news mis-tagged as climate/social
   src.forEach(function(e){ var nd=_fixDomain(e); if(nd) e.domain=nd; });
