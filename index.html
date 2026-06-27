@@ -8498,7 +8498,7 @@ function _grdfContextHtml(c){
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
   // ── 3. Структура GRI · рейтинг доменов (полосы вместо радиала) ──
   (function(){
-    function dlvl(v){ return [window._sevLabel(v), window._sevColor(v)]; }
+    function dlvl(v){ if(v>=75)return['критический','#ef4444']; if(v>=60)return['высокий','#f97316']; if(v>=40)return['повышенный','#eab308']; if(v>=20)return['низкий','#10b981']; return['минимальный','#6f88ab']; }
     var _sum=_AD.reduce(function(a,d){return a+Math.round(_ds[d]||0);},0)||1;
     var rows=_AD.map(function(d){ return {d:d,v:Math.round(_ds[d]||0)}; }).sort(function(a,b){return b.v-a.v;}).map(function(o,idx){
       var lv=dlvl(o.v), col=DOM_COLORS[o.d]||'#888', pct=Math.round(o.v/_sum*100);
