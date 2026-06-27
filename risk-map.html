@@ -1874,7 +1874,9 @@ function renderMarkers() {
 }
 
 // ── СТАТИСТИКА И СПИСОК ──────────────────────────────────────────────────────
-function sc(s){ return s>=90?'#cc5a3a':s>=75?'#cf9a3a':s>=60?'#b8973a':s>=40?'#9a9a52':'#7d8a6a' }
+window._sevLabel = function(v){ v=+v||0; return v>=75?'Критический':v>=60?'Повышенный':v>=40?'Средний':'Низкий'; };
+window._sevColor = function(v){ v=+v||0; return v>=75?'#E6B84C':v>=60?'#CC9A3C':v>=40?'#A89150':'#D8D8D8'; };
+function sc(s){ return window._sevColor(s); }
 function fd(iso){ return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) }
 
 function updateStats() {
@@ -2943,7 +2945,7 @@ window._grdfDisasterEnsure=function(){
 (function(){
   var rgInterval=null, rgCache=[];
   function rgCol(s){ return s>=85?'#C0392B':s>=70?'#FF7A1A':s>=56?'#E0A82E':'#3CB371'; }
-  function rgLbl(s){ return s>=85?'критический':s>=70?'высокий':s>=56?'повышенный':'умеренный'; }
+  function rgLbl(s){ return window._sevLabel(s); }
   function rgDate(d){ try{ return new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }catch(e){ return ''; } }
   function renderRosgidromet(){
     var box=document.getElementById('rosgidromet-list'); if(!box) return;
@@ -3592,7 +3594,7 @@ const LEVEL_RU = {
   stable:'Стабильно', elevated:'Повышенный', pressured:'Под давлением', critical:'Критический',
 };
 
-const SCORE_COLOR = s => s >= 80 ? '#E84030' : s >= 65 ? '#E87030' : s >= 50 ? '#D4AF5A' : '#27AE60';
+const SCORE_COLOR = s => window._sevColor(s);
 
 // ── Entitlement Engine V1 — Client Side ─────────────────────────────────
 function _getClientCaps(tier) {
@@ -4516,9 +4518,7 @@ function renderAlerts(data) {
   var html = '';
   alerts.forEach(function(a) {
     var domCol = (window.DCL_INTEL || {})[a.domain] || 'rgba(255,255,255,.3)';
-    var sevCol = a.severity >= 80 ? '#dc2626'
-               : a.severity >= 65 ? '#ef4444'
-               : a.severity >= 50 ? '#f59e0b' : '#22c55e';
+   var sevCol = window._sevColor(a.severity);
     var typeLabel = _AP_TYPE_LABELS[a.type] || a.type;
 
     html += '<div class="ap-card" onclick="openCountryCard(\'' + (a.country||'') + '\')">'
@@ -8498,7 +8498,7 @@ function _grdfContextHtml(c){
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
   // ── 3. Структура GRI · рейтинг доменов (полосы вместо радиала) ──
   (function(){
-    function dlvl(v){ if(v>=75)return['критический','#ef4444']; if(v>=60)return['высокий','#f97316']; if(v>=40)return['повышенный','#eab308']; if(v>=20)return['низкий','#10b981']; return['минимальный','#6f88ab']; }
+    function dlvl(v){ return [window._sevLabel(v), window._sevColor(v)]; }
     var _sum=_AD.reduce(function(a,d){return a+Math.round(_ds[d]||0);},0)||1;
     var rows=_AD.map(function(d){ return {d:d,v:Math.round(_ds[d]||0)}; }).sort(function(a,b){return b.v-a.v;}).map(function(o,idx){
       var lv=dlvl(o.v), col=DOM_COLORS[o.d]||'#888', pct=Math.round(o.v/_sum*100);
@@ -8947,8 +8947,8 @@ function grdfRenderCountryPanel(cc) {
   var gri = fr(c.risk_score);
   var cri = fr((c.cri_score!=null)?c.cri_score:gri*0.85);
   // Risk level label helpers (local)
-  function _riskLabel(v){ return v>=80?'Критический':v>=60?'Высокий':v>=40?'Умеренный':'Низкий'; }
-  function _riskLabelCol(v){ return v>=80?'#ef4444':v>=60?'#f97316':v>=40?'#eab308':'#10b981'; }
+  function _riskLabel(v){ return window._sevLabel(v); }
+  function _riskLabelCol(v){ return window._sevColor(v); }
   var ews = fr((c.ews_score!=null)?c.ews_score:gri*0.95);
   var status = getStatus(gri);
   var statusCol = STATUS_COLORS[status]||'#10B981';
@@ -9880,7 +9880,7 @@ function grdfRenderSignals(dom){
     var col = DCx[ev.domain]||'#B8973A';
     var sev = ev.severity||0;
     var _m = ev._meta||ev.meta;
-    var _lw=(sev>=90)?'\u041a\u0440\u0438\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439':((sev>=75)?'\u0412\u044b\u0441\u043e\u043a\u0438\u0439':((sev>=60)?'\u041f\u043e\u0432\u044b\u0448\u0435\u043d\u043d\u044b\u0439':((sev>=40)?'\u0421\u0440\u0435\u0434\u043d\u0438\u0439':'\u041d\u0438\u0437\u043a\u0438\u0439')));
+    var _lw = window._sevLabel(sev);
       var _cb = (function(){ var FB={RU:['🇷🇺','Россия'],US:['🇺🇸','США'],GB:['🇬🇧','Великобритания'],FR:['🇫🇷','Франция'],CN:['🇨🇳','Китай'],IR:['🇮🇷','Иран'],IL:['🇮🇱','Израиль'],DE:['🇩🇪','Германия'],UA:['🇺🇦','Украина'],TR:['🇹🇷','Турция'],GE:['🇬🇪','Грузия'],AM:['🇦🇲','Армения'],AE:['🇦🇪','ОАЭ'],JP:['🇯🇵','Япония'],CH:['🇨🇭','Швейцария'],IT:['🇮🇹','Италия'],PL:['🇵🇱','Польша'],BY:['🇧🇾','Беларусь'],EU:['🇪🇺','ЕС'],KP:['🇰🇵','КНДР'],ME:['🌍','Ближний Восток']}; var ec=String(ev.event_country||'').toUpperCase(), pc=String(ev.primary_country||'').toUpperCase(); if(!ec||!pc||ec===pc) return ''; var nm=function(x){ return _flag(x)+' '+(_CNRU[x]||x); }; var _dom=String(ev.domain||'').toLowerCase(); var _natt=((ev.title||'')+' '+(ev.summary||'')).toLowerCase(); var _isNat=/землетряс|афтершок|цунами|наводнен|паводок|ураган|тайфун|шторм|циклон|извержен|вулкан|оползен|сель|лавин|засух|аномальн.{0,4}жар|аномальн.{0,4}холод|лесн.{0,4}пожар|сейсм/.test(_natt); var _IAc='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'; if(_dom==='climate'||_dom==='geological'||_isNat){ return ''; } var IA='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>', IB='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>', IC='<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M6 8H18M15 5l3 3-3 3"/><path d="M18 16H6M9 13l-3 3 3 3"/></svg>'; var sn={}; sn[ec]=1; sn[pc]=1; var cps=(ev.impact_countries||[]).map(function(x){return String(x||'').toUpperCase();}).filter(function(x){ if(!x||sn[x])return false; sn[x]=1; return true; }).slice(0,3); var cr=''; if(cps.length){ var lb=cps.length>1?'Контрагенты':'Контрагент'; cr='<div style="color:#6f88ab;letter-spacing:.04em">'+IC+lb+'</div>'+'<div style="color:#cbd5e1;margin-left:16px">'+cps.map(nm).join(' · ')+'</div>'; } return '<div style="display:block;margin:6px 0 2px 12px;padding:5px 0 5px 10px;border-left:2px solid rgba(184,151,58,.45);font-size:10px;line-height:1.55">'+'<div style="color:#6f88ab;letter-spacing:.04em">'+IA+'Где произошло</div>'+'<div style="color:#cbd5e1;margin-left:16px">'+nm(ec)+'</div>'+'<div style="color:#caa45a;letter-spacing:.04em">'+IB+'На кого влияет</div>'+'<div style="color:#e7d9ad;margin-left:16px">'+nm(pc)+'</div>'+cr+'</div>'; })();
       var _fk = ((_m && _m.kind==='firms') ? '<div class="grdf-sig-flag">Сигнал · не подтверждён · '+(((_m.confidence==='h'||_m.confidence==='high'))?'выс. достоверность':'ном. достоверность')+(_m.frp?(' · FRP '+Math.round(_m.frp)):'')+(_m.persist_days>=2?(' · '+_m.persist_days+'д подряд'):'')+'</div>' : '');
       var _rk = ((_m && _m.kind==='radar_outage') ? '<div class="grdf-sig-flag">Cloudflare Radar · '+(_RDOT[_m.outage_type]||'отключение')+(_RDC[_m.cause]?(' · '+_RDC[_m.cause]):'')+'</div>' : '');
