@@ -9444,7 +9444,7 @@ function _fixDomain(e){
   if(FEED_HUMAN.test(_sf) && FEED_WAR.test(_sf)) return 'geopolitics';
   return null;
 }
-window._pressColor = function(p){ return p>=75?'#ef4444':(p>=60?'#ff7a00':(p>=40?'#eab308':'#22c55e')); };
+window._pressColor = function(p){ return window._sevColor(p); };
 window._SRC_SLUGS = ['bbbreaking','breaking','rian_ru','rbc_news','forbesrussia','mchs_official','readovkanews','mash','bazabazon','novosti_efir','rbc','rian','readovka','mchs','tlive','t live','baza','efir','forbes','mash','telegram'];
 window._isSourceLike = function(val){
   // V6.4: значение является источником/каналом, а не географией?
