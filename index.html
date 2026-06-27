@@ -3032,7 +3032,7 @@ window._grdfDisasterEnsure=function(){
   }
   try{window.grdfRefreshNews=_loadNewsEv;}catch(e){}
   setTimeout(function(){ _loadNewsEv(); setInterval(_loadNewsEv,30000); }, 400);
-  setTimeout(function(){ if(!window._newsReady){ window._statsTimeout=true; try{ if(typeof updateStats==='function') updateStats(); }catch(_e){} } }, 3000);
+  setTimeout(function(){ if(!window._newsReady){ window._statsTimeout=true; try{ if(typeof updateStats==='function') updateStats(); }catch(_e){} try{ var _rsc2=document.getElementById('grdf-radar-screen'); if(_rsc2 && _rsc2.classList.contains('visible') && window.grdfRenderRadar) window.grdfRenderRadar(true); }catch(_e2){} } }, 3000);
 })();
 
 // ═══════════════════════════════════════════════════════════════════
@@ -9700,6 +9700,7 @@ window.grdfRenderRadar = function(force){
   var DOMS = ['climate','geopolitics','economy','technology','social'];
   var DC2 = (typeof DC!=='undefined' && DC) ? DC : {climate:'#22c55e',geopolitics:'#ff7a00',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'};
   var DL2 = (typeof DL!=='undefined' && DL) ? DL : {climate:'\u041a\u043b\u0438\u043c\u0430\u0442',geopolitics:'\u0413\u0435\u043e\u043f\u043e\u043b\u0438\u0442\u0438\u043a\u0430',economy:'\u042d\u043a\u043e\u043d\u043e\u043c\u0438\u043a\u0430',technology:'\u0422\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438',social:'\u0421\u043e\u0446\u0438\u0443\u043c'};
+  if(!window._newsReady && !window._statsTimeout){ return; }
   var M = window._signalMetrics();
   var ded = M._ded;
   var byDom={}; DOMS.forEach(function(d){ byDom[d]=[]; });
