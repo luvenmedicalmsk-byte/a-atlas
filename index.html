@@ -9767,7 +9767,7 @@ window.grdfRenderRadar = function(force){
   svg += '</svg>';
   canvas.innerHTML = svg;
   canvas.querySelectorAll('.grdf-radar-dot').forEach(function(el){ el.addEventListener('click', function(){ if(window._radarPick) window._radarPick(el.getAttribute('data-rid')); }); });
-  var cnt=document.getElementById('grdf-radar-count'); if(cnt){ var _h=new Date(); var _t=('0'+_h.getHours()).slice(-2)+':'+('0'+_h.getMinutes()).slice(-2); cnt.textContent = total+' сигналов · '+_t; }
+  var cnt=document.getElementById('grdf-radar-count'); if(cnt){ var _h=new Date(); var _t=('0'+_h.getHours()).slice(-2)+':'+('0'+_h.getMinutes()).slice(-2); cnt.textContent = (M&&M.total!=null?M.total:total)+' сигналов · '+_t; }
 };
 
 window._radarPick = function(id){
