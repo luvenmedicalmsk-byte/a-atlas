@@ -1881,7 +1881,9 @@ function updateStats() {
   // Счётчик шапки = реально загруженные сигналы; критичные — severity > 80 (локальный расчёт, без /api/stats)
   // Унифицировано: единый источник _signalMetrics() (дедуп+фильтр как Радар). Порог Главной не изменён — critical80 = severity>80.
   var M; try{ M = (typeof window._signalMetrics==='function') ? window._signalMetrics() : null; }catch(_e){ M=null; }
-  if(!M){ var _ev=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; var _st0=document.getElementById('s-t'); if(_st0)_st0.textContent=_ev.length; return; }
+  if(!M) return;
+  // Не показываем промежуточное значение до прихода новостей — убирает «вспышку» 118 на старте.
+  if(!window._newsReady && !window._statsTimeout) return;
   var _st = document.getElementById('s-t'); if(_st) _st.textContent = M.total;
   var _sc = document.getElementById('s-c'); if(_sc) _sc.textContent = M.critical80;
   var _sa = document.getElementById('s-a'); if(_sa) _sa.textContent = M.avgSev;  // s-a = CRI/avg
@@ -3017,6 +3019,7 @@ window._grdfDisasterEnsure=function(){
       if(!r.ok) return;
       var j=await r.json();
       window.NEWS_EVENTS=_newsToEv((j&&j.items)||[]);
+      window._newsReady=true;
       // унификация счётчиков: новости пришли асинхронно -> пересчитать шапку и радар, чтобы Главная/Радар сошлись
       try{ if(typeof updateStats==='function') updateStats(); }catch(_eu){}
       try{ var _rsc=document.getElementById('grdf-radar-screen'); if(_rsc && _rsc.classList.contains('visible') && window.grdfRenderRadar) window.grdfRenderRadar(true); }catch(_er){}
@@ -3027,7 +3030,8 @@ window._grdfDisasterEnsure=function(){
     }catch(e){}
   }
   try{window.grdfRefreshNews=_loadNewsEv;}catch(e){}
-  setTimeout(function(){ _loadNewsEv(); setInterval(_loadNewsEv,30000); }, 1500);
+  setTimeout(function(){ _loadNewsEv(); setInterval(_loadNewsEv,30000); }, 400);
+  setTimeout(function(){ if(!window._newsReady){ window._statsTimeout=true; try{ if(typeof updateStats==='function') updateStats(); }catch(_e){} } }, 3000);
 })();
 
 // ═══════════════════════════════════════════════════════════════════
