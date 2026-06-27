@@ -9406,6 +9406,7 @@ function grdfPopulateWarnings(countries) {
 var _grdfSigFilter = 'all';
 // Лента «События»: скрытые источники (точное совпадение ярлыка источника). Редактируется здесь.
 var FEED_SRC_BLOCK = ['киев','київ','kyiv','kiev','рбк','rbc'];
+var REPORT_SRC_BLOCK = ['copernicus ems']; // report/пост-картирование — не live-сигнал, остаётся только в analysis-слое (карта)
 // Лента «События»: стоп-слова промо-хвостов (телеграм-приписки). Редактируется здесь.
 var FEED_PROMO_WORDS = ['подпи','subscribe','follow us','follow','наш канал','читайте в','t\\.me/'];
 function _stripPromo(t){
@@ -9530,6 +9531,7 @@ window._signalDataset = function(){
   if(typeof _fixDomain==='function') src.forEach(function(e){ var nd=_fixDomain(e); if(nd) e.domain=nd; });
   // unify with «События»: same source-blocklist + clickbait filters
   if(typeof FEED_SRC_BLOCK!=='undefined') src = src.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
+  if(typeof REPORT_SRC_BLOCK!=='undefined') src = src.filter(function(e){ return REPORT_SRC_BLOCK.indexOf(String(e.source||'').trim().toLowerCase())<0; });
   src = src.filter(function(e){ var _t=String(e.title||'').trim().toLowerCase(); return !(_t.indexOf('смотри')===0||_t.indexOf('видео:')===0||_t.indexOf('watch:')===0||_t.indexOf('фото:')===0||_t.indexOf('look:')===0); });
   var DOMS = ['climate','geopolitics','economy','technology','social'];
   // dedup (domain|title|region), keep highest severity
@@ -9827,6 +9829,8 @@ function grdfRenderSignals(dom){
   var items = (dom==='all') ? src.slice() : src.filter(function(e){ return e.domain===dom; });
   // Source curation — hide items whose source label is on the blocklist (exact match, география не трогается)
   items = items.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
+  // lifecycle gate: report-источники (Copernicus EMS и т.п.) не входят в live-ленту — уходят в analysis-слой
+  items = items.filter(function(e){ var _rej = REPORT_SRC_BLOCK.indexOf(String(e.source||'').trim().toLowerCase())>=0; if(_rej){ try{ console.debug('[feed] event_rejected_reason=EMS_REPORT', e.source, '|', e.title); }catch(_){} } return !_rej; });
   // hide video-teaser clickbait (Смотрите:/Видео:/Watch:/Фото:) — событие приходит профильным сигналом
   items = items.filter(function(e){ var _t=String(e.title||'').trim().toLowerCase(); return !(_t.indexOf('смотри')===0||_t.indexOf('видео:')===0||_t.indexOf('watch:')===0||_t.indexOf('фото:')===0||_t.indexOf('look:')===0); });
   // C — collapse rolling multi-day duplicates of the same event (same domain|title|region)
