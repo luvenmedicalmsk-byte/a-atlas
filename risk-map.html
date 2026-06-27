@@ -1874,8 +1874,8 @@ function renderMarkers() {
 }
 
 // ── СТАТИСТИКА И СПИСОК ──────────────────────────────────────────────────────
-window._sevLabel = function(v){ v=+v||0; return v>=75?'Критический':v>=60?'Повышенный':v>=40?'Средний':'Низкий'; };
-window._sevColor = function(v){ v=+v||0; return v>=75?'#E24A3B':v>=60?'#F2A33C':v>=40?'#A89150':'#D8D8D8'; };
+window._sevLabel = function(v){ v=+v||0; return v>=90?'Критический':v>=75?'Высокий риск':v>=60?'Повышенный риск':v>=40?'Средний риск':'Низкий риск'; };
+window._sevColor = function(v){ v=+v||0; return v>=90?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8'; };
 function sc(s){ return window._sevColor(s); }
 function fd(iso){ return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) }
 
