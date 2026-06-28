@@ -1850,6 +1850,7 @@ function renderMarkers() {
   const now = Date.now();
   const cutoff = now - MAX_EVENT_AGE_MS;
   const fresh = filtered.filter(ev => {
+    if (ev.lifecycle_type === 'ARCHIVE') return false; // архив — analysis-слой, не на live-карте
     if (!ev.lat || !ev.lng || isNaN(ev.lat) || isNaN(ev.lng)) return false;
     if (!ev.date) return true;  // no date = keep
     const age = new Date(ev.date).getTime();
@@ -9417,11 +9418,11 @@ window._classifyEvents = function(arr){
   (arr||[]).forEach(function(e){
     var src=String(e&&e.source||'').trim().toLowerCase();
     var t = (e&&(e.model_derived===true||String(e.signal_type||'').toLowerCase()==='model')) ? 'MODEL' : ((REPORT_SRC_BLOCK.indexOf(src)>=0)?'REPORT':'LIVE');
-    try{ e.lifecycle_type=t;
+    try{ if(e.lifecycle_type!=='ARCHIVE') e.lifecycle_type=t; // ARCHIVE — first-class, явный тег не перетирается
       if(!e.source_type) e.source_type = /copernicus|nasa|eonet|usgs|sentinel|satellite/.test(src)?'satellite':(/telegram\//.test(src)?'telegram':(/\bcap\b|мчс|cisa|kev|gov|минздрав|роспотреб|росгидромет/.test(src)?'official':(/cyber|threat|thn/.test(src)?'cyber':'news')));
       if(!e.signal_type) e.signal_type='baseline';
     }catch(_){}
-    if(t!=='LIVE') rep++;
+    if(e.lifecycle_type!=='LIVE') rep++;
   });
   try{ if(rep) console.debug('[ingest] lifecycle: '+rep+' REPORT помечены (остаются в ALL_EVENTS, идут в analysis-слой, не в LIVE-агрегацию)'); }catch(_){}
   return (typeof window._signalRouteGuard==='function') ? window._signalRouteGuard(arr) : arr; // ПОЛНЫЙ universe + guarantee layer
