@@ -2411,7 +2411,7 @@ function startSSE() {
         const newEvs = d.events.filter(ev => !existingIds.has(ev.id));
         if (newEvs.length > 0) {
           // FIX1: cap array size to prevent unbounded memory growth
-          ALL_EVENTS = [...newEvs, ...ALL_EVENTS].slice(0, MAX_EVENTS);
+          ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents([...newEvs, ...ALL_EVENTS].slice(0, MAX_EVENTS)) : [...newEvs, ...ALL_EVENTS].slice(0, MAX_EVENTS);
           filtered = filter === 'all' ? [...ALL_EVENTS] : ALL_EVENTS.filter(ev => ev.domain === filter);
           _lastRenderedCount = -1;  // force redraw after new events
           updateStats(); renderList(); renderMarkers();
@@ -3161,7 +3161,7 @@ async function loadExternalFeed() {
 
     if (added > 0) {
       // Prepend new events; keep list bounded at 500 to avoid memory bloat
-      ALL_EVENTS = [...newEvs, ...ALL_EVENTS].slice(0, 500);
+      ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents([...newEvs, ...ALL_EVENTS].slice(0, 500)) : [...newEvs, ...ALL_EVENTS].slice(0, 500);
       filtered = filter === 'all'
         ? [...ALL_EVENTS]
         : ALL_EVENTS.filter(e => e.domain === filter);
@@ -9424,38 +9424,61 @@ window._classifyEvents = function(arr){
     if(t!=='LIVE') rep++;
   });
   try{ if(rep) console.debug('[ingest] lifecycle: '+rep+' REPORT помечены (остаются в ALL_EVENTS, идут в analysis-слой, не в LIVE-агрегацию)'); }catch(_){}
-  return arr; // ПОЛНЫЙ universe, только с тегами — НЕ фильтруется и НЕ редуцируется
+  return (typeof window._signalRouteGuard==='function') ? window._signalRouteGuard(arr) : arr; // ПОЛНЫЙ universe + guarantee layer
+};
+// GUARANTEE LAYER (инвариант): ∀ signal -> ≥1 валидный route. Нероутируемый (нет/неизвестный lifecycle_type)
+// получает детерминированный fallback в LIVE (лента всегда доступна) + лог. Делает silent loss невозможным по дизайну.
+window._signalRouteGuard = function(arr){
+  var a = arr || ((typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]);
+  var KNOWN={LIVE:1,REPORT:1,MODEL:1,ARCHIVE:1}, rescued=0;
+  (a||[]).forEach(function(e){
+    if(!e) return;
+    var t=e.lifecycle_type;
+    if(t && KNOWN[t]) return; // уже имеет валидный route-тип
+    var was=t||'нет';
+    try{ e.lifecycle_type='LIVE'; e._route_fallback=(t?('unknown:'+t):'untagged'); }catch(_){}
+    rescued++;
+    try{ console.warn('[route-guard] RESCUE -> LIVE (guarantee): '+(e.id||'?')+' | было lifecycle_type='+was); }catch(_){}
+  });
+  if(rescued) try{ console.warn('[route-guard] спасено от silent loss: '+rescued); }catch(_){}
+  window._lastRescued=rescued;
+  return a;
 };
 // Производные VIEW-слои (фильтрация view, не data): источник — ALL_EVENTS.
 window._liveEvents   = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return (e&&e.lifecycle_type||'LIVE')==='LIVE'; }); };
 window._reportEvents = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='REPORT'; }); };
 window._archiveEvents= function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='ARCHIVE'; }); };
 window._modelEvents  = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='MODEL'; }); };
-// PRODUCTION SIGNAL AUDIT (диагностика, без рефакторинга): проверяет, что каждый сигнал ALL_EVENTS
-// достигает хотя бы одного СУЩЕСТВУЮЩЕГО view (_liveEvents/_reportEvents/_modelEvents/карта по координатам).
+// PRODUCTION SIGNAL LOSS INVARIANT: проверяет, что каждый сигнал ALL_EVENTS имеет ≥1 валидный route
+// (_liveEvents/_reportEvents/_modelEvents/_archiveEvents/карта). Работает как invariant guard поверх guarantee layer.
 window._signalAudit = function(){
   var all=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[];
   var live=(typeof window._liveEvents==='function')?window._liveEvents():[];
   var report=(typeof window._reportEvents==='function')?window._reportEvents():[];
   var model=(typeof window._modelEvents==='function')?window._modelEvents():[];
+  var archive=(typeof window._archiveEvents==='function')?window._archiveEvents():[];
   function geo(e){ return !!(e&&e.lat!=null&&e.lng!=null&&!isNaN(+e.lat)&&!isNaN(+e.lng)); }
-  var inLive=new Set(live), inReport=new Set(report), inModel=new Set(model);
+  var KNOWN={LIVE:1,REPORT:1,MODEL:1,ARCHIVE:1};
+  var inLive=new Set(live), inReport=new Set(report), inModel=new Set(model), inArch=new Set(archive);
   var mapped=all.filter(geo);
-  var unmapped=[];
+  var unmapped=[], invalid=[];
   all.forEach(function(e){
-    var covered = inLive.has(e)||inReport.has(e)||inModel.has(e)||geo(e);
-    if(!covered) unmapped.push({ id:(e&&e.id)||null, source:(e&&e.source)||'', lifecycle_type:(e&&e.lifecycle_type)||'(нет)', has_geo:geo(e), title:String(e&&e.title||'').slice(0,60) });
+    var t=e&&e.lifecycle_type;
+    if(t && !KNOWN[t]) invalid.push({ id:(e&&e.id)||null, lifecycle_type:t, title:String(e&&e.title||'').slice(0,50) }); // неизвестный тип = invalid route
+    var routed = inLive.has(e)||inReport.has(e)||inModel.has(e)||inArch.has(e)||geo(e);
+    if(!routed) unmapped.push({ id:(e&&e.id)||null, source:(e&&e.source)||'', lifecycle_type:t||'(нет)', has_geo:geo(e), title:String(e&&e.title||'').slice(0,60) });
   });
-  var out={ total:all.length, live:live.length, report:report.length, model:model.length, mapped:mapped.length, unmapped:unmapped.length, silent_loss:unmapped.length };
+  var ok = (unmapped.length===0 && invalid.length===0);
+  var out={ total:all.length, live:live.length, report:report.length, model:model.length, mapped:mapped.length, unmapped:unmapped.length, invalid_route:invalid.length, silent_loss:unmapped.length, status:(ok?'PASS':'FAIL') };
   try{
-    console.info('[signal-audit] total:'+out.total+' live:'+out.live+' report:'+out.report+' model:'+out.model+' mapped:'+out.mapped+' unmapped:'+out.unmapped+' silent_loss:'+out.silent_loss);
-    if(unmapped.length){ console.error('[signal-audit] BROKEN SYSTEM (unmapped/silent_loss>0):', unmapped); }
-    else { console.info('[signal-audit] OK — 0 unmapped, 0 silent_loss: каждый сигнал достигает хотя бы одного view'); }
+    console.info('[signal-audit] total:'+out.total+' live:'+out.live+' report:'+out.report+' model:'+out.model+' mapped:'+out.mapped+' unmapped:'+out.unmapped+' invalid_route:'+out.invalid_route+' silent_loss:'+out.silent_loss+' status:'+out.status);
+    if(!ok){ console.error('[signal-audit] SYSTEM FAILURE — unmapped:', unmapped, 'invalid_route:', invalid); }
+    else { console.info('[signal-audit] PASS — инвариант держится: 0 unmapped, 0 invalid_route, 0 silent_loss (guarantee layer активен)'); }
     var sat=all.filter(function(e){ return /copernicus|nasa|eonet|usgs|sentinel|\bems\b/i.test(String(e&&e.source||'')); });
-    var satCov=sat.filter(function(e){ return inLive.has(e)||inReport.has(e)||inModel.has(e)||geo(e); }).length;
-    console.info('[signal-audit] satellite/EMS/external: '+sat.length+' шт · покрыто view: '+satCov+' · на карте: '+sat.filter(geo).length);
+    var satCov=sat.filter(function(e){ return inLive.has(e)||inReport.has(e)||inModel.has(e)||inArch.has(e)||geo(e); }).length;
+    console.info('[signal-audit] satellite/EMS/external: '+sat.length+' шт · покрыто: '+satCov+' · на карте: '+sat.filter(geo).length);
   }catch(_){}
-  window._lastAudit=out; window._lastUnmapped=unmapped;
+  window._lastAudit=out; window._lastUnmapped=unmapped; window._lastInvalid=invalid;
   return out;
 }
 // Лента «События»: стоп-слова промо-хвостов (телеграм-приписки). Редактируется здесь.
