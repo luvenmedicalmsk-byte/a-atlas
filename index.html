@@ -10057,7 +10057,7 @@ function grdfPopulateCountriesList(countries) {
   function row(c, dev){
     var gri = fr(c.risk_score);
     var sc  = STATUS_COLORS[getStatus(gri)]||'#888';
-    var delta = parseFloat(c.delta||0);
+    var delta = parseFloat(c.gri_delta_7d); if(isNaN(delta)) delta=0;  // изменение GRI за 7д — как в карточке (было c.delta, расходилось)
     var h = '<div class="grdf-country-row" style="'+(dev?'opacity:.6;':'')+'" data-grdf-cc="'+esc(c.country)+'" onclick="grdfOpenCountrySheet(this.dataset.grdfCc)">';
     h += '<div class="grdf-country-avatar" style="background:'+sc+'18;border:1.5px solid '+sc+'30;font-size:20px">'+_flag(c.country)+'</div>';
     h += '<div style="flex:1"><div style="font-size:12px;font-weight:500;color:#e2e8f0">'+esc(c.country_name||c.country)
