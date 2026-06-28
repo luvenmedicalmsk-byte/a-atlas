@@ -2857,6 +2857,22 @@ document.addEventListener('click',function(e){
 (function(){var s=document.createElement('style');s.textContent='.dn-card{display:flex;align-items:flex-start;gap:9px;padding:11px 14px;border-bottom:0.5px solid rgba(184,151,58,0.1);cursor:pointer}.dn-title{font-size:13px;color:#cbd5e1;font-weight:600;line-height:1.3;margin:1px 0 4px}.dn-text{font-size:12px;color:rgba(203,213,225,0.82);line-height:1.42;margin:1px 0 4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.dn-card.dn-open .dn-text{-webkit-line-clamp:unset;overflow:visible;display:block}.dn-actions{margin-top:5px}.dn-actions a{color:rgba(148,163,184,0.85);text-decoration:none;font-size:10px}.dn-media{display:flex;gap:4px;margin:6px 0 2px;flex-wrap:wrap}.dn-thumb{width:66px;height:50px;border-radius:6px;background-color:#10161f;position:relative;overflow:hidden;flex-shrink:0}.dn-thumb img{width:100%;height:100%;object-fit:cover;display:block}.dn-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);filter:drop-shadow(0 1px 3px rgba(0,0,0,.6))}.dn-more{width:40px;height:50px;border-radius:6px;background:#10161f;color:#8a93a3;font-size:11px;display:flex;align-items:center;justify-content:center}.dn-thumb[data-vid]{cursor:pointer}.dn-thumb[data-c],.dn-more[data-c]{cursor:pointer}#dn-lb{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center}#dn-lb.open{display:flex}#dn-lb .dn-lb-stage{max-width:100vw;max-height:100vh;display:flex;align-items:center;justify-content:center}#dn-lb img,#dn-lb video{max-width:96vw;max-height:84vh;border-radius:8px;background:#000}#dn-lb .dn-lb-x{position:absolute;top:14px;right:16px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;cursor:pointer}#dn-lb .dn-lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;cursor:pointer}#dn-lb .dn-lb-prev{left:10px}#dn-lb .dn-lb-next{right:10px}#dn-lb .dn-lb-nav.hide{display:none}#dn-lb .dn-lb-count{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#cbd5e1;font-size:13px}';document.head.appendChild(s);})();
 
 var dnInterval=null, dnCache=[];
+// Дедуп переформулированных репостов в ленте ЧС (паритет с C2 в «События»): stem-overlap по заголовку.
+function _dnStems(t){ var sn={}, out=[]; String(t||'').toLowerCase().replace(/[^0-9a-zа-яё ]/gi,' ').split(/\s+/).forEach(function(w){ if(w.length>=4){ var p=w.slice(0,6); if(!sn[p]){ sn[p]=1; out.push(p); } } }); return out; }
+function _dnDedup(arr){
+  var kept=[], res=[];
+  (arr||[]).forEach(function(it){
+    var raw=String(it&&it.text||''); var nl=raw.indexOf('\n'); var ttl=(nl>0?raw.slice(0,nl):raw);
+    var w=_dnStems(ttl), dup=-1;
+    for(var i=0;i<kept.length;i++){ var sa={}; kept[i].w.forEach(function(p){sa[p]=1;}); var inter=0; w.forEach(function(p){ if(sa[p]) inter++; });
+      var minL=Math.min(w.length,kept[i].w.length)||1; var ratio=inter/minL; if(inter>=3 && ratio>=0.6){ dup=i; break; } }
+    if(dup<0){ kept.push({w:w,idx:res.length}); res.push(it); }
+    else { var pi=kept[dup].idx, cur=res[pi];
+      var curM=((cur.media||[]).length)+((cur.videos||[]).length), newM=((it.media||[]).length)+((it.videos||[]).length);
+      if(newM>curM){ res[pi]=it; kept[dup].w=w; } }
+  });
+  return res;
+}
 function _dnCase(t){
   t=(t||'').trim(); if(!t) return t;
   var letters=(t.match(/[a-zа-яё]/gi)||[]).length;
@@ -2926,7 +2942,7 @@ async function loadDisaster(){
   try{
     var r=await fetch(API_BASE+'/api/proxy/disaster-news',{cache:'no-store'});
     if(!r.ok) throw new Error('http '+r.status);
-    var j=await r.json(); dnCache=(j&&j.items)||[]; renderDisaster();
+    var j=await r.json(); dnCache=_dnDedup((j&&j.items)||[]); renderDisaster();
     console.info('[Disaster]',dnCache.length,'постов');
   }catch(e){
     if(!dnCache.length) box.innerHTML='<div class="qk-empty">Лента ЧС временно недоступна.<br>Источник: Telegram · Disaster_News.</div>';
@@ -9514,11 +9530,16 @@ var FEED_GEO_MILCTX = /(дрон|бпла|ракет|обстрел|нпз|не�
 var FEED_GEO_BLOCK = /(акул|медвед|собак|укус|молни|наводнен|паводок|подтоплен|землетряс|оползен|пожар|шторм|ливень|засух|дтп|провали|колодец|утонул|поскользн|бытов|ограблен|кража|изнасил|маньяк|педофил|наркот)/;
 var FEED_HUMAN = /(гуманитарн|беженц|перемещ|недоедан|голод|мирных жител|мирные жител|мирного насел|эвакуир насел|гуманитарной помощ|гуманитарную помощ)/;
 var FEED_WAR = /(войн|военн|конфликт|боев|обстрел|бомбардир|оккупац|осад|блокад|вторжен|фронт|всу |армия|авиаудар|удар по)/;
+// Явные климат/погодные ЧС — для возврата ошибочно НЕ-климатических новостей (жара и т.п.) в climate.
+var FEED_CLIMATE_STRONG = /(аномальн\S* жар|тепловая волна|волна жары|рекордн\S* (?:жар|температур)|жара обновля|наводнени|паводок|подтоплен|засух|ураган|тайфун|циклон|лесн\S* пожар|природн\S* пожар|заморозк|ледяной дождь|сильнейш\S* ливн)/i;
+// Экономическое ядро — НЕ переносим в climate, даже при наличии погодного термина (анти-false-positive).
+var FEED_ECON_CORE = /(цен[аыуе]|подорожан|рынок|рынк|акци|бирж|инфляц|ввп|курс\b|экспорт|импорт|тариф|санкци|бюджет|нефт|пшениц|котировк|валют|ставк)/i;
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
-  if(d!=='climate' && d!=='social') return null;
   var s=((e.title||'')+' '+(e.region||'')).toLowerCase();
+  if(d!=='climate' && FEED_CLIMATE_STRONG.test(s) && !FEED_ECON_CORE.test(s)) return 'climate';
+  if(d!=='climate' && d!=='social') return null;
   if(FEED_GEO_BLOCK.test(s)) return null;
   for(var i=0;i<FEED_GEO_STRONG.length;i++){ if(s.indexOf(FEED_GEO_STRONG[i])>=0) return 'geopolitics'; }
   if(FEED_GEO_MILCTX.test(s)){ for(var j=0;j<FEED_GEO_WEAK.length;j++){ if(s.indexOf(FEED_GEO_WEAK[j])>=0) return 'geopolitics'; } }
