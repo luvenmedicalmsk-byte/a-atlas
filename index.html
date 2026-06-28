@@ -8074,7 +8074,7 @@ function _grdfFreeMirror(c){ try{
       +'</div>'; }
   function FINAL(){ var det=['главный источник давления','ключевые драйверы риска','вероятные направления распространения риска','критические точки наблюдения','стратегический фокус давления','вероятные сценарии развития','долгосрочные факторы риска'];
     return '<div style="margin:18px 14px 8px;padding:22px 18px;border:1px solid rgba(227,178,60,.42);border-radius:16px;background:linear-gradient(180deg,rgba(227,178,60,.11),rgba(255,255,255,.012));text-align:left">'
-      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#D4AF5A;line-height:1.22">Atlas Intelligence завершил полный анализ страны</div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#D4AF5A;line-height:1.22">'+(_aStatus==='complete'?'Atlas Intelligence завершил полный анализ страны':'Предварительная модель анализа страны')+'</div>'
       +'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.6;margin-top:11px">Система уже определила ключевые источники давления, вероятные сценарии развития и стратегические точки наблюдения. Эти выводы получены на основе многодоменного анализа, сценарного моделирования и архивных исследований.</div>'
       +'<div style="font-size:10px;color:rgba(184,151,58,.95);text-transform:uppercase;letter-spacing:.12em;font-weight:700;font-family:Montserrat,sans-serif;margin-top:20px;margin-bottom:11px">Определены</div>'
       +'<div>'+det.map(function(t){return '<div style="font-size:12.5px;color:rgba(203,213,225,.88);padding:4px 0;line-height:1.35;display:flex;align-items:center">'+CHK+esc(t)+'</div>';}).join('')+'</div>'
