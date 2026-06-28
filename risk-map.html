@@ -7993,6 +7993,9 @@ function _fmLoadArch(cc){ try{
 /* ── Free-зеркало: завершённое исследование, выводы скрыты (содержательные описания, без названий движков) ── */
 function _grdfFreeMirror(c){ try{
   var cc=String(c.country||'').toUpperCase();
+  // analysis_status: полный анализ только у готовых стран (_GRDF_READY, сейчас RU). Остальные — модельная оценка.
+  var _aStatus = (typeof _GRDF_READY!=='undefined' && _GRDF_READY[cc]) ? 'complete' : 'model';
+  var _aLabel = _aStatus==='complete'?'Анализ завершён':(_aStatus==='model'?'Предварительная оценка':(_aStatus==='partial'?'Частичная оценка':'Анализ в разработке'));
   var GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'};
   var gname=GEN[cc]||_CNRU[cc]||(c.country_name||cc);
   var GOLD='#E3B23C', CTA_TXT='Разблокировать полный профиль страны';
@@ -8036,7 +8039,9 @@ function _grdfFreeMirror(c){ try{
             +'<div style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;line-height:1.3">'+esc(t)+'</div>'
             +'<div style="font-size:11.5px;color:rgba(203,213,225,.80);line-height:1.5;margin-top:6px">'+esc(m[0])+'</div>'
             +'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;align-items:center">'
-              +'<span style="font-size:10px;color:#1faacc;font-weight:600;display:inline-flex;align-items:center">'+CHK+'Анализ завершён</span>'
+              +(_aStatus==='complete'
+                 ? '<span style="font-size:10px;color:#1faacc;font-weight:600;display:inline-flex;align-items:center">'+CHK+'Анализ завершён</span>'
+                 : '<span style="font-size:10px;color:rgba(184,151,58,.95);font-weight:600;display:inline-flex;align-items:center">'+esc(_aLabel)+'</span>')
               +'<span style="font-size:10px;color:rgba(184,151,58,.95);font-weight:600">🔒 '+esc(m[1])+'</span>'
             +'</div>'
           +'</div>'
