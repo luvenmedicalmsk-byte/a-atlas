@@ -9577,6 +9577,7 @@ window._isSourceLike = function(val){
 };
 window._geoStatus = function(ev){
   try{
+    if(typeof _grdfTier!=='undefined' && _grdfTier!=='FREE') return 'CONFIRMED'; // Signal Pro: пока как было, safety-слой только в FREE
     var blob=(String(ev.title||'')+' '+String(ev.summary||'')).toLowerCase();
     var NO_GEO=/(санкц|эмбарго|пошлин|тариф|заявил|объявил|переговор|саммит|резолюц|рекоменд|доклад|прогноз|аналитик|инфляц|\bставк|рынок|бирж|рубл|\bевро |\bдоллар|уязвим|cisa|cve|malware|вредонос|взлом|утечк|фишинг|хакер|кибер|приложени|импорт|экспорт)/i;
     var KINETIC=/(удар|атак|обстрел|ракет|бомб|взрыв|авиауд|бпла|дрон|штурм|снаряд|вторжен|наступлен|сбит)/i;
