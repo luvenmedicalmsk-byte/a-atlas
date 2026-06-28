@@ -4534,7 +4534,7 @@ function renderAlerts(data) {
 
     html += '</div>'
           + '<span class="ap-type-badge ap-type-' + (a.type||'') + '">' + _esc(typeLabel) + '</span>'
-          + '<div class="ap-title">' + _esc(a.title||'') + '</div>';
+          + '<div class="ap-title">' + _esc((typeof window._cleanSignalText==='function'?window._cleanSignalText(a.title||'', a):(a.title||''))) + '</div>';
 
     if (a.message) {
       html += '<div class="ap-message">' + _esc(a.message) + '</div>';
@@ -9852,11 +9852,12 @@ window._cleanSignalText = function(t, e){
   return s;
 };
 // BLOCKING VALIDATION (контракт): детектор остаточного leak. Логирует TEXT_POLICY_VIOLATION, не рушит рендер.
+// VALIDATION ENGINE (спека Layer 10): validate(text) -> {status:'PASS'|'FAIL', reason}. Логирует, не рушит рендер.
 window._textPolicyCheck = function(t){
   var s=String(t||'');
   var leak=/@[\wА-Яа-яЁё]|подпис(?:ывайтесь|аться)|\bsubscribe\b|\bvia\s+\S|\(РБК\)|\(RBK\)|\bTopor\b|Топор\s*\+?\s*18/i;
-  if(leak.test(s)){ try{ console.warn('[text-policy] TEXT_POLICY_VIOLATION:', s.slice(0,140)); }catch(_){} return false; }
-  return true;
+  if(leak.test(s)){ try{ console.warn('[text-policy] FAIL · TEXT_POLICY_VIOLATION:', s.slice(0,140)); }catch(_){} return {status:'FAIL', reason:'TEXT_POLICY_VIOLATION'}; }
+  return {status:'PASS', reason:null};
 };
 window._radarPick = function(id){
   var e = window._radarReg && window._radarReg[id];
@@ -9979,7 +9980,7 @@ function grdfRenderSignals(dom){
       var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx(_deEnt(_sum))+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">'+escx(window._srcLabel(ev.source))+'</div>':'')+'</div>';
       html += '<div class="grdf-sig-card'+(ev._news?' sig-news':'')+'">'
       + '<div class="sig-main">'
-      +   '<div class="grdf-sig-title sig-clamp2">'+escx(_stripPromo(_deEnt(ev.title)))+'</div>'
+      +   '<div class="grdf-sig-title sig-clamp2">'+escx((typeof window._cleanSignalText==='function'?window._cleanSignalText(_stripPromo(_deEnt(ev.title)), ev):_stripPromo(_deEnt(ev.title))))+'</div>'
       +   _cb
       +   '<div class="grdf-sig-meta">'+(_cb?'':(function(){var _g=window._pinGeo(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
       +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
