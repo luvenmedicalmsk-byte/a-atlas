@@ -3012,7 +3012,7 @@ window._grdfDisasterEnsure=function(){
   function _newsToEv(items){
     return items.map(function(it){
       var full=(it.text||'').replace(/\s*\n\s*/g,' ').trim();
-      return { domain: it.domain||'geopolitics', title: full, region: (it.region||it.country||''), country_code: it.country_code||'', event_country: it.event_country||'', source: it.source||'', date: it.time||'', severity:(typeof it.severity==='number'?it.severity:50), dup_count: it.dup_count||0, dup_sources: it.dup_sources||[], _news:true };
+      return { domain: it.domain||'geopolitics', title: (typeof window._cleanSignalText==='function'?window._cleanSignalText(full, it):full), region: (it.region||it.country||''), country_code: it.country_code||'', event_country: it.event_country||'', source: it.source||'', date: it.time||'', severity:(typeof it.severity==='number'?it.severity:50), dup_count: it.dup_count||0, dup_sources: it.dup_sources||[], _news:true };
     });
   }
   async function _loadNewsEv(){
@@ -9805,13 +9805,20 @@ window.grdfRenderRadar = function(force){
   var cnt=document.getElementById('grdf-radar-count'); if(cnt){ var _h=new Date(); var _t=('0'+_h.getHours()).slice(-2)+':'+('0'+_h.getMinutes()).slice(-2); cnt.textContent = (M&&M.total!=null?M.total:total)+' сигналов · '+_t; }
 };
 
-// Раскрытие сигнала: убрать ведущую атрибуцию каналов из ТЕКСТА (источник остаётся один раз в мета-блоке).
-// Консервативно: срабатывает только если текст начинается с '@' и есть терминатор '+'; иначе текст не трогается.
-window._stripSrcAttr = function(t){
-  var s=String(t==null?'':t).trim();
-  if(s.charAt(0)!=='@') return s;
-  var m=s.match(/^@[^@]{0,150}?\+\s*(?:и\s*т\.?\s*д\.?|ещё\s*\d+|др\.?|\d+)?\s*/i);
-  if(m){ var rest=s.slice(m[0].length).replace(/^[\s\u2014:\-,]+/,'').trim(); if(rest.length>=15) return rest; }
+// ATLAS UI RULEBOOK: source/канал/редакционные теги НЕ живут в тексте — только в мета-блоке.
+// Единый чистильщик текста сигнала (data-layer). Безопасен: медиа-атрибуцию режет только по ИЗВЕСТНЫМ
+// источникам события (source/dup_sources) — контент-сущности (CENTCOM, министерства, «сообщил») не трогаются.
+window._cleanSignalText = function(t, e){
+  var s=String(t==null?'':t).trim(); var orig=s; if(!s) return s;
+  s=s.replace(/@[\wА-Яа-яЁё]+(?:\s+[A-ZА-ЯЁ][\wА-Яа-яЁё]*){0,3}/g,' ');
+  s=s.replace(/^\s*(?:срочно|молни[яи]|breaking|live|exclusive|эксклюзив|важно)\b[\s:!|.\u2014+-]+/i,'');
+  s=s.replace(/@?(?:Топор|Topor)\s*\+?\s*\d+/gi,' ');
+  try{ var nm=[]; if(e&&e.source) nm.push(String(e.source)); if(e&&e.dup_sources&&e.dup_sources.forEach) e.dup_sources.forEach(function(x){ if(x) nm.push(String(x)); });
+    nm.forEach(function(n){ n=n.replace(/^Telegram\//i,'').trim(); if(n.length<3) return; var es=n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      s=s.replace(new RegExp('[\\s,;\\u2014-]*(?:по\\s+данным|как\\s+(?:пишет|сообщает|перед\u0430\u0451т)|сообщ(?:ил[аои]?|ает)|источник)?\\s*:?\\s*@?'+es+'\\s*\\+?\\s*\\d*','gi'),' '); });
+  }catch(_){}
+  s=s.replace(/\s{2,}/g,' ').replace(/\s+\+\s+/g,' ').replace(/^[\s,;:|+\u2014-]+/,'').replace(/[\s,;:|+\u2014-]+$/,'').trim();
+  if(s.length<12 || s.length<orig.length*0.4) return orig;
   return s;
 };
 window._radarPick = function(id){
@@ -9826,12 +9833,12 @@ window._radarPick = function(id){
   function esc2(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   var col = DC2[e.domain] || '#B8973A';
   var sev = (e._sev!=null) ? e._sev : e.severity;
-  var sum = window._stripSrcAttr(String(e.summary||'').split('|||')[0].split('|')[0].trim()); if(sum.length>1500) sum=sum.slice(0,1500)+'\u2026';
+  var sum = window._cleanSignalText(String(e.summary||'').split('|||')[0].split('|')[0].trim(), e); if(sum.length>1500) sum=sum.slice(0,1500)+'\u2026';
   var dd=''; try{ if(e.date && typeof fd==='function') dd=fd(e.date); }catch(_){}
   var meta=[]; if(e.region) meta.push(esc2(e.region)); if(dd) meta.push(dd); if(e.source) meta.push(esc2(window._srcLabel(e.source))); if(e.dup_count){ meta.push('+ ещё '+e.dup_count+(e.dup_sources&&e.dup_sources.length?' ('+e.dup_sources.map(function(x){return esc2(x);}).join(', ')+')':'')); }
   var html = '<button class="grdf-rd-x" type="button">\u2715</button>'
     + '<div class="grdf-rd-tag" style="color:'+col+'"><i style="background:'+col+'"></i>'+esc2(DL2[e.domain]||e.domain)+'</div>'
-    + '<div class="grdf-rd-title">'+esc2(window._stripSrcAttr(e.title||''))+'</div>'
+    + '<div class="grdf-rd-title">'+esc2(window._cleanSignalText(e.title||'', e))+'</div>'
     + (meta.length?'<div class="grdf-rd-meta">'+meta.join(' \u00b7 ')+'</div>':'')
     + '<div class="grdf-rd-bar"><div style="width:'+Math.max(0,Math.min(100,sev))+'%;background:'+col+'"></div></div>'
     + '<div class="grdf-rd-sev">\u0421\u0438\u043b\u0430 \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u00b7 '+sev+'/100</div>'
