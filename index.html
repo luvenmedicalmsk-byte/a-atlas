@@ -9547,9 +9547,7 @@ var FEED_POL_CORE=/(выбор[аыовну]|президент|премьер-�
 var FEED_NOISE_PERSONAL=/(от первого лица|её история|ее история|его история|история одной|история одного|истори[яю] (?:семьи|матери|отца|беженц)|одна (?:мать|женщина|семья|жительница) (?:говорит|рассказ|вспомин|ищет)|один (?:отец|мужчина|житель) (?:говорит|рассказ|вспомин)|рассказывает свою историю|личн(?:ая|ую) истори|вот (?:её|ее|его) истори)/i;
 // мнение/комментарий (моральные призывы, «рискует вызвать гнев») — не риск-сигнал
 var FEED_NOISE_OPINION=/(рискует вызвать гнев|моральн[а-яё]* призыв|обращаясь с (?:[а-яё]+\s)?призыв|с моральным призывом)/i;
-// авто-тикер курса валют (ЦБ РФ readout) — не дискретный сигнал
-var FEED_NOISE_TICKER=/(курс доллара цб рф|курс евро цб рф|рубль ослаб: usd|рубль укреп[а-яё]*: usd|usd\s*\d+[.,]\d+\s*₽.*(?:нед|мес)|цб рф:\s*\d+[.,]\d+\s*₽)/i;
-window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return (FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t)) || FEED_NOISE_PERSONAL.test(t) || FEED_NOISE_OPINION.test(t) || FEED_NOISE_TICKER.test(t); };  // культура (с risk-guard) ИЛИ личная история (формат)
+window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return (FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t)) || FEED_NOISE_PERSONAL.test(t) || FEED_NOISE_OPINION.test(t); };  // культура (с risk-guard) ИЛИ личная история (формат)
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
@@ -9708,6 +9706,7 @@ window._geoResolve = function(ev){
     var bad=[]; re=new RegExp(NONP.source,'gi'); while((m=re.exec(blob))) bad.push([m.index,m.index+m[0].length]);
     // 3 NATURAL (до NO-GEO)
     if(NAT.test(blob)){ var pl=placesIn(blob,actor,bad); if(pl.length) return L([pl[0][1],pl[0][2],pl[0][3],pl[0][4]],'natural'); }
+    if(/(рубль|рубл[яеь])\s+(?:ослаб|укреп|упал|пада|вырос|раст|обвал|подеш|подорож|рухн|просел|на бирж)/i.test(t)) return L(['RU','Россия',55.75,37.62],'currency');
     // 4 NO-GEO gate (до locative)
     if(NOGEO.test(blob) && !KIN.test(blob)) return null;
     // 5 LOCATIVE
