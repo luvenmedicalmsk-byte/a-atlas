@@ -9537,6 +9537,7 @@ var FEED_ECON_CORE = /(цен[аыуе]|подорожан|рынок|рынк|�
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
+  if(d==='geological') return 'climate';  // (consistency) геология (землетрясения и т.п.) -> климат: видно одинаково и в ленте, и на радаре
   var s=((e.title||'')+' '+(e.region||'')).toLowerCase();
   if(d!=='climate' && FEED_CLIMATE_STRONG.test(s) && !FEED_ECON_CORE.test(s)) return 'climate';
   if(d!=='climate' && d!=='social') return null;
