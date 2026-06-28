@@ -9667,6 +9667,12 @@ window._geoResolve = function(ev){
   'бразили':['BR','Бразилия',-15.8,-47.9],
   'рейнланд':['DE','Германия',50.0,7.0],
   'пфальц':['DE','Германия',49.4,8.0],
+  'рф':['RU','Россия',55.75,37.62],
+  'иркутск':['RU','Россия',52.3,104.3],
+  'курган':['RU','Россия',55.4,65.3],
+  'росгвард':['RU','Россия',55.75,37.62],
+  'рязан':['RU','Россия',54.6,39.7],
+  'самар':['RU','Россия',53.2,50.1],
   'европ':['EU','ЕС',50.85,4.35],
   'евросоюз':['EU','ЕС',50.85,4.35],
   'брюссел':['EU','ЕС',50.85,4.35],
@@ -9686,35 +9692,30 @@ window._geoResolve = function(ev){
     function L(g,src){ return {country:g[0],region:g[1],lat:g[2],lng:g[3],source:src}; }
     var actor=null, mm=t.match(/^\s*([а-яё\-]+)/);
     if(mm){ var ap=placeAt(mm[1]); if(ap && KIN.test(t.slice(0,90))) actor=ap[0]; }
-    // STATEMENT-гейт
     if(STMT.test(t) && !KIN.test(blob) && !NAT.test(blob)) return null;
     var anchors=[],re,m;
     re=new RegExp(OBJ,'g'); while((m=re.exec(blob))) anchors.push(m.index);
     re=new RegExp(KIN.source,'gi'); while((m=re.exec(blob))) anchors.push(m.index);
     re=new RegExp(NAT.source,'gi'); while((m=re.exec(blob))) anchors.push(m.index);
-    // 1 OBJECT-BOUND
     re=new RegExp(OBJ+'[^.]{0,30}?(?:^|[^а-яё])(?:в|во|на)\\s+([а-яё\\-]+)','gi');
     while((m=re.exec(blob))){ var p=placeAt(m[1]); if(p&&p[0]!==actor) return L(p,'object'); }
-    // 1b DIRECTION
     re=/(?:на|в)\s+(?:юге|севере|западе|востоке|центре)\s+([а-яё\-]+)/gi;
     while((m=re.exec(blob))){ var p2=placeAt(m[1]); if(p2&&p2[0]!==actor) return L(p2,'direction'); }
-    // 2 KINETIC TARGET
     if(KIN.test(blob)){
       re=/(?:^|[^а-яё])по\s+([а-яё\-]+(?:\s+[а-яё\-]+)?)/gi;
       while((m=re.exec(blob))){ if(NONP.test(m[0]))continue; var parts=m[1].split(/\s+/); var p3=placeAt(parts[parts.length-1])||placeAt(parts[0]); if(p3&&p3[0]!==actor) return L(p3,'kinetic_target'); }
     }
     var bad=[]; re=new RegExp(NONP.source,'gi'); while((m=re.exec(blob))) bad.push([m.index,m.index+m[0].length]);
-    // 3 NATURAL (до NO-GEO)
     if(NAT.test(blob)){ var pl=placesIn(blob,actor,bad); if(pl.length) return L([pl[0][1],pl[0][2],pl[0][3],pl[0][4]],'natural'); }
+    // OUTAGE: интернет-отключения имеют страну
+    if(/(отключение интернет|падение интернет|интернет-связи|сбой интернет|аномали[яи] трафика)/i.test(t)){ var plo=placesIn(blob,actor,bad); if(plo.length) return L([plo[0][1],plo[0][2],plo[0][3],plo[0][4]],'outage'); }
+    // CURRENCY: валютный риск -> страна валюты
     if(/(рубль|рубл[яеь])\s+(?:ослаб|укреп|упал|пада|вырос|раст|обвал|подеш|подорож|рухн|просел|на бирж)/i.test(t)) return L(['RU','Россия',55.75,37.62],'currency');
-    // 4 NO-GEO gate (до locative)
     if(NOGEO.test(blob) && !KIN.test(blob)) return null;
-    // 5 LOCATIVE
     var cand=[];
     re=new RegExp('(?:^|[^а-яё])'+LOCP+'\\s+([а-яё\\-]+)','gi');
     while((m=re.exec(blob))){ var p4=placeAt(m[1]); if(p4&&p4[0]!==actor){ var d=anchors.length?Math.min.apply(null,anchors.map(function(a){return Math.abs(m.index-a);})):m.index; cand.push([d,m.index,p4]); } }
     if(cand.length){ cand.sort(function(a,b){return a[0]-b[0]||a[1]-b[1];}); return L(cand[0][2],'locative'); }
-    // 6 SINGLE
     var pl2=placesIn(blob,actor,bad); if(pl2.length===1) return L([pl2[0][1],pl2[0][2],pl2[0][3],pl2[0][4]],'single');
     return null;
   }catch(e){ return null; }
