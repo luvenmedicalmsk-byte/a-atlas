@@ -9536,6 +9536,10 @@ var FEED_CLIMATE_STRONG = /(аномальн\S* жар|(?:^|[^а-яё])жар[а
 var FEED_ECON_CORE = /(цен[аыуе]|подорожан|рынок|рынк|акци|бирж|инфляц|ввп|курс\b|экспорт|импорт|тариф|санкци|бюджет|нефт|пшениц|котировк|валют|ставк)/i;
 // Топливо/энергорынок — для возврата ошибочно climate/social-новостей в economy
 var FEED_ECON_STRONG = /(топлив|бензин|дизель|заправк|(?:^|[^а-яё])азс|нефтепродукт|керосин|мазут|солярк|дефицит\S* (?:топлив|бензин|газ)|лимит\S* (?:топлив|бензин))/i;
+// Шум-фильтр: культура/искусство/ремесло human-interest (не риск). Узкие однозначные маркеры + risk-guard.
+var FEED_NOISE_CULTURE=/(ремонт\S* (?:удов|инструмент|скрипок|гитар)|реставратор\b|музыкант|композитор|скульптор|\bхудожник|\bпоэт[ауыео]?\b|\bписател|балерин|\bбалет\b|оперн\S* певц|кинорежиссёр|народн\S* промыс|ремесленник|ремесл[оаеуы]|резчик по|гончар|уличн\S* музык|стрит-арт)/i;
+var FEED_RISK_KEEP=/(погиб|жертв|взрыв|теракт|\bатак|обстрел|ракет|\bудар|эвакуац|разрушен|катастроф|\bавари|пожар|наводнен|землетряс|ураган|кризис|санкци|дефолт|эпидеми|вспышк|протест|перформанс|беспорядк|переворот|захват|блокад|дефицит|инфляц|обвал|оружи|вооруж|бизнес|предпринимат|инвестиц)/i;
+window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t); };
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
@@ -9649,6 +9653,7 @@ window._signalDataset = function(){
   // unify with «События»: same source-blocklist + clickbait filters
   if(typeof FEED_SRC_BLOCK!=='undefined') src = src.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
   src = src.filter(function(e){ var _t=String(e.title||'').trim().toLowerCase(); return !(_t.indexOf('смотри')===0||_t.indexOf('видео:')===0||_t.indexOf('watch:')===0||_t.indexOf('фото:')===0||_t.indexOf('look:')===0); });
+  src = src.filter(function(e){ return !(window._isNoiseEvent&&window._isNoiseEvent(e)); });  // шум: культура/искусство
   var DOMS = ['climate','geopolitics','economy','technology','social'];
   // dedup (domain|title|region), keep highest severity
   var seen={}, ded=[];
@@ -10000,6 +10005,7 @@ function grdfRenderSignals(dom){
   items = items.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
   // hide video-teaser clickbait (Смотрите:/Видео:/Watch:/Фото:) — событие приходит профильным сигналом
   items = items.filter(function(e){ var _t=String(e.title||'').trim().toLowerCase(); return !(_t.indexOf('смотри')===0||_t.indexOf('видео:')===0||_t.indexOf('watch:')===0||_t.indexOf('фото:')===0||_t.indexOf('look:')===0); });
+  items = items.filter(function(e){ return !(window._isNoiseEvent&&window._isNoiseEvent(e)); });  // шум: культура/искусство
   // C — collapse rolling multi-day duplicates of the same event (same domain|title|region)
   var _seen={}, _ded=[];
   items.forEach(function(e){
