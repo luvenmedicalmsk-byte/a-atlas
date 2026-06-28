@@ -1916,7 +1916,7 @@ function _evPopup(ev){
   var dd=''; try{ dd = ev.date ? fd(ev.date) : ''; }catch(_){}
   var html = '<div style="min-width:190px;max-width:230px">'
     + '<div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:'+col+';margin-bottom:3px">'+e(lab)+'</div>'
-    + '<div style="font-size:12px;color:#cbd5e1;line-height:1.3;font-weight:600">'+e(ev.title)+'</div>'
+    + '<div style="font-size:12px;color:#cbd5e1;line-height:1.3;font-weight:600">'+e((typeof window._cleanSignalText==='function'?window._cleanSignalText(ev.title, ev):ev.title))+'</div>'
     + '<div style="font-size:9px;color:rgba(148,163,184,0.7);margin-top:4px">'+e(ev.region||'')+(dd?' · '+dd:'')+'</div>';
   if(ev.severity!=null && ev.severity!==''){ var scl='#D4AF5A'; try{ scl=sc(ev.severity); }catch(_){}; html += '<div style="font-size:9px;color:'+scl+';margin-top:5px;letter-spacing:.06em">ИНДЕКС РИСКА '+ev.severity+'/100</div>'; }
   if(sum) html += '<div style="font-size:10px;color:#A8A090;line-height:1.45;margin-top:5px">'+e(sum)+'</div>';
@@ -1928,7 +1928,7 @@ function showDetail(ev) {
   selected = ev;
   const col = DC[ev.domain];
   document.getElementById('dt-domain').innerHTML = `<div style="width:4px;height:4px;border-radius:50%;background:${col}"></div><span style="color:${col}">${DL[ev.domain]||ev.domain}</span>`;
-  document.getElementById('dt-title').textContent = ev.title;
+  document.getElementById('dt-title').textContent = (typeof window._cleanSignalText==='function'?window._cleanSignalText(ev.title, ev):ev.title);
   document.getElementById('dt-region').textContent = ev.region;
   document.getElementById('dt-sv').textContent = ev.severity + ' / 100';
   document.getElementById('dt-sfill').style.cssText = `width:${ev.severity}%;background:${sc(ev.severity)}`;
@@ -2878,8 +2878,8 @@ function renderDisaster(){
     var _nl=raw.indexOf('\n'); var ttl, bdy;
     if(_nl>0){ ttl=raw.slice(0,_nl).trim(); bdy=raw.slice(_nl+1).trim(); }
     else { var _m=raw.match(/^([\s\S]{12,90}?[.!?\u2026])\s+([\s\S]+)$/); if(_m){ ttl=_m[1].trim(); bdy=_m[2].trim(); } else { ttl=raw; bdy=''; } }
-    var ttlH=qkEsc(_dnCase(ttl));
-    var text=qkEsc(bdy).replace(/\n/g,'<br>');
+    var ttlH=qkEsc((typeof window._cleanSignalText==='function'?window._cleanSignalText(_dnCase(ttl)):_dnCase(ttl)));
+    var text=qkEsc((typeof window._cleanSignalText==='function'?window._cleanSignalText(bdy):bdy)).replace(/\n/g,'<br>');
     var md=(it.media||[]).filter(function(u){return /^https?:/.test(u);});
     var vids=(it.videos||[]).filter(function(u){return /^https?:/.test(u);});
     var mh='';
@@ -9851,6 +9851,7 @@ window.grdfRenderRadar = function(force){
 // источникам события (source/dup_sources) — контент-сущности (CENTCOM, министерства, «сообщил») не трогаются.
 window._cleanSignalText = function(t, e){
   var s=String(t==null?'':t).trim(); var orig=s; if(!s) return s;
+  s=s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#0?39;/g,"'").replace(/&nbsp;/g,' ');
   var WB='(?![\\wА-Яа-яЁё])';
   s=s.replace(/@[\wА-Яа-яЁё]+(?:\s+[A-ZА-ЯЁ][\wА-Яа-яЁё]*){0,3}/g,' ');
   s=s.replace(/^\s*(?:срочно|молни[яи]|breaking|live|exclusive|эксклюзив|важно)[\s:!|.\u2014+-]+/i,'');
@@ -9998,10 +9999,10 @@ function grdfRenderSignals(dom){
       var _dk = (ev.dup_count?'<span class="sig-dup" style="color:'+col+'">+ \u0435\u0449\u0451 '+ev.dup_count+'</span>':'');
       var _mk = _fk + _rk + _dk;
       var _sum = String(ev.summary||'').split('|||')[0].split('|')[0].trim();
-      var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx(_deEnt(_sum))+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">'+escx(window._srcLabel(ev.source))+'</div>':'')+'</div>';
+      var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx((typeof window._cleanSignalText==='function'?window._cleanSignalText(_sum, ev):_deEnt(_sum)))+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">'+escx(window._srcLabel(ev.source))+'</div>':'')+'</div>';
       html += '<div class="grdf-sig-card'+(ev._news?' sig-news':'')+'">'
       + '<div class="sig-main">'
-      +   '<div class="grdf-sig-title sig-clamp2">'+escx((typeof window._cleanSignalText==='function'?window._cleanSignalText(_stripPromo(_deEnt(ev.title)), ev):_stripPromo(_deEnt(ev.title))))+'</div>'
+      +   '<div class="grdf-sig-title sig-clamp2">'+escx((typeof window._cleanSignalText==='function'?window._cleanSignalText(ev.title, ev):ev.title))+'</div>'
       +   _cb
       +   '<div class="grdf-sig-meta">'+(_cb?'':(function(){var _g=window._pinGeo(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
       +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
