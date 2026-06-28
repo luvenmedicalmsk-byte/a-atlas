@@ -9810,16 +9810,33 @@ window.grdfRenderRadar = function(force){
 // источникам события (source/dup_sources) — контент-сущности (CENTCOM, министерства, «сообщил») не трогаются.
 window._cleanSignalText = function(t, e){
   var s=String(t==null?'':t).trim(); var orig=s; if(!s) return s;
+  var WB='(?![\\wА-Яа-яЁё])';
   s=s.replace(/@[\wА-Яа-яЁё]+(?:\s+[A-ZА-ЯЁ][\wА-Яа-яЁё]*){0,3}/g,' ');
-  s=s.replace(/^\s*(?:срочно|молни[яи]|breaking|live|exclusive|эксклюзив|важно)\b[\s:!|.\u2014+-]+/i,'');
+  s=s.replace(/^\s*(?:срочно|молни[яи]|breaking|live|exclusive|эксклюзив|важно)[\s:!|.\u2014+-]+/i,'');
   s=s.replace(/@?(?:Топор|Topor)\s*\+?\s*\d+/gi,' ');
+  s=s.replace(/подпис(?:ывайтесь|аться|ка)[^.!?]*[.!?]?/gi,' ').replace(/(?:subscribe|follow\s+us|наш\s+канал|читайте\s+в|присоединяйтесь)[^.!?]*[.!?]?/gi,' ');
+  s=s.replace(/\bvia\s+@?[\wА-Яа-яЁё.\-]+/gi,' ');
+  s=s.replace(/\((?:РБК|RBK|RBC|Reuters|BBC|ТАСС|TASS|РИА(?:\s*Новости)?|AP|AFP|CNN|Bloomberg|Interfax|Интерфакс)\)/gi,' ');
+  s=s.replace(/\bT\s*Live\b/gi,' ').replace(/(^|\s)\+\s*18(?![\wА-Яа-яЁё])/g,'$1').replace(/(^|\s)(?:Breaking|Live|Exclusive)(?=\s|$|[.,;:!])/gi,'$1');
   try{ var nm=[]; if(e&&e.source) nm.push(String(e.source)); if(e&&e.dup_sources&&e.dup_sources.forEach) e.dup_sources.forEach(function(x){ if(x) nm.push(String(x)); });
     nm.forEach(function(n){ n=n.replace(/^Telegram\//i,'').trim(); if(n.length<3) return; var es=n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      s=s.replace(new RegExp('[\\s,;\\u2014-]*(?:по\\s+данным|как\\s+(?:пишет|сообщает|перед\u0430\u0451т)|сообщ(?:ил[аои]?|ает)|источник)?\\s*:?\\s*@?'+es+'\\s*\\+?\\s*\\d*','gi'),' '); });
+      s=s.replace(new RegExp('[\\s,;\\u2014-]*(?:по\\s+данным|как\\s+(?:пишет|сообщает|передаёт)|сообщ(?:ил[аои]?|ает)|источник)?\\s*:?\\s*@?'+es+'\\s*\\+?\\s*\\d*'+WB,'gi'),' '); });
   }catch(_){}
-  s=s.replace(/\s{2,}/g,' ').replace(/\s+\+\s+/g,' ').replace(/^[\s,;:|+\u2014-]+/,'').replace(/[\s,;:|+\u2014-]+$/,'').trim();
-  if(s.length<12 || s.length<orig.length*0.4) return orig;
+  var _O='Reuters|BBC|ТАСС|TASS|РИА(?:\\s*Новости)?|Al[\\s-]?Jazeera|CNN|Bloomberg|Interfax|Интерфакс|РБК|RBK|AP|AFP';
+  s=s.replace(new RegExp('[\\s,;\\u2014-]*(?:по\\s+данным|как\\s+(?:пишет|сообщает|передаёт)|сообщ(?:ил[аои]?|ает)|источник)\\s*:?\\s*@?(?:'+_O+')'+WB,'gi'),' ');
+  s=s.replace(new RegExp('^(?:'+_O+')\\s*[:\\-\\u2014]\\s+','i'),'').replace(new RegExp('[\\s,;\\u2014-]+(?:'+_O+')\\.?\\s*$','i'),'');
+  s=s.replace(/[\s,;\u2014-]+(?:reported\s+by|по\s+данным|как\s+(?:пишет|сообщает)|сообщает|передаёт|via)\s*$/i,'');
+  s=s.replace(/@\S+/g,' ');
+  s=s.replace(/\s{2,}/g,' ').replace(/\s+([.,;:!?])/g,'$1').replace(/\s+\+\s+/g,' ').replace(/^[\s,;:|+\u2014-]+/,'').replace(/[\s,;:|+\u2014-]+$/,'').trim();
+  if(s.length<10) return orig;
   return s;
+};
+// BLOCKING VALIDATION (контракт): детектор остаточного leak. Логирует TEXT_POLICY_VIOLATION, не рушит рендер.
+window._textPolicyCheck = function(t){
+  var s=String(t||'');
+  var leak=/@[\wА-Яа-яЁё]|подпис(?:ывайтесь|аться)|\bsubscribe\b|\bvia\s+\S|\(РБК\)|\(RBK\)|\bTopor\b|Топор\s*\+?\s*18/i;
+  if(leak.test(s)){ try{ console.warn('[text-policy] TEXT_POLICY_VIOLATION:', s.slice(0,140)); }catch(_){} return false; }
+  return true;
 };
 window._radarPick = function(id){
   var e = window._radarReg && window._radarReg[id];
@@ -9834,11 +9851,12 @@ window._radarPick = function(id){
   var col = DC2[e.domain] || '#B8973A';
   var sev = (e._sev!=null) ? e._sev : e.severity;
   var sum = window._cleanSignalText(String(e.summary||'').split('|||')[0].split('|')[0].trim(), e); if(sum.length>1500) sum=sum.slice(0,1500)+'\u2026';
+  var _ct = window._cleanSignalText(e.title||'', e); try{ if(window._textPolicyCheck){ window._textPolicyCheck(_ct); window._textPolicyCheck(sum); } }catch(_){}
   var dd=''; try{ if(e.date && typeof fd==='function') dd=fd(e.date); }catch(_){}
   var meta=[]; if(e.region) meta.push(esc2(e.region)); if(dd) meta.push(dd); if(e.source) meta.push(esc2(window._srcLabel(e.source))); if(e.dup_count){ meta.push('+ ещё '+e.dup_count+(e.dup_sources&&e.dup_sources.length?' ('+e.dup_sources.map(function(x){return esc2(x);}).join(', ')+')':'')); }
   var html = '<button class="grdf-rd-x" type="button">\u2715</button>'
     + '<div class="grdf-rd-tag" style="color:'+col+'"><i style="background:'+col+'"></i>'+esc2(DL2[e.domain]||e.domain)+'</div>'
-    + '<div class="grdf-rd-title">'+esc2(window._cleanSignalText(e.title||'', e))+'</div>'
+    + '<div class="grdf-rd-title">'+esc2(_ct)+'</div>'
     + (meta.length?'<div class="grdf-rd-meta">'+meta.join(' \u00b7 ')+'</div>':'')
     + '<div class="grdf-rd-bar"><div style="width:'+Math.max(0,Math.min(100,sev))+'%;background:'+col+'"></div></div>'
     + '<div class="grdf-rd-sev">\u0421\u0438\u043b\u0430 \u0441\u0438\u0433\u043d\u0430\u043b\u0430 \u00b7 '+sev+'/100</div>'
