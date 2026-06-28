@@ -1911,7 +1911,7 @@ function _evPopup(ev){
   function e(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   var col = (typeof DC!=='undefined' && DC[ev.domain]) || '#B8973A';
   var lab = (typeof DL!=='undefined' && DL[ev.domain]) || ev.domain || '';
-  var sum = (ev.summary||'').split('|||')[0].split('|')[0].trim();
+  var sum = (typeof window._cleanSignalText==='function'?window._cleanSignalText((ev.summary||'').split('|||')[0].split('|')[0].trim(), ev):(ev.summary||'').split('|||')[0].split('|')[0].trim());
   if(sum.length>160) sum=sum.slice(0,160)+'…';
   var dd=''; try{ dd = ev.date ? fd(ev.date) : ''; }catch(_){}
   var html = '<div style="min-width:190px;max-width:230px">'
@@ -1934,7 +1934,7 @@ function showDetail(ev) {
   document.getElementById('dt-sfill').style.cssText = `width:${ev.severity}%;background:${sc(ev.severity)}`;
   // Берём только первый абзац summary, убираем мусор
   const rawSummary = (ev.summary || '');
-  const cleanSummary = rawSummary.split('|||')[0].split('|')[0].trim();
+  const cleanSummary = (typeof window._cleanSignalText==='function'?window._cleanSignalText(rawSummary.split('|||')[0].split('|')[0].trim(), ev):rawSummary.split('|||')[0].split('|')[0].trim());
   document.getElementById('dt-summary').textContent = cleanSummary;
   document.getElementById('dt-src').textContent = 'Источник: ' + ev.source;
   document.getElementById('dt-dt').textContent = fd(ev.date);
