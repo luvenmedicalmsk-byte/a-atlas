@@ -9550,6 +9550,7 @@ function _fixDomain(e){
   var _polTxt=((e.title||'')+' '+(e.summary||'')).toLowerCase();
   if(d!=='climate' && FEED_CLIMATE_STRONG.test(s) && !FEED_ECON_CORE.test(s) && !FEED_POL_CORE.test(_polTxt)) return 'climate';
   if((d==='climate'||d==='social') && FEED_ECON_STRONG.test(s) && !FEED_CLIMATE_STRONG.test(s)) return 'economy';
+  if((d==='climate'||d==='social') && FEED_POL_CORE.test(_polTxt) && !FEED_CLIMATE_STRONG.test(s)) return 'geopolitics';  // политическое (выборы/партсписок), ошибочно в climate/social -> geopolitics
   if(d!=='climate' && d!=='social') return null;
   if(FEED_GEO_BLOCK.test(s)) return null;
   for(var i=0;i<FEED_GEO_STRONG.length;i++){ if(s.indexOf(FEED_GEO_STRONG[i])>=0) return 'geopolitics'; }
