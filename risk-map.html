@@ -9534,12 +9534,15 @@ var FEED_WAR = /(войн|военн|конфликт|боев|обстрел|б
 var FEED_CLIMATE_STRONG = /(аномальн\S* жар|(?:^|[^а-яё])жар[аыео]|жертв\S* .{0,20}жар|тепловая волна|волна жары|рекордн\S* (?:жар|температур)|жара обновля|наводнени|паводок|подтоплен|засух|ураган|тайфун|циклон|лесн\S* пожар|природн\S* пожар|заморозк|ледяной дождь|сильнейш\S* ливн)/i;
 // Экономическое ядро — НЕ переносим в climate, даже при наличии погодного термина (анти-false-positive).
 var FEED_ECON_CORE = /(цен[аыуе]|подорожан|рынок|рынк|акци|бирж|инфляц|ввп|курс\b|экспорт|импорт|тариф|санкци|бюджет|нефт|пшениц|котировк|валют|ставк)/i;
+// Топливо/энергорынок — для возврата ошибочно climate/social-новостей в economy
+var FEED_ECON_STRONG = /(топлив|бензин|дизель|заправк|(?:^|[^а-яё])азс|нефтепродукт|керосин|мазут|солярк|дефицит\S* (?:топлив|бензин|газ)|лимит\S* (?:топлив|бензин))/i;
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
   if(d==='geological') return 'climate';  // (consistency) геология (землетрясения и т.п.) -> климат: видно одинаково и в ленте, и на радаре
   var s=((e.title||'')+' '+(e.region||'')).toLowerCase();
   if(d!=='climate' && FEED_CLIMATE_STRONG.test(s) && !FEED_ECON_CORE.test(s)) return 'climate';
+  if((d==='climate'||d==='social') && FEED_ECON_STRONG.test(s) && !FEED_CLIMATE_STRONG.test(s)) return 'economy';
   if(d!=='climate' && d!=='social') return null;
   if(FEED_GEO_BLOCK.test(s)) return null;
   for(var i=0;i<FEED_GEO_STRONG.length;i++){ if(s.indexOf(FEED_GEO_STRONG[i])>=0) return 'geopolitics'; }
