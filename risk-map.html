@@ -3113,7 +3113,7 @@ function _catInfo(categories) {
     const key = c.toLowerCase().trim();
     const domain = CAT_TO_DOMAIN[key];
     const color  = CAT_COLOR[key];
-    if (domain || color) return { domain: domain||'climate', color, label: c };
+    if (domain || color) return { domain: domain||'geopolitics', color, label: c };  // FIX: было ||'climate' — климат-утечка для категорий без домена; единый дефолт geopolitics (как L3124)
     // partial match
     for (const [k, d] of Object.entries(CAT_TO_DOMAIN)) {
       if (key.includes(k) || k.includes(key)) {
@@ -9539,13 +9539,16 @@ var FEED_ECON_STRONG = /(топлив|бензин|дизель|заправк|(
 // Шум-фильтр: культура/искусство/ремесло human-interest (не риск). Узкие однозначные маркеры + risk-guard.
 var FEED_NOISE_CULTURE=/(ремонт\S* (?:удов|инструмент|скрипок|гитар)|реставратор\b|музыкант|композитор|скульптор|\bхудожник|\bпоэт[ауыео]?\b|\bписател|балерин|\bбалет\b|оперн\S* певц|кинорежиссёр|народн\S* промыс|ремесленник|ремесл[оаеуы]|резчик по|гончар|уличн\S* музык|стрит-арт)/i;
 var FEED_RISK_KEEP=/(погиб|жертв|взрыв|теракт|\bатак|обстрел|ракет|\bудар|эвакуац|разрушен|катастроф|\bавари|пожар|наводнен|землетряс|ураган|кризис|санкци|дефолт|эпидеми|вспышк|протест|перформанс|беспорядк|переворот|захват|блокад|дефицит|инфляц|обвал|оружи|вооруж|бизнес|предпринимат|инвестиц)/i;
+// Политические маркеры — анти-leak: политическое событие с климат-словом НЕ уходит в climate.
+var FEED_POL_CORE=/(выбор[аыовну]|президент|премьер-министр|парламент|депутат[аыов]|санкци|оппозиц|госдум|инаугурац|импичмент|кандидат[аыов]|голосовани|избирател|\bсаммит|дипломатическ)/i;
 window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t); };
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
   if(d==='geological') return 'climate';  // (consistency) геология (землетрясения и т.п.) -> климат: видно одинаково и в ленте, и на радаре
   var s=((e.title||'')+' '+(e.region||'')).toLowerCase();
-  if(d!=='climate' && FEED_CLIMATE_STRONG.test(s) && !FEED_ECON_CORE.test(s)) return 'climate';
+  var _polTxt=((e.title||'')+' '+(e.summary||'')).toLowerCase();
+  if(d!=='climate' && FEED_CLIMATE_STRONG.test(s) && !FEED_ECON_CORE.test(s) && !FEED_POL_CORE.test(_polTxt)) return 'climate';
   if((d==='climate'||d==='social') && FEED_ECON_STRONG.test(s) && !FEED_CLIMATE_STRONG.test(s)) return 'economy';
   if(d!=='climate' && d!=='social') return null;
   if(FEED_GEO_BLOCK.test(s)) return null;
