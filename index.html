@@ -9547,7 +9547,9 @@ var FEED_POL_CORE=/(выбор[аыовну]|президент|премьер-�
 var FEED_NOISE_PERSONAL=/(от первого лица|её история|ее история|его история|история одной|история одного|истори[яю] (?:семьи|матери|отца|беженц)|одна (?:мать|женщина|семья|жительница) (?:говорит|рассказ|вспомин|ищет)|один (?:отец|мужчина|житель) (?:говорит|рассказ|вспомин)|рассказывает свою историю|личн(?:ая|ую) истори|вот (?:её|ее|его) истори)/i;
 // мнение/комментарий (моральные призывы, «рискует вызвать гнев») — не риск-сигнал
 var FEED_NOISE_OPINION=/(рискует вызвать гнев|моральн[а-яё]* призыв|обращаясь с (?:[а-яё]+\s)?призыв|с моральным призывом)/i;
-window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return (FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t)) || FEED_NOISE_PERSONAL.test(t) || FEED_NOISE_OPINION.test(t); };  // культура (с risk-guard) ИЛИ личная история (формат)
+// explainer/фича: «как X меняет/влияет на жизнь Y» + драматичная редакц. рамка — не риск-сигнал
+var FEED_NOISE_EXPLAINER=/(как .{0,55}(меняет|меняют|измени[лвт]|влияет на|разруша|ломает|перевернул)[а-яё]* жизн|финансовая смертная казнь|как .{0,40}(пережива|выжива)[а-яё]* в условиях)/i;
+window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return (FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t)) || FEED_NOISE_PERSONAL.test(t) || FEED_NOISE_OPINION.test(t) || FEED_NOISE_EXPLAINER.test(t); };  // культура (с risk-guard) ИЛИ личная история (формат)
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
