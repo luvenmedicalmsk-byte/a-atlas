@@ -9431,35 +9431,33 @@ window._liveEvents   = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_E
 window._reportEvents = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='REPORT'; }); };
 window._archiveEvents= function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='ARCHIVE'; }); };
 window._modelEvents  = function(){ var a=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]; return a.filter(function(e){ return e&&e.lifecycle_type==='MODEL'; }); };
-// NO SIGNAL LOSS (production): трассирует каждый сигнал ALL_EVENTS+NEWS, считает destination view,
-// фиксирует orphan/silent_loss с причиной. [INGEST]->[CLASSIFY]->[ROUTE]->[RENDER].
+// PRODUCTION SIGNAL AUDIT (диагностика, без рефакторинга): проверяет, что каждый сигнал ALL_EVENTS
+// достигает хотя бы одного СУЩЕСТВУЮЩЕГО view (_liveEvents/_reportEvents/_modelEvents/карта по координатам).
 window._signalAudit = function(){
   var all=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[];
-  var news=(typeof window.NEWS_EVENTS!=='undefined'&&window.NEWS_EVENTS)?window.NEWS_EVENTS:[];
-  var by={LIVE:0,REPORT:0,MODEL:0,ARCHIVE:0,UNTAGGED:0}, route={feed:0,map:0,diagnostics:0,storage:0}, orphans=[];
+  var live=(typeof window._liveEvents==='function')?window._liveEvents():[];
+  var report=(typeof window._reportEvents==='function')?window._reportEvents():[];
+  var model=(typeof window._modelEvents==='function')?window._modelEvents():[];
+  function geo(e){ return !!(e&&e.lat!=null&&e.lng!=null&&!isNaN(+e.lat)&&!isNaN(+e.lng)); }
+  var inLive=new Set(live), inReport=new Set(report), inModel=new Set(model);
+  var mapped=all.filter(geo);
+  var unmapped=[];
   all.forEach(function(e){
-    var t=(e&&e.lifecycle_type)||'';
-    var geo=e&&e.lat!=null&&e.lng!=null&&!isNaN(+e.lat)&&!isNaN(+e.lng);
-    if(t===''){ by.UNTAGGED++; } else if(by[t]!==undefined){ by[t]++; } else { by[t]=(by[t]||0)+1; }
-    var dest=null;
-    if(t===''||t==='LIVE'){ dest='feed'; route.feed++; }
-    else if(t==='REPORT'){ if(geo){ dest='map'; route.map++; } }
-    else if(t==='MODEL'){ dest='diagnostics'; route.diagnostics++; }
-    else if(t==='ARCHIVE'){ dest='storage'; route.storage++; }
-    if(!dest && geo){ dest='map'; route.map++; }
-    if(!dest) orphans.push({ id:(e&&e.id)||null, source:(e&&e.source)||'', source_type:(e&&e.source_type)||'', title:String(e&&e.title||'').slice(0,60), reason:(t===''?'нет lifecycle_type':(t==='REPORT'?'REPORT без координат':'нет destination view')) });
+    var covered = inLive.has(e)||inReport.has(e)||inModel.has(e)||geo(e);
+    if(!covered) unmapped.push({ id:(e&&e.id)||null, source:(e&&e.source)||'', lifecycle_type:(e&&e.lifecycle_type)||'(нет)', has_geo:geo(e), title:String(e&&e.title||'').slice(0,60) });
   });
-  route.feed+=news.length; // NEWS всегда LIVE -> лента
-  var out={ total_signals:all.length, live:(by.LIVE+by.UNTAGGED), report:by.REPORT, model:by.MODEL, archive:by.ARCHIVE, untagged:by.UNTAGGED, news:news.length, orphan:orphans.length, silent_loss:orphans.length, routes:route };
+  var out={ total:all.length, live:live.length, report:report.length, model:model.length, mapped:mapped.length, unmapped:unmapped.length, silent_loss:unmapped.length };
   try{
-    console.info('[signal-audit]', JSON.stringify({total_signals:out.total_signals, live:out.live, report:out.report, model:out.model, news:out.news, orphan:out.orphan, silent_loss:out.silent_loss}));
-    console.info('[signal-audit] routes', JSON.stringify(route), '| [INGEST]->[CLASSIFY]->[ROUTE]->[RENDER]');
-    if(orphans.length) console.error('[signal-audit] BROKEN STATE: orphan/silent_loss>0', orphans);
-    else console.info('[signal-audit] OK: 0 orphan, 0 silent_loss, 100% destination view');
+    console.info('[signal-audit] total:'+out.total+' live:'+out.live+' report:'+out.report+' model:'+out.model+' mapped:'+out.mapped+' unmapped:'+out.unmapped+' silent_loss:'+out.silent_loss);
+    if(unmapped.length){ console.error('[signal-audit] BROKEN SYSTEM (unmapped/silent_loss>0):', unmapped); }
+    else { console.info('[signal-audit] OK — 0 unmapped, 0 silent_loss: каждый сигнал достигает хотя бы одного view'); }
+    var sat=all.filter(function(e){ return /copernicus|nasa|eonet|usgs|sentinel|\bems\b/i.test(String(e&&e.source||'')); });
+    var satCov=sat.filter(function(e){ return inLive.has(e)||inReport.has(e)||inModel.has(e)||geo(e); }).length;
+    console.info('[signal-audit] satellite/EMS/external: '+sat.length+' шт · покрыто view: '+satCov+' · на карте: '+sat.filter(geo).length);
   }catch(_){}
-  window._lastAudit=out; window._lastOrphans=orphans;
+  window._lastAudit=out; window._lastUnmapped=unmapped;
   return out;
-};
+}
 // Лента «События»: стоп-слова промо-хвостов (телеграм-приписки). Редактируется здесь.
 var FEED_PROMO_WORDS = ['подпи','subscribe','follow us','follow','наш канал','читайте в','t\\.me/'];
 function _stripPromo(t){
