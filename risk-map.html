@@ -1946,7 +1946,7 @@ function showDetail(ev) {
   const col = DC[ev.domain];
   document.getElementById('dt-domain').innerHTML = `<div style="width:4px;height:4px;border-radius:50%;background:${col}"></div><span style="color:${col}">${DL[ev.domain]||ev.domain}</span>`;
   document.getElementById('dt-title').textContent = (typeof window._cleanSignalText==='function'?window._cleanSignalText(ev.title, ev):ev.title);
-  document.getElementById('dt-region').textContent = ev.region;
+  document.getElementById('dt-region').textContent = (window._displayRegion?window._displayRegion(ev):ev.region) || ev.region;
   document.getElementById('dt-sv').textContent = ev.severity + ' / 100';
   document.getElementById('dt-sfill').style.cssText = `width:${ev.severity}%;background:${sc(ev.severity)}`;
   // Берём только первый абзац summary, убираем мусор
@@ -10047,6 +10047,14 @@ window._cleanDesc = function(summary){
     return s;
   }catch(e){ return String(summary||''); }
 };
+window._displayRegion = function(ev){
+  // единый регион для отображения: климат-акватория -> в ОБОИХ тирах; иначе FREE=резолвер, PRO=пайплайн
+  try{
+    if(ev && ev.domain==='climate' && window._climateGeo){ var c=window._climateGeo(ev); if(c && c.region) return c.region; }
+    var p = window._pinGeo ? window._pinGeo(ev) : '';
+    return p || (ev && ev.region) || '';
+  }catch(_){ return (ev&&ev.region)||''; }
+};
 window._pinGeo = function(ev){
   try{
     if(typeof _grdfTier!=='undefined' && _grdfTier==='FREE'){ var _fl=(window._floc?window._floc(ev):null); return _fl?_fl.region:''; }
@@ -10424,7 +10432,7 @@ window._radarPick = function(id){
   var sum = window._cleanSignalText(String(e.summary||'').split('|||')[0].split('|')[0].trim(), e); if(sum.length>1500) sum=sum.slice(0,1500)+'\u2026';
   var _ct = window._cleanSignalText(e.title||'', e); try{ if(window._textPolicyCheck){ window._textPolicyCheck(_ct); window._textPolicyCheck(sum); } }catch(_){}
   var dd=''; try{ if(e.date && typeof fd==='function') dd=fd(e.date); }catch(_){}
-  var meta=[]; if(e.region) meta.push(esc2(e.region)); if(dd) meta.push(dd); if(e.source) meta.push(esc2(window._srcLabel(e.source))); if(e.dup_count){ meta.push('+ ещё '+e.dup_count+(e.dup_sources&&e.dup_sources.length?' ('+e.dup_sources.map(function(x){return esc2(x);}).join(', ')+')':'')); }
+  var meta=[]; if(e.region) meta.push(esc2((window._displayRegion?window._displayRegion(e):e.region)||e.region)); if(dd) meta.push(dd); if(e.source) meta.push(esc2(window._srcLabel(e.source))); if(e.dup_count){ meta.push('+ ещё '+e.dup_count+(e.dup_sources&&e.dup_sources.length?' ('+e.dup_sources.map(function(x){return esc2(x);}).join(', ')+')':'')); }
   var html = '<button class="grdf-rd-x" type="button">\u2715</button>'
     + '<div class="grdf-rd-tag" style="color:'+col+'"><i style="background:'+col+'"></i>'+esc2(DL2[e.domain]||e.domain)+'</div>'
     + '<div class="grdf-rd-title">'+esc2(_ct)+'</div>'
