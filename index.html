@@ -1620,8 +1620,10 @@ html,body{overscroll-behavior-y:contain}
     <div id="overlay-wrap" style="position:relative;display:flex">
       <button class="zb" id="overlay-toggle" style="font-size:14px;letter-spacing:0" title="Слой событий"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" style="display:block"><rect x="4" y="4" width="16" height="16" rx="1.5"/><circle cx="12" cy="12" r="2.3" fill="currentColor" stroke="none"/></svg></button>
       <div id="overlay-menu">
-        <button class="bb" data-ov="on">Землетрясения: вкл</button>
-        <button class="bb" data-ov="off">Землетрясения: выкл</button>
+        <button class="bb" data-ovs="quakes" data-ov="on">Землетрясения: вкл</button>
+        <button class="bb" data-ovs="quakes" data-ov="off">Землетрясения: выкл</button>
+        <button class="bb" data-ovs="cryo" data-ov="on">Ледники: вкл</button>
+        <button class="bb" data-ovs="cryo" data-ov="off">Ледники: выкл</button>
       </div>
     </div>
     <button id="map-attr-i" aria-label="Источники карты">i</button>
@@ -1991,9 +1993,9 @@ document.getElementById('z-out').onclick = () => map.zoomOut();
 document.getElementById('z-reset').onclick = () => map.flyTo([20, 10], 2, {duration: 0.8});
 (function(){ var ob=document.getElementById('overlay-toggle'), om=document.getElementById('overlay-menu');
   if(ob&&om){ ob.onclick=function(e){ e.stopPropagation(); om.classList.toggle('open'); };
-    om.querySelectorAll('.bb').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); try{ if(window._setOverlay) window._setOverlay(b.getAttribute('data-ov')==='on'); }catch(_){} om.classList.remove('open'); }; });
+    om.querySelectorAll('.bb').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); try{ if(window._setOverlaySource) window._setOverlaySource(b.getAttribute('data-ovs'), b.getAttribute('data-ov')==='on'); }catch(_){} om.classList.remove('open'); }; });
     document.addEventListener('click', function(){ om.classList.remove('open'); });
-    try{ var off=om.querySelector('[data-ov="off"]'); if(off) off.classList.add('active'); }catch(_){}
+    try{ om.querySelectorAll('[data-ov="off"]').forEach(function(off){ off.classList.add('active'); }); }catch(_){}
   } })();
 (function(){ var bt=document.getElementById('base-toggle'), bm=document.getElementById('base-menu');
   if(bt&&bm){ bt.onclick=function(e){ e.stopPropagation(); bm.classList.toggle('open'); };
@@ -2852,6 +2854,7 @@ async function loadQuakes(){
 window._overlayLayer = (typeof L!=='undefined') ? L.layerGroup() : null;
 window._overlayOn = false;
 window._overlaySources = {};
+window._overlayVis = {quakes:false, cryo:false};
 window._overlaySources.quakes = {
   _cache: [], _loading: false,
   ensure: function(){
@@ -2882,30 +2885,74 @@ window._overlaySources.quakes = {
     }catch(e){}
   }
 };
+window._overlaySources.cryo = {
+  _cache: [], _loading: false,
+  ensure: function(){
+    var S=window._overlaySources.cryo;
+    if(S._loading || S._cache.length){ window._renderOverlay(); return; }
+    S._loading=true;
+    try{
+      fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=500',{cache:'no-store'})
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(d){
+          if(d && d.events){
+            S._cache=d.events.map(function(ev){
+              var cat=(ev.categories&&ev.categories[0]&&ev.categories[0].id)||'';
+              if(cat!=='icebergs' && cat!=='seaLakeIce') return null;
+              var g=(ev.geometry&&ev.geometry.length)?ev.geometry[ev.geometry.length-1]:null;
+              if(!g||!g.coordinates) return null;
+              var co=g.coordinates, lng, lat;
+              if(g.type==='Point'){ lng=co[0]; lat=co[1]; }
+              else { var p=co; while(Array.isArray(p[0])) p=p[0]; lng=p[0]; lat=p[1]; }
+              if(typeof lat!=='number' || typeof lng!=='number') return null;
+              return {lat:lat,lng:lng,title:ev.title||'',cat:cat,date:g.date||'',mag:(g.magnitudeValue!=null?g.magnitudeValue:null)};
+            }).filter(function(x){return x;});
+          }
+          S._loading=false; window._renderOverlay();
+        }).catch(function(){ S._loading=false; });
+    }catch(e){ S._loading=false; }
+  },
+  render: function(group){
+    try{
+      var S=window._overlaySources.cryo;
+      S._cache.forEach(function(c){
+        var rad = (c.cat==='icebergs') ? 10 : 6;
+        if(c.mag!=null){ rad = Math.max(5, Math.min(16, 5+Math.sqrt(Math.abs(c.mag)))); }
+        var lbl = (c.cat==='icebergs') ? 'Айсберг / откол шельфа' : (c.cat==='seaLakeIce' ? 'Аномалия морского льда' : 'Криосфера');
+        var mk=L.circleMarker([c.lat,c.lng],{radius:rad,color:'#FFFFFF',weight:1.4,fillColor:'#FFFFFF',fillOpacity:0.13,className:'cryo-ov'})
+          .bindPopup('<b style="color:#fff">'+lbl+'</b><br><span style="font-size:11px;color:#cbb">'+String(c.title||'').replace(/[<>]/g,'')+'</span>'+(c.date?'<br><span style="font-size:9px;color:#889">'+String(c.date).slice(0,10)+'</span>':''));
+        group.addLayer(mk);
+      });
+    }catch(e){}
+  }
+};
 window._renderOverlay = function(){
   try{
     if(!window._overlayLayer) return;
     window._overlayLayer.clearLayers();
     if(!window._overlayOn) return;
-    Object.keys(window._overlaySources).forEach(function(k){ try{ window._overlaySources[k].render(window._overlayLayer); }catch(e){} });
+    Object.keys(window._overlaySources).forEach(function(k){ if(window._overlayVis && !window._overlayVis[k]) return; try{ window._overlaySources[k].render(window._overlayLayer); }catch(e){} });
   }catch(e){}
 };
-window._setOverlay = function(on){
+window._applyOverlay = function(){
   try{
     if(!window._overlayLayer || typeof map==='undefined') return;
-    window._overlayOn = !!on;
-    if(window._overlayOn){
-      Object.keys(window._overlaySources).forEach(function(k){ try{ var sc=window._overlaySources[k]; if(sc.ensure) sc.ensure(); }catch(e){} });
+    var any=false; Object.keys(window._overlayVis).forEach(function(k){ if(window._overlayVis[k]) any=true; });
+    window._overlayOn = any;
+    if(any){
+      Object.keys(window._overlaySources).forEach(function(k){ if(window._overlayVis[k]){ try{ var sc=window._overlaySources[k]; if(sc.ensure) sc.ensure(); }catch(e){} } });
       window._overlayLayer.addTo(map);
       window._renderOverlay();
-      setTimeout(window._renderOverlay, 1500); setTimeout(window._renderOverlay, 4000);
+      setTimeout(window._renderOverlay,1500); setTimeout(window._renderOverlay,4000);
     } else {
       try{ map.removeLayer(window._overlayLayer); }catch(e){}
       try{ window._overlayLayer.clearLayers(); }catch(e){}
     }
-    try{ document.querySelectorAll('#overlay-menu .bb').forEach(function(b){ b.classList.toggle('active', (b.getAttribute('data-ov')==='on')===window._overlayOn); }); }catch(e){}
+    try{ document.querySelectorAll('#overlay-menu .bb').forEach(function(b){ var k=b.getAttribute('data-ovs'); var want=(b.getAttribute('data-ov')==='on'); b.classList.toggle('active', (!!window._overlayVis[k])===want); }); }catch(_){}
   }catch(e){}
 };
+window._setOverlaySource = function(key, on){ try{ if(!(key in window._overlayVis)) return; window._overlayVis[key]=(on===true||on==='on'); window._applyOverlay(); }catch(e){} };
+window._setOverlay = function(on){ try{ Object.keys(window._overlayVis).forEach(function(k){ window._overlayVis[k]=!!on; }); window._applyOverlay(); }catch(e){} };
 window._toggleOverlay = function(){ window._setOverlay(!window._overlayOn); };
 window._grdfQuakesEnsure=function(){
   if(!quakesInterval){ loadQuakes(); quakesInterval=setInterval(loadQuakes,25000); }
