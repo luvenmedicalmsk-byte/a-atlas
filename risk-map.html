@@ -9828,8 +9828,10 @@ window._headline = function(ev){
     t=t.replace(/^[«"'\u2018\u201c]+/,'').replace(/[»"'\u2019\u201d]+$/,'');
     t=t.replace(/^(по данным|как сообщает|как заявил[аи]?|согласно|по сообщени[июя]м?|по информации)[^,]{0,40},\s*/i,'');
     t=t.replace(/\s*[,—–-]\s*(?:—\s*)?(сообщил[аои]?|заявил[аои]?|пишет|пишут|передаёт|передает|по данным|как сообщает|отмечает|информирует|сообщает|сообщают|рассказал[аи]?|добавил[аи]?|уточнил[аи]?|подчеркнул[аи]?)\s+[а-яёa-z][^.]*$/i,'');
+    t=t.replace(/\s*\([^)]*\)/g,'');
+    t=t.replace(/\s*\([^)]*$/,'');
     var dot=t.search(/[.!?]\s+[А-ЯA-Z]/); if(dot>40) t=t.slice(0,dot+1);
-    t=t.replace(/[\s.…]+$/,'');
+    t=t.replace(/[\s:;,.…—–-]+$/,'');
     if(t.length>104){ var cut=t.slice(0,104); var sp=cut.lastIndexOf(' '); if(sp>60) cut=cut.slice(0,sp); t=cut.replace(/[\s,;:—–-]+$/,'')+'…'; }
     if(!t || t.length<6) return raw;
     return t.charAt(0).toUpperCase()+t.slice(1);
