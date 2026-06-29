@@ -291,7 +291,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
 .sig-sev-num{font-family:'Cormorant Garamond',serif;font-size:27px;line-height:1;font-weight:300}
 .sig-sev-d{font-size:9px;opacity:.45;font-family:Montserrat,sans-serif;letter-spacing:.04em}
 .sig-sev-lvl{font-size:9px;letter-spacing:.05em;font-weight:400;margin-top:4px;opacity:.9;font-family:Montserrat,sans-serif}
-.sig-clamp2{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.grdf-sig-card{cursor:pointer}.grdf-sig-card.sig-open .sig-clamp2{-webkit-line-clamp:4!important}.sig-detail{display:none;margin-top:8px;padding-top:8px;border-top:0.5px solid rgba(184,151,58,0.12)}.grdf-sig-card.sig-open .sig-detail{display:block}.sig-d-sum{font-size:11px;color:#A8A090;line-height:1.55;margin-bottom:6px;font-family:Montserrat,sans-serif}.sig-d-src{font-size:10px;color:rgba(148,163,184,0.6)}
+.sig-clamp2{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.sig-clamp-h{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.sig-meta2{font-size:9px;color:rgba(148,163,184,0.6);display:flex;gap:8px;margin-top:3px;flex-wrap:wrap}.grdf-sig-card{cursor:pointer}.grdf-sig-card.sig-open .sig-clamp2{-webkit-line-clamp:4!important}.sig-detail{display:none;margin-top:8px;padding-top:8px;border-top:0.5px solid rgba(184,151,58,0.12)}.grdf-sig-card.sig-open .sig-detail{display:block}.sig-d-sum{font-size:11px;color:#B0A892;line-height:1.62;margin-bottom:6px;font-family:Montserrat,sans-serif}.sig-d-src{font-size:10px;color:rgba(148,163,184,0.6)}
 .sig-domtag{font-size:9px;letter-spacing:.04em;opacity:1}
 .sig-markers{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:6px}
 .sig-lvl{font-size:9px;letter-spacing:.07em;font-weight:600}
@@ -9821,6 +9821,20 @@ window._geoStatus = function(ev){
     return 'CONFIRMED';
   }catch(e){ return 'CONFIRMED'; }
 };
+window._headline = function(ev){
+  try{
+    var raw = (typeof window._cleanSignalText==='function') ? window._cleanSignalText(ev.title, ev) : String((ev&&ev.title)||'');
+    var t=String(raw||'').trim();
+    t=t.replace(/^[«"'\u2018\u201c]+/,'').replace(/[»"'\u2019\u201d]+$/,'');
+    t=t.replace(/^(по данным|как сообщает|как заявил[аи]?|согласно|по сообщени[июя]м?|по информации)[^,]{0,40},\s*/i,'');
+    t=t.replace(/\s*[,—–-]\s*(?:—\s*)?(сообщил[аои]?|заявил[аои]?|пишет|пишут|передаёт|передает|по данным|как сообщает|отмечает|информирует|сообщает|сообщают|рассказал[аи]?|добавил[аи]?|уточнил[аи]?|подчеркнул[аи]?)\s+[а-яёa-z][^.]*$/i,'');
+    var dot=t.search(/[.!?]\s+[А-ЯA-Z]/); if(dot>40) t=t.slice(0,dot+1);
+    t=t.replace(/[\s.…]+$/,'');
+    if(t.length>104){ var cut=t.slice(0,104); var sp=cut.lastIndexOf(' '); if(sp>60) cut=cut.slice(0,sp); t=cut.replace(/[\s,;:—–-]+$/,'')+'…'; }
+    if(!t || t.length<6) return raw;
+    return t.charAt(0).toUpperCase()+t.slice(1);
+  }catch(e){ return String((ev&&ev.title)||''); }
+};
 window._pinGeo = function(ev){
   try{
     if(typeof _grdfTier!=='undefined' && _grdfTier==='FREE'){ var _fl=(window._floc?window._floc(ev):null); return _fl?_fl.region:''; }
@@ -10323,9 +10337,10 @@ function grdfRenderSignals(dom){
       var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx((typeof window._cleanSignalText==='function'?window._cleanSignalText(_sum, ev):_deEnt(_sum)))+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">'+escx(window._srcLabel(ev.source))+'</div>':'')+'</div>';
       html += '<div class="grdf-sig-card'+(ev._news?' sig-news':'')+'">'
       + '<div class="sig-main">'
-      +   '<div class="grdf-sig-title sig-clamp2">'+escx((typeof window._cleanSignalText==='function'?window._cleanSignalText(ev.title, ev):ev.title))+'</div>'
+      +   '<div class="grdf-sig-title sig-clamp-h">'+escx((typeof window._headline==='function'?window._headline(ev):((typeof window._cleanSignalText==='function')?window._cleanSignalText(ev.title, ev):ev.title)))+'</div>'
       +   ((typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')?'':_cb)
       +   '<div class="grdf-sig-meta">'+((!(typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')&&_cb)?'':(function(){var _g=window._pinGeo(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
+      +   '<div class="sig-meta2">'+(ev.date?'<span>'+escx(fdx(ev.date))+'</span>':'')+((ev.domain&&typeof DOMAIN_RU!=='undefined')?'<span style="color:'+((typeof DC!=='undefined'&&DC[ev.domain])||'#9a8a5a')+'">'+escx(DOMAIN_RU[ev.domain]||ev.domain)+'</span>':'')+'</div>'
       +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
       +   _det
       + '</div>'
