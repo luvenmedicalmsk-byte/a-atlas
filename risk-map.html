@@ -9957,7 +9957,47 @@ window._geoDisputed = function(ev, r){
     return !inTitle;
   }catch(_){ return false; }
 };
-window._floc = function(ev){ try{ if(ev.__floc===undefined){ var _r=window._geoResolve(ev); if(_r && window._geoDisputed(ev,_r)) _r=null; ev.__floc=_r; } return ev.__floc; }catch(e){ return null; } };
+window._seaBasin = function(la, ln){
+  // координаты над водой -> название акватории/бассейна (открытая вода, для климат-событий с общим регионом)
+  try{
+    function box(a,b,c,d){ return la>=a&&la<=b&&ln>=c&&ln<=d; }
+    // Восточная Азия / Тихий океан
+    if(box(25,50,141,175)) return 'Тихий океан, восточнее Японии';   // СЗ Тихий океан восточнее Японии
+    if(box(5,30,127,145))  return 'Филиппинское море';
+    if(box(25,33,120,128)) return 'Восточно-Китайское море';
+    if(box(3,23,105,120))  return 'Южно-Китайское море';
+    if(box(34,52,128,141)) return 'Японское море';
+    if(box(0,25,90,141) && !box(0,25,120,141)) return 'Тихий океан, западная часть';
+    // Индийский океан / прилегающие
+    if(box(5,24,79,100))   return 'Бенгальский залив';
+    if(box(5,25,50,78))    return 'Аравийское море';
+    if(box(-40,5,40,100))  return 'Индийский океан';
+    // Европа / Средиземноморье / Чёрное
+    if(box(41,47,27,42))   return 'Чёрное море';
+    if(box(30,46,-6,37) && !box(36,46,-6,4)) return 'Средиземное море';
+    // Атлантика / Карибы
+    if(box(9,23,-88,-60))  return 'Карибское море';
+    if(box(18,31,-98,-80)) return 'Мексиканский залив';
+    if(box(0,66,-70,-12))  return 'Атлантический океан';
+    return null;
+  }catch(_){ return null; }
+};
+window._climateGeo = function(ev){
+  // климат-события с ОБЩИМ регионом и координатами над водой -> точная акватория (реальные координаты).
+  // специфичные суши-регионы не трогаем (их корректно ведёт обычный резолвер).
+  try{
+    if(ev.domain!=='climate') return null;
+    var la=parseFloat(ev.lat), ln=parseFloat(ev.lng);
+    if(isNaN(la)||isNaN(ln)) return null;
+    var reg=String(ev.region||'');
+    var GENERAL=['Восточная Азия','Юго-Восточная Азия','Южная Азия','Центральная Азия','Азия','Европа','Южная Европа','Северная Европа','Западная Европа','Восточная Европа','Африка','Северная Африка','Северная Америка','Южная Америка','Латинская Америка','Ближний Восток','Океания','Глобально',''];
+    if(GENERAL.indexOf(reg)<0) return null; // регион уже конкретный -> не трогаем
+    var basin=window._seaBasin(la,ln);
+    if(basin) return {country:null, region:basin, lat:la, lng:ln, source:'basin'};
+    return null;
+  }catch(_){ return null; }
+};
+window._floc = function(ev){ try{ if(ev.__floc===undefined){ var _r=(ev&&ev.domain==='climate')?window._climateGeo(ev):null; if(!_r){ _r=window._geoResolve(ev); if(_r && window._geoDisputed(ev,_r)) _r=null; } ev.__floc=_r; } return ev.__floc; }catch(e){ return null; } };
 window._geoStatus = function(ev){
   try{
     if(typeof _grdfTier!=='undefined' && _grdfTier!=='FREE') return 'CONFIRMED'; // Signal Pro: пока как было, safety-слой только в FREE
