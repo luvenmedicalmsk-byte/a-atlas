@@ -2798,12 +2798,16 @@ function _loadCities(container){
 window.grdfRenderRiskPulse = function(){
   var el=document.getElementById('grdf-risk-pulse'); if(!el) return;
   var now=Date.now(), DAY=86400000;
-  var COL_W='#F0E68C', COL_Q='#8B0000', COL_C='#FFFFFF';
-  function spark(times, col){
-    var win=times.filter(function(t){return t>=now-7*DAY;});
-    var dys=[]; for(var d=6;d>=0;d--){ var lo=now-(d+1)*DAY,hi=now-d*DAY; dys.push(win.filter(function(t){return t>=lo&&t<hi;}).length); }
+  var COL_W='#F0E68C', COL_Q='#DC143C', COL_C='#FFFFFF';
+  function spark(times, col, winDays, buckets){
+    var W=winDays*DAY;
+    var win=times.filter(function(t){return t>=now-W;});
+    var step=W/buckets, dys=[];
+    for(var b=buckets-1;b>=0;b--){ var lo=now-(b+1)*step, hi=now-b*step; dys.push(win.filter(function(t){return t>=lo&&t<hi;}).length); }
     var mx=Math.max(1,Math.max.apply(null,dys));
-    var rc=(dys[4]+dys[5]+dys[6])/3, er=(dys[0]+dys[1]+dys[2]+dys[3])/4;
+    var half=Math.floor(buckets/2), rc=0,er=0,rn=0,en=0;
+    for(var i=0;i<buckets;i++){ if(i>=buckets-half){ rc+=dys[i]; rn++; } else { er+=dys[i]; en++; } }
+    rc=rc/(rn||1); er=er/(en||1);
     var dir=rc>er*1.15?'up':(rc<er*0.85?'down':'flat');
     var bars=''; dys.forEach(function(c){ var bh=Math.max(2,(c/mx)*26); bars+='<i style="width:7px;height:'+bh.toFixed(0)+'px;background:'+col+';opacity:'+(0.4+0.6*(c/mx)).toFixed(2)+'"></i>'; });
     return {bars:bars, total:win.length, dir:dir};
@@ -2818,12 +2822,12 @@ window.grdfRenderRiskPulse = function(){
   var cc=(cs&&cs._cache)||[];
   if(cs && !cc.length && !cs._loading && cs.ensure){ try{ cs.ensure(); }catch(_){} }
   var ct=[]; cc.forEach(function(c){ var t=Date.parse(c.date); if(!isNaN(t)) ct.push(t); });
-  var W=spark(wt,COL_W), Q=spark(qt,COL_Q), C=spark(ct,COL_C);
+  var W=spark(wt,COL_W,7,7), Q=spark(qt,COL_Q,7,7), C=spark(ct,COL_C,365,6);
   el.innerHTML=
     '<div class="rp-graphs">'
     +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">погода '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">'+darr(W.dir)+' '+dtxt(W.dir)+'</span></div>'
     +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+darr(Q.dir)+' '+dtxt(Q.dir)+'</span></div>'
-    +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+darr(C.dir)+' '+dtxt(C.dir)+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+darr(C.dir)+' '+dtxt(C.dir)+' \u00b7 год</span></div>'
     +'</div>';
 };
 
