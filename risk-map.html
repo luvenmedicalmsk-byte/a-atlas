@@ -2862,7 +2862,7 @@ window._overlaySources.quakes = {
       fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson',{cache:'no-store'})
         .then(function(r){ return r.ok?r.json():null; })
         .then(function(d){
-          if(d){ S._cache=(d.features||[]).map(function(f){ var c=(f.geometry&&f.geometry.coordinates)||[]; var p=f.properties||{}; return {mag:p.mag||0,lat:c[1],lng:c[0],time:p.time,place:(window.ruQuake?window.ruQuake(p.place||''):(p.place||''))}; }).filter(function(q){ return typeof q.lat==='number'&&typeof q.lng==='number'&&q.mag>=5; }); }
+          if(d){ S._cache=(d.features||[]).map(function(f){ var c=(f.geometry&&f.geometry.coordinates)||[]; var p=f.properties||{}; return {mag:p.mag||0,lat:c[1],lng:c[0],depth:c[2],place:(window.ruQuake?window.ruQuake(p.place||''):(p.place||'')),title:p.title||'',time:p.time||0,url:p.url||'',tsunami:p.tsunami||0,alert:p.alert||'',mmi:(p.mmi==null?null:p.mmi),felt:p.felt||0,cdi:(p.cdi==null?null:p.cdi),sig:p.sig||0,detail:p.detail||''}; }).filter(function(q){ return typeof q.lat==='number'&&typeof q.lng==='number'&&q.mag>=5; }); }
           S._loading=false;
           if(window._overlayOn) window._renderOverlay();
         }).catch(function(){ S._loading=false; });
