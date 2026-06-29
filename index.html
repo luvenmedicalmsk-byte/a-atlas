@@ -9792,6 +9792,11 @@ window._isSourceLike = function(val){
 };
 window._geoResolve = function(ev){
   try{
+    // PRE-LAUNCH geo-safety: аналитика/опинион/адверториал -> низкая уверенность гео, маркер не ставим (лучше скрыть, чем неверно)
+    var _tt0=String(ev.title||'').trim().toLowerCase();
+    var _ss0=String(ev.summary||'').toLowerCase();
+    if(/^(?:кто |почему |зачем |является ли |стоит ли |что значит |что означает |чем грозит )/.test(_tt0)) return null;
+    if(/представлено компанией|presented by|sponsored by|спонсировано|advertorial/.test(_ss0)) return null;
     var GAZ={
   'росс':['RU','Россия',55.75,37.62],
   'москв':['RU','Россия',55.75,37.62],
