@@ -2887,28 +2887,43 @@ window._overlaySources.quakes = {
 };
 window._overlaySources.cryo = {
   _cache: [], _loading: false,
+  _parse: function(d){
+    if(!d || !d.events) return [];
+    return d.events.map(function(ev){
+      var g=(ev.geometry&&ev.geometry.length)?ev.geometry[ev.geometry.length-1]:null;
+      if(!g||!g.coordinates) return null;
+      var co=g.coordinates, lng, lat;
+      if(g.type==='Point'){ lng=co[0]; lat=co[1]; }
+      else { var p=co; while(p&&Array.isArray(p[0])) p=p[0]; if(!p) return null; lng=p[0]; lat=p[1]; }
+      if(typeof lat!=='number' || typeof lng!=='number') return null;
+      var ti=String(ev.title||'');
+      var berg=/iceberg|\bberg\b|айсберг|(^|[^a-z])a-?\d/i.test(ti);
+      return {lat:lat,lng:lng,title:ti,berg:berg,date:g.date||'',mag:(g.magnitudeValue!=null?g.magnitudeValue:null)};
+    }).filter(function(x){return x;});
+  },
   ensure: function(){
     var S=window._overlaySources.cryo;
     if(S._loading || S._cache.length){ window._renderOverlay(); return; }
     S._loading=true;
+    function done(arr){ S._cache=arr||[]; S._loading=false; try{ console.debug('[cryo] EONET событий: '+S._cache.length); }catch(_){}
+      window._renderOverlay(); }
+    function getJSON(u){ return fetch(u,{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }); }
     try{
-      fetch('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=500',{cache:'no-store'})
-        .then(function(r){ return r.ok?r.json():null; })
+      // спец-эндпоинт категории Sea & Lake Ice (айсберги/calving + морской лёд) — без обрезки лимитом
+      getJSON('https://eonet.gsfc.nasa.gov/api/v3/categories/seaLakeIce?status=open&limit=300')
         .then(function(d){
-          if(d && d.events){
-            S._cache=d.events.map(function(ev){
-              var cat=(ev.categories&&ev.categories[0]&&ev.categories[0].id)||'';
-              if(cat!=='icebergs' && cat!=='seaLakeIce') return null;
-              var g=(ev.geometry&&ev.geometry.length)?ev.geometry[ev.geometry.length-1]:null;
-              if(!g||!g.coordinates) return null;
-              var co=g.coordinates, lng, lat;
-              if(g.type==='Point'){ lng=co[0]; lat=co[1]; }
-              else { var p=co; while(Array.isArray(p[0])) p=p[0]; lng=p[0]; lat=p[1]; }
-              if(typeof lat!=='number' || typeof lng!=='number') return null;
-              return {lat:lat,lng:lng,title:ev.title||'',cat:cat,date:g.date||'',mag:(g.magnitudeValue!=null?g.magnitudeValue:null)};
-            }).filter(function(x){return x;});
-          }
-          S._loading=false; window._renderOverlay();
+          var arr=S._parse(d);
+          if(arr.length){ done(arr); return; }
+          // фолбэк 1: без status (включая недавно закрытые)
+          return getJSON('https://eonet.gsfc.nasa.gov/api/v3/categories/seaLakeIce?limit=200').then(function(d2){
+            var a2=S._parse(d2);
+            if(a2.length){ done(a2); return; }
+            // фолбэк 2: широкий фид, фильтр по категории клиентом
+            return getJSON('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=1000').then(function(d3){
+              var a3=(d3&&d3.events)?S._parse({events:d3.events.filter(function(ev){ var c=(ev.categories&&ev.categories[0]&&ev.categories[0].id)||''; return /ice|berg/i.test(c)||/iceberg|айсберг|ice shelf|sea ice/i.test(String(ev.title||'')); })}):[];
+              done(a3);
+            });
+          });
         }).catch(function(){ S._loading=false; });
     }catch(e){ S._loading=false; }
   },
@@ -2916,10 +2931,10 @@ window._overlaySources.cryo = {
     try{
       var S=window._overlaySources.cryo;
       S._cache.forEach(function(c){
-        var rad = (c.cat==='icebergs') ? 10 : 6;
+        var rad = c.berg ? 10 : 6;
         if(c.mag!=null){ rad = Math.max(5, Math.min(16, 5+Math.sqrt(Math.abs(c.mag)))); }
-        var lbl = (c.cat==='icebergs') ? 'Айсберг / откол шельфа' : (c.cat==='seaLakeIce' ? 'Аномалия морского льда' : 'Криосфера');
-        var mk=L.circleMarker([c.lat,c.lng],{radius:rad,color:'#FFFFFF',weight:1.4,fillColor:'#FFFFFF',fillOpacity:0.13,className:'cryo-ov'})
+        var lbl = c.berg ? 'Айсберг / откол шельфа' : 'Морской лёд';
+        var mk=L.circleMarker([c.lat,c.lng],{radius:rad,color:'#FFFFFF',weight:1.4,fillColor:'#FFFFFF',fillOpacity:0.14,className:'cryo-ov'})
           .bindPopup('<b style="color:#fff">'+lbl+'</b><br><span style="font-size:11px;color:#cbb">'+String(c.title||'').replace(/[<>]/g,'')+'</span>'+(c.date?'<br><span style="font-size:9px;color:#889">'+String(c.date).slice(0,10)+'</span>':''));
         group.addLayer(mk);
       });
