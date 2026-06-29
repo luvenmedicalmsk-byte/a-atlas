@@ -2798,30 +2798,32 @@ function _loadCities(container){
 window.grdfRenderRiskPulse = function(){
   var el=document.getElementById('grdf-risk-pulse'); if(!el) return;
   var now=Date.now(), DAY=86400000;
-  var nat=[];
-  var _src=(typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS : [];
-  _src.forEach(function(e){ if(e && e.domain==='climate'){ var t=Date.parse(e.date); if(!isNaN(t)) nat.push(t); } });
-  var qc=(typeof quakeCache!=='undefined' && quakeCache) ? quakeCache : [];
-  qc.forEach(function(q){ if(q && q.time) nat.push(q.time); });
-  var win=nat.filter(function(t){ return t>=now-7*DAY; });
-  var total=win.length, days=[];
-  for(var d=6; d>=0; d--){ var lo=now-(d+1)*DAY, hi=now-d*DAY; days.push(win.filter(function(t){ return t>=lo && t<hi; }).length); }
-  var maxd=Math.max(1, Math.max.apply(null,days));
-  var recent=(days[4]+days[5]+days[6])/3, earlier=(days[0]+days[1]+days[2]+days[3])/4;
-  var dir = recent>earlier*1.15 ? 'up' : (recent<earlier*0.85 ? 'down' : 'flat');
-  var dirTxt = dir==='up'?'выше нормы':(dir==='down'?'ниже нормы':'в норме');
-  var dirCol = dir==='up'?'#ff7a00':(dir==='down'?'#38bdf8':'#A8A090');
-  var arrow = dir==='up'?'↑':(dir==='down'?'↓':'→');
-  var bars='';
-  days.forEach(function(c){ var bh=Math.max(2,(c/maxd)*26); bars+='<i style="width:10px;height:'+bh.toFixed(0)+'px;background:'+dirCol+';opacity:'+(0.35+0.65*(c/maxd)).toFixed(2)+'"></i>'; });
-  var sdays=[]; for(var sd=6; sd>=0; sd--){ var slo=now-(sd+1)*DAY, shi=now-sd*DAY; sdays.push(qc.filter(function(q){ return q.time>=slo && q.time<shi; }).length); }
-  var smax=Math.max(1, Math.max.apply(null,sdays));
-  var sbars=''; sdays.forEach(function(c){ var bh=Math.max(2,(c/smax)*26); sbars+='<i style="width:10px;height:'+bh.toFixed(0)+'px;background:#38bdf8;opacity:'+(0.35+0.65*(c/smax)).toFixed(2)+'"></i>'; });
-  var stotal=qc.filter(function(q){ return q.time>=now-7*DAY; }).length;
-  el.innerHTML =
+  var COL_W='#F0E68C', COL_Q='#8B0000', COL_C='#FFFFFF';
+  function spark(times, col){
+    var win=times.filter(function(t){return t>=now-7*DAY;});
+    var dys=[]; for(var d=6;d>=0;d--){ var lo=now-(d+1)*DAY,hi=now-d*DAY; dys.push(win.filter(function(t){return t>=lo&&t<hi;}).length); }
+    var mx=Math.max(1,Math.max.apply(null,dys));
+    var rc=(dys[4]+dys[5]+dys[6])/3, er=(dys[0]+dys[1]+dys[2]+dys[3])/4;
+    var dir=rc>er*1.15?'up':(rc<er*0.85?'down':'flat');
+    var bars=''; dys.forEach(function(c){ var bh=Math.max(2,(c/mx)*26); bars+='<i style="width:7px;height:'+bh.toFixed(0)+'px;background:'+col+';opacity:'+(0.4+0.6*(c/mx)).toFixed(2)+'"></i>'; });
+    return {bars:bars, total:win.length, dir:dir};
+  }
+  function dtxt(d){ return d==='up'?'выше нормы':(d==='down'?'ниже нормы':'в норме'); }
+  function darr(d){ return d==='up'?'\u2191':(d==='down'?'\u2193':'\u2192'); }
+  var _src=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[];
+  var wt=[]; _src.forEach(function(e){ if(e&&e.domain==='climate'){ var t=Date.parse(e.date); if(!isNaN(t)) wt.push(t); } });
+  var qc=(typeof quakeCache!=='undefined'&&quakeCache)?quakeCache:[];
+  var qt=[]; qc.forEach(function(q){ if(q&&q.time) qt.push(q.time); });
+  var cs=(window._overlaySources&&window._overlaySources.cryo)?window._overlaySources.cryo:null;
+  var cc=(cs&&cs._cache)||[];
+  if(cs && !cc.length && !cs._loading && cs.ensure){ try{ cs.ensure(); }catch(_){} }
+  var ct=[]; cc.forEach(function(c){ var t=Date.parse(c.date); if(!isNaN(t)) ct.push(t); });
+  var W=spark(wt,COL_W), Q=spark(qt,COL_Q), C=spark(ct,COL_C);
+  el.innerHTML=
     '<div class="rp-graphs">'
-    +'<div class="rp-g"><div class="rp-spark">'+bars+'</div><span class="rp-gl">природные</span><span class="rp-gm" style="color:'+dirCol+'">'+arrow+' '+dirTxt+'</span></div>'
-    +'<div class="rp-g"><div class="rp-spark">'+sbars+'</div><span class="rp-gl" style="color:#38bdf8">сейсмика '+stotal+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">погода '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">'+darr(W.dir)+' '+dtxt(W.dir)+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+darr(Q.dir)+' '+dtxt(Q.dir)+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+darr(C.dir)+' '+dtxt(C.dir)+'</span></div>'
     +'</div>';
 };
 
@@ -2907,6 +2909,7 @@ window._overlaySources.cryo = {
     S._loading=true;
     function done(arr){ S._cache=arr||[]; S._loading=false; try{ console.debug('[cryo] EONET событий: '+S._cache.length); }catch(_){}
       try{ if(window.renderCryoList) window.renderCryoList(); }catch(_e){}
+      try{ if(window.grdfRenderRiskPulse) window.grdfRenderRiskPulse(); }catch(_p){}
       window._renderOverlay(); }
     function getJSON(u){ return fetch(u,{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }); }
     try{
