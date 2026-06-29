@@ -9523,6 +9523,12 @@ window._classifyEvents = function(arr){
       if(!e.source_type) e.source_type = /copernicus|nasa|eonet|usgs|sentinel|satellite/.test(src)?'satellite':(/telegram\//.test(src)?'telegram':(/\bcap\b|мчс|cisa|kev|gov|минздрав|роспотреб|росгидромет/.test(src)?'official':(/cyber|threat|thn/.test(src)?'cyber':'news')));
       if(!e.signal_type) e.signal_type='baseline';
     }catch(_){}
+    try{ if(e&&e.domain){ var _dt=String(e.title||'').toLowerCase();
+      if(e.domain==='geopolitics' && /(самолёт|самолет|вертолёт|вертолет|легкомотор|авиалайнер|авиакатастроф|пилот погиб)/.test(_dt) && /(врезал|разбил|упал|рухнул|крушени|катастроф|погиб)/.test(_dt)) e.domain='social';
+      else if(e.domain==='economy' && /(рекордн[а-яё]* жар|волн[а-яё]* жары|аномальн[а-яё]* жар|жара (нарушает|накрыла|в европе|обрушил))/.test(_dt)) e.domain='climate';
+      else if(e.domain==='economy' && /(openai|gpt[- ]?\d|chatgpt|нейросет|языков[а-яё]* модел| llm |gemini|anthropic)/.test(_dt)) e.domain='technology';
+      else if(e.domain==='climate' && /(заправк|бензин|дизель|топлив|подачи электр|отключени[а-яё]* электр)/.test(_dt) && !/(осадк|гроза|ливн|жара|наводнен|пожар|землетряс|шторм|паводок|снег|ветер|ураган)/.test(_dt)) e.domain='economy';
+    } }catch(_){}
     if(e.lifecycle_type!=='LIVE') rep++;
   });
   try{ if(rep) console.debug('[ingest] lifecycle: '+rep+' REPORT помечены (остаются в ALL_EVENTS, идут в analysis-слой, не в LIVE-агрегацию)'); }catch(_){}
@@ -9624,8 +9630,9 @@ var FEED_NOISE_PERSONAL=/(от первого лица|её история|ее 
 // мнение/комментарий (моральные призывы, «рискует вызвать гнев») — не риск-сигнал
 var FEED_NOISE_OPINION=/(рискует вызвать гнев|моральн[а-яё]* призыв|обращаясь с (?:[а-яё]+\s)?призыв|с моральным призывом)/i;
 // explainer/фича: «как X меняет/влияет на жизнь Y» + драматичная редакц. рамка — не риск-сигнал
-var FEED_NOISE_EXPLAINER=/(как .{0,55}(меняет|меняют|измени[лвт]|влияет на|разруша|ломает|перевернул)[а-яё]* жизн|финансовая смертная казнь|как .{0,40}(пережива|выжива)[а-яё]* в условиях)/i;
-window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return (FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t)) || FEED_NOISE_PERSONAL.test(t) || FEED_NOISE_OPINION.test(t) || FEED_NOISE_EXPLAINER.test(t); };  // культура (с risk-guard) ИЛИ личная история (формат)
+var FEED_NOISE_EXPLAINER=/(как .{0,55}(меняет|меняют|измени[лвт]|влияет на|разруша|ломает|перевернул)[а-яё]* жизн|финансовая смертная казнь|как .{0,40}(пережива|выжива)[а-яё]* в условиях|(^|['"«:]\s*)почему |^\s*кто (выигрывает|побежда|стоит за|виноват|контролир)|^\s*(является ли|стоит ли|будет ли|может ли|нужно ли|что (значит|означает))|уроки (для|от) )/i;
+var FEED_NOISE_DIGEST=/(новости вкратце|вкратце:|дайджест|коротко о главном|обзор недели|итоги недели|канал \S+ пишет|пишет интересное|в своём канале|построили город|как живут|один день из жизни|бэнкси|стрит-арт|граффити|арт-перформанс|протест-перформанс|перформанс против)/i;
+window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return (FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t)) || FEED_NOISE_PERSONAL.test(t) || FEED_NOISE_OPINION.test(t) || FEED_NOISE_EXPLAINER.test(t) || FEED_NOISE_DIGEST.test(t); };  // культура (с risk-guard) ИЛИ личная история (формат)
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
@@ -9760,12 +9767,13 @@ window._geoResolve = function(ev){
     var NOGEO=/(санкц|эмбарго|пошлин|тариф|заявил|объявил|решени|указ|(?:^|[^а-яёa-z])ввёл|(?:^|[^а-яёa-z])ввел|пригроз|призва|осудил|переговор|саммит|резолюц|рекоменд|доклад|отчёт|отчет|прогноз|аналитик|инфляц|(?:^|[^а-яёa-z])ставк|рынок|бирж|прибыл|(?:^|[^а-яёa-z])евро |(?:^|[^а-яёa-z])доллар|(?:^|[^а-яёa-z])рубл|уязвим|cisa|cve| kev|malware|вредонос|взлом|утечк|фишинг|хакер|кибер|приложени|app store|импортир|экспортир)/i;
     var NAT=/(землетряс|наводнен|паводок|засух|ураган|тайфун|циклон|пожар|оползен|цунами|извержен|вулкан|шторм|сел[ьея]|подтоплен|маловод|жар[аеуы]|зной|аномальн\\w* (?:жар|темпер)|максимум температ|волн\\w* жары|рекордн\\w* (?:жар|темпер)|избыточн\\w* смерт)/i;
     var STMT=/(заявил|заявля|обвиня|обвинил|предупре|пригроз|призва|призыва|осудил|раскрыл|настаива|потребова|выразил)/i;
+    var ATTADJ=/(?:росси|укра|американ|израил|иран|турец|кита|пакистан|афган|сирийск|ливан|йеменск|польск|британск|немец|француз)[а-яё]*\s+(?:беспилотник|бпла|дрон|ракет|снаряд|боевик|войск|сил[аыу]|формирован|авиаци|артиллер|диверсант)/gi;
     var LOCP='(?:в|во|на|у|близ|около|в районе|в провинции|в городе|в порту|в акватории|на территории|у берегов)';
     var OBJ='(?:баз[аеуыо]|инфраструктур\\w*|город\\w*|порт\\w*|объект\\w*|завод\\w*|аэропорт\\w*|здани\\w*|больниц\\w*|посольств\\w*|штаб\\w*|комплекс\\w*|музе\\w*|област)';
     var NONP=/по\s+(?:[а-яё]+ск[а-яё]*\s+)?(?:военн|войск|объект|позици|сил[аыу]|суд[аноы]|корабл|базам?|базе|инфраструктур|целям|боевик|формирован|подразделен|укреплен|складам?|аэродром)/i;
     function reAt(stem){ return new RegExp('(?:^|[^а-яёa-z])'+stem+'[а-яё\\-]{0,8}(?![а-яё])','i'); }
     function placeAt(w){ var x=' '+w+' '; for(var st in GAZ){ if(reAt(st).test(x)) return GAZ[st]; } return null; }
-    function placesIn(span,excl,bad){ var out=[]; for(var st in GAZ){ var g=GAZ[st]; if(excl&&g[0]===excl)continue; var m=reAt(st).exec(span); if(!m)continue; var pos=m.index; if(bad&&bad.some(function(b){return b[0]<=pos&&pos<b[1];}))continue; out.push([pos].concat(g)); }
+    function placesIn(span,excl,bad){ var out=[]; for(var st in GAZ){ var g=GAZ[st]; if(excl&&g[0]===excl)continue; var m=reAt(st).exec(span); if(!m)continue; var pos=m.index; if(bad&&bad.some(function(b){return b[0]-1<=pos&&pos<b[1];}))continue; out.push([pos].concat(g)); }
       out.sort(function(a,b){return a[0]-b[0];}); var seen={},u=[]; out.forEach(function(x){ if(seen[x[1]])return; seen[x[1]]=1; u.push(x); }); return u; }
     function L(g,src){ return {country:g[0],region:g[1],lat:g[2],lng:g[3],source:src}; }
     var actor=null, mm=t.match(/^\s*([а-яё\-]+)/);
@@ -9784,10 +9792,9 @@ window._geoResolve = function(ev){
       while((m=re.exec(blob))){ if(NONP.test(m[0]))continue; var parts=m[1].split(/\s+/); var p3=placeAt(parts[parts.length-1])||placeAt(parts[0]); if(p3&&p3[0]!==actor) return L(p3,'kinetic_target'); }
     }
     var bad=[]; re=new RegExp(NONP.source,'gi'); while((m=re.exec(blob))) bad.push([m.index,m.index+m[0].length]);
+    ATTADJ.lastIndex=0; while((m=ATTADJ.exec(blob))) bad.push([m.index,m.index+m[0].length]);
     if(NAT.test(blob)){ var pl=placesIn(blob,actor,bad); if(pl.length) return L([pl[0][1],pl[0][2],pl[0][3],pl[0][4]],'natural'); }
-    // OUTAGE: интернет-отключения имеют страну
     if(/(отключение интернет|падение интернет|интернет-связи|сбой интернет|аномали[яи] трафика)/i.test(t)){ var plo=placesIn(blob,actor,bad); if(plo.length) return L([plo[0][1],plo[0][2],plo[0][3],plo[0][4]],'outage'); }
-    // CURRENCY: валютный риск -> страна валюты
     if(/(рубль|рубл[яеь])\s+(?:ослаб|укреп|упал|пада|вырос|раст|обвал|подеш|подорож|рухн|просел|на бирж)/i.test(t)) return L(['RU','Россия',55.75,37.62],'currency');
     if(NOGEO.test(blob) && !KIN.test(blob)) return null;
     var cand=[];
