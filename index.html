@@ -9999,7 +9999,24 @@ window._climateGeo = function(ev){
     return null;
   }catch(_){ return null; }
 };
-window._floc = function(ev){ try{ if(ev.__floc===undefined){ var _r=(ev&&ev.domain==='climate')?window._climateGeo(ev):null; if(!_r){ _r=window._geoResolve(ev); if(_r && window._geoDisputed(ev,_r)) _r=null; } ev.__floc=_r; } return ev.__floc; }catch(e){ return null; } };
+window._techGeo = function(ev){
+  // техно-утечки/взломы с подтверждённой страной -> центроид страны (суша). Не actor-атрибуция, не дайджесты.
+  try{
+    if(ev.domain!=='technology') return null;
+    var cc=String(ev.country_code||ev.event_country||'').toUpperCase();
+    var CENT={JP:['Япония',35.68,139.7],US:['США',38.9,-95.0],RU:['Россия',55.75,37.62],CN:['Китай',39.9,116.4],KR:['Южная Корея',37.57,126.98],DE:['Германия',52.5,13.4],FR:['Франция',48.85,2.35],GB:['Великобритания',51.5,-0.13],IN:['Индия',28.6,77.2],TZ:['Танзания',-6.2,35.7],VE:['Венесуэла',10.5,-66.9],IQ:['Ирак',33.3,44.4]};
+    var c=CENT[cc]; if(!c) return null;
+    var txt=(String(ev.title||'')+' '+String(ev.summary||'')).toLowerCase();
+    var isBreach=/(утечк|взлом|украл|похищен|скомпрометирован|раскрыва|данны)/.test(txt);
+    var isActor=/(хакер|разведк|кибергруппир|группиров|\bapt\b)/.test(txt);
+    var isDigest=/(канал .* пишет|дайджест|пишет интересн)/.test(txt);
+    if(!isBreach || isActor || isDigest) return null;
+    var roots={JP:['япони','японск','токио'],US:['сша','америк','техас'],RU:['росси','российск','москв'],CN:['кита','пекин'],KR:['корея'],DE:['герман'],FR:['франц'],GB:['британ'],IN:['инди']};
+    var rs=roots[cc]; if(rs && !rs.some(function(x){return txt.indexOf(x)>=0;})) return null;
+    return {country:cc, region:c[0], lat:c[1], lng:c[2], source:'country'};
+  }catch(_){ return null; }
+};
+window._floc = function(ev){ try{ if(ev.__floc===undefined){ var _r=(ev&&ev.domain==='climate')?window._climateGeo(ev):null; if(!_r){ _r=window._geoResolve(ev); if(_r && window._geoDisputed(ev,_r)) _r=null; } if(!_r && ev&&ev.domain==='technology' && window._techGeo){ _r=window._techGeo(ev); } ev.__floc=_r; } return ev.__floc; }catch(e){ return null; } };
 window._geoStatus = function(ev){
   try{
     if(typeof _grdfTier!=='undefined' && _grdfTier!=='FREE') return 'CONFIRMED'; // Signal Pro: пока как было, safety-слой только в FREE
