@@ -1917,7 +1917,7 @@ function renderList() {
     const d = document.createElement('div');
     d.className = 'ei' + (selected?.id===ev.id ? ' sel' : '');
     d.innerHTML = `<div class="ei-tag" style="color:${col}"><div class="ei-dot" style="background:${col}"></div>${DL[ev.domain]||ev.domain}</div><div class="ei-title">${esc(ev.title)}</div><div class="ei-meta"><span>${esc(ev.region)}</span><span>${fd(ev.date)}</span></div><div class="ei-bar"><div class="ei-fill" style="width:${ev.severity}%;background:${sc(ev.severity)}"></div></div>`;
-    d.onclick = () => { try{ if(window.atlasTrackMaterial) atlasTrackMaterial(ev.id||ev.title); }catch(_e){} if(ev.lat&&ev.lng){ try{ map.setView([ev.lat,ev.lng], Math.max(map.getZoom()||3,4)); L.popup({maxWidth:240}).setLatLng([ev.lat,ev.lng]).setContent(_evPopup(ev)).openOn(map); }catch(_){} } };
+    d.onclick = () => { try{ if(window.atlasTrackMaterial) atlasTrackMaterial(ev.id||ev.title); }catch(_e){} var _fc=((typeof _grdfTier!=='undefined'&&_grdfTier==='FREE'&&window._floc)?window._floc(ev):null); var _la=_fc?_fc.lat:ev.lat, _ln=_fc?_fc.lng:ev.lng; if(_la&&_ln){ try{ map.setView([_la,_ln], Math.max(map.getZoom()||3,4)); L.popup({maxWidth:240}).setLatLng([_la,_ln]).setContent(_evPopup(ev)).openOn(map); }catch(_){} } };
     list.appendChild(d);
   });
 }
@@ -1983,7 +1983,7 @@ function showDetail(ev) {
   document.getElementById('detail').classList.add('open');
   document.getElementById('sidebar').classList.remove('open');
   // Плавно перемещаем карту к событию
-  map.flyTo([ev.lat, ev.lng], Math.max(map.getZoom(), 4), {duration: 0.8});
+  var _ffl=((typeof _grdfTier!=='undefined'&&_grdfTier==='FREE'&&window._floc)?window._floc(ev):null); map.flyTo(_ffl?[_ffl.lat,_ffl.lng]:[ev.lat, ev.lng], Math.max(map.getZoom(), 4), {duration: 0.8});
   renderList();
 }
 
