@@ -9937,7 +9937,27 @@ window._geoResolve = function(ev){
     return null;
   }catch(e){ return null; }
 };
-window._floc = function(ev){ try{ if(ev.__floc===undefined) ev.__floc = window._geoResolve(ev); return ev.__floc; }catch(e){ return null; } };
+window._geoDisputed = function(ev, r){
+  // PRE-LAUNCH safety: переговоры/соглашения ИЛИ заявления-не-атаки, с >=2 странами в тексте,
+  // где резолвнутая страна НЕ в заголовке -> гео из вторичного участника -> скрыть. Движок не трогаем.
+  try{
+    if(!r) return false;
+    var t=String(ev.title||'').toLowerCase();
+    var blob=t+' '+String(ev.summary||'').toLowerCase();
+    var isNeg=/(договорённост|договоренност|переговор|соглашени|сделк|саммит)/.test(t);
+    var isStmt=/(заявил|заявила|заявили)/.test(t);
+    var kinT=/(удар|атак|обстрел|ракет|бомб|взрыв|авиауд|бпла|дрон|штурм|снаряд|вторжен|наступлен|сбит)/.test(t);
+    var gate = isNeg || (isStmt && !kinT);
+    if(!gate) return false;
+    var TOK={RU:['росси','москв','подмосков','кремл','рф'],US:['сша','америк','вашингтон'],UA:['украин','киев'],IR:['иран','тегеран'],IL:['израил','тель-авив'],BH:['бахрейн','манам'],EU:['евросоюз','европ','брюссел'],CN:['кита','пекин'],IN:['инди','дели'],TR:['турци','анкар','стамбул'],IQ:['ирак','багдад'],AF:['афган','кабул'],PK:['пакистан'],JP:['япони','токио'],FR:['франци','париж'],DE:['герман','берлин'],VE:['венесуэл','каракас'],AR:['аргентин'],SY:['сири'],LB:['ливан'],YE:['йемен'],KP:['кндр'],KR:['корея']};
+    var nc=0; for(var k in TOK){ if(TOK[k].some(function(x){return blob.indexOf(x)>=0;})) nc++; }
+    if(nc<2) return false;
+    var rs=TOK[String(r.country||'')]; if(!rs){ var rn=String(r.region||'').toLowerCase(); rs=rn?[rn.slice(0,5)]:[]; }
+    var inTitle=rs.some(function(x){ return x && t.indexOf(x)>=0; });
+    return !inTitle;
+  }catch(_){ return false; }
+};
+window._floc = function(ev){ try{ if(ev.__floc===undefined){ var _r=window._geoResolve(ev); if(_r && window._geoDisputed(ev,_r)) _r=null; ev.__floc=_r; } return ev.__floc; }catch(e){ return null; } };
 window._geoStatus = function(ev){
   try{
     if(typeof _grdfTier!=='undefined' && _grdfTier!=='FREE') return 'CONFIRMED'; // Signal Pro: пока как было, safety-слой только в FREE
