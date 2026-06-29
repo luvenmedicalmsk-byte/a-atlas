@@ -9835,6 +9835,22 @@ window._headline = function(ev){
     return t.charAt(0).toUpperCase()+t.slice(1);
   }catch(e){ return String((ev&&ev.title)||''); }
 };
+window._cleanDesc = function(summary){
+  try{
+    var s=String(summary||'');
+    var altm=s.match(/<img[^>]*\balt="([^"]{15,})"/i); var imgAlt=altm?altm[1]:'';
+    s=s.replace(/(?:https?:\/\/|www\.)\S+/gi,' ');
+    s=s.replace(/\b(?:ift\.tt|t\.me|bit\.ly|goo\.gl|clck\.ru)\/\S+/gi,' ');
+    s=s.replace(/<[^>]*>/g,' ');
+    s=s.replace(/<[a-zA-Z!\/][^<]*/g,' ');
+    if(s.replace(/\s+/g,'').length<15 && imgAlt) s=imgAlt;
+    s=s.replace(/(?:кризисные карты|подробнее|читать далее|читайте(?: далее| в \S+)?|источник|ссылк[аи]|подпис\w*|подписывайт\w*|наш канал|телеграм[- ]?канал)\s*[:\-—]*\s*/gi,' ');
+    s=s.replace(/@[A-Za-z0-9_]{3,}/g,' ').replace(/#[A-Za-zА-Яа-я0-9_]{2,}/g,' ');
+    s=s.replace(/\s{2,}/g,' ').replace(/\s+([.,;:!?»)])/g,'$1');
+    s=s.replace(/[\s·,;|:—-]+$/,'').replace(/^[\s·,;|:—-]+/,'').trim();
+    return s;
+  }catch(e){ return String(summary||''); }
+};
 window._pinGeo = function(ev){
   try{
     if(typeof _grdfTier!=='undefined' && _grdfTier==='FREE'){ var _fl=(window._floc?window._floc(ev):null); return _fl?_fl.region:''; }
@@ -10333,8 +10349,8 @@ function grdfRenderSignals(dom){
       var _rk = ((_m && _m.kind==='radar_outage') ? '<div class="grdf-sig-flag">Cloudflare Radar · '+(_RDOT[_m.outage_type]||'отключение')+(_RDC[_m.cause]?(' · '+_RDC[_m.cause]):'')+'</div>' : '');
       var _dk = (ev.dup_count?'<span class="sig-dup" style="color:'+col+'">+ \u0435\u0449\u0451 '+ev.dup_count+'</span>':'');
       var _mk = _fk + _rk + _dk;
-      var _sum = String(ev.summary||'').split('|||')[0].split('|')[0].trim();
-      var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx((typeof window._cleanSignalText==='function'?window._cleanSignalText(_sum, ev):_deEnt(_sum)))+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">'+escx(window._srcLabel(ev.source))+'</div>':'')+'</div>';
+      var _sum0 = String(ev.summary||'').split('|||')[0].split('|')[0].trim(); if(!_sum0) _sum0 = String(ev.summary||'').replace(/\|\|\||\|/g,' ').trim(); var _sum = (typeof window._cleanDesc==='function') ? window._cleanDesc((typeof window._cleanSignalText==='function')?window._cleanSignalText(_sum0, ev):_sum0) : _sum0;
+      var _det = '<div class="sig-detail">'+(_sum?'<div class="sig-d-sum">'+escx(_sum)+'</div>':'')+(ev.ai_reasoning?'<div class="sig-d-sum">'+escx(_deEnt(String(ev.ai_reasoning)))+'</div>':'')+(ev.source?'<div class="sig-d-src">'+escx(window._srcLabel(ev.source))+'</div>':'')+'</div>';
       html += '<div class="grdf-sig-card'+(ev._news?' sig-news':'')+'">'
       + '<div class="sig-main">'
       +   '<div class="grdf-sig-title sig-clamp-h">'+escx((typeof window._headline==='function'?window._headline(ev):((typeof window._cleanSignalText==='function')?window._cleanSignalText(ev.title, ev):ev.title)))+'</div>'
