@@ -2841,15 +2841,29 @@ window._overlayLayer = (typeof L!=='undefined') ? L.layerGroup() : null;
 window._overlayOn = false;
 window._overlaySources = {};
 window._overlaySources.quakes = {
-  ensure: function(){ try{ if(window._grdfQuakesEnsure) window._grdfQuakesEnsure(); }catch(e){} },
+  _cache: [], _loading: false,
+  ensure: function(){
+    var S=window._overlaySources.quakes;
+    if(S._loading || S._cache.length){ if(window._overlayOn) window._renderOverlay(); return; }
+    S._loading=true;
+    try{
+      fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson',{cache:'no-store'})
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(d){
+          if(d){ S._cache=(d.features||[]).map(function(f){ var c=(f.geometry&&f.geometry.coordinates)||[]; var p=f.properties||{}; return {mag:p.mag||0,lat:c[1],lng:c[0],time:p.time,place:(window.ruQuake?window.ruQuake(p.place||''):(p.place||''))}; }).filter(function(q){ return typeof q.lat==='number'&&typeof q.lng==='number'&&q.mag>=5; }); }
+          S._loading=false;
+          if(window._overlayOn) window._renderOverlay();
+        }).catch(function(){ S._loading=false; });
+    }catch(e){ S._loading=false; }
+  },
   render: function(group){
     try{
-      if(typeof quakeCache==='undefined' || !quakeCache.length) return;
-      var now=Date.now();
-      quakeCache.forEach(function(q){
-        if(!(q.mag>=5)) return;
-        var imp=qkImpact(q), fresh=(now-q.time)/60000<60;
-        var mk=L.circleMarker([q.lat,q.lng],{radius:qkRadius(q.mag),color:imp.col,weight:fresh?2:1,fillColor:imp.col,fillOpacity:0.16,className:'qk-ov'})
+      var S=window._overlaySources.quakes, now=Date.now();
+      S._cache.forEach(function(q){
+        var imp=(typeof qkImpact==='function')?qkImpact(q):{col:'#1faacc'};
+        var rad=(typeof qkRadius==='function')?qkRadius(q.mag):(4+(q.mag||0));
+        var fresh=(now-q.time)/60000<60;
+        var mk=L.circleMarker([q.lat,q.lng],{radius:rad,color:imp.col,weight:fresh?2:1,fillColor:imp.col,fillOpacity:0.16,className:'qk-ov'})
           .bindPopup('<b style="color:'+imp.col+'">M'+(q.mag||0).toFixed(1)+'</b><br><span style="font-size:11px;color:#cbb">'+(q.place||'')+'</span>');
         group.addLayer(mk);
       });
@@ -2877,6 +2891,7 @@ window._toggleOverlay = function(){
       if(btn) btn.classList.add('on');
     } else {
       try{ map.removeLayer(window._overlayLayer); }catch(e){}
+      try{ window._overlayLayer.clearLayers(); }catch(e){}
       if(btn) btn.classList.remove('on');
     }
   }catch(e){}
