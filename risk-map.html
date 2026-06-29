@@ -2936,7 +2936,7 @@ window._overlaySources.cryo = {
         if(c.mag!=null){ rad = Math.max(5, Math.min(16, 5+Math.sqrt(Math.abs(c.mag)))); }
         var lbl = c.berg ? 'Айсберг / откол шельфа' : 'Морской лёд';
         var mk=L.circleMarker([c.lat,c.lng],{radius:rad,color:'#FFFFFF',weight:1.4,fillColor:'#FFFFFF',fillOpacity:0.14,className:'cryo-ov'})
-          .bindPopup('<b style="color:#fff">'+lbl+'</b><br><span style="font-size:11px;color:#cbb">'+String(c.title||'').replace(/[<>]/g,'')+'</span>'+(c.date?'<br><span style="font-size:9px;color:#889">'+String(c.date).slice(0,10)+'</span>':''));
+          .bindPopup('<b style="color:#fff">'+lbl+'</b><br><span style="font-size:11px;color:#cbb">'+String(c.title||'').replace(/[<>]/g,'')+'</span>'+(c.date?'<br><span style="font-size:9px;color:#889">'+String(c.date).slice(0,10)+'</span>':'')+'<br><span style="font-size:9px;color:#6f7d8a">Источник: NASA EONET</span>');
         group.addLayer(mk);
       });
     }catch(e){}
