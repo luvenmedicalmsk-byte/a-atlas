@@ -2906,6 +2906,7 @@ window._overlaySources.cryo = {
     if(S._loading || S._cache.length){ window._renderOverlay(); return; }
     S._loading=true;
     function done(arr){ S._cache=arr||[]; S._loading=false; try{ console.debug('[cryo] EONET событий: '+S._cache.length); }catch(_){}
+      try{ if(window.renderCryoList) window.renderCryoList(); }catch(_e){}
       window._renderOverlay(); }
     function getJSON(u){ return fetch(u,{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }); }
     try{
@@ -3142,6 +3143,54 @@ window._grdfDisasterEnsure=function(){
   var _o2=window.grdfAlertsTab;
   window.grdfAlertsTab=function(name){ if(_o2) _o2(name); var ru=document.getElementById('ga-russia'); if(ru) ru.style.display=(name==='russia'?'block':'none'); if(name==='russia') window._grdfRosgidrometEnsure(); };
 })();
+
+// === КРИОСФЕРА в «Рисках» ===
+(function(){
+  window._cryoFilter='all';
+  function esc(x){ return String(x||'').replace(/[&<>"]/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[m];}); }
+  window.renderCryoList=function(){
+    var box=document.getElementById('cryo-list'); if(!box) return 0;
+    var S=window._overlaySources && window._overlaySources.cryo; var cache=(S&&S._cache)||[];
+    var tab=document.querySelector('#grdf-alerts-tabs .ga-tab[data-tab="cryo"]'); if(tab) tab.textContent='Криосфера'+(cache.length?(' ('+cache.length+')'):'');
+    if(!cache.length){ box.innerHTML='<div class="qk-empty">Сейчас нет открытых криособытий.<br>Источник: NASA EONET (айсберги / морской лёд).</div>'; return 0; }
+    var list=cache.filter(function(c){ return window._cryoFilter==='all' || (window._cryoFilter==='berg'?c.berg:!c.berg); });
+    var bergN=cache.filter(function(c){return c.berg;}).length;
+    if(!list.length){ box.innerHTML='<div class="qk-summary">Событий: '+cache.length+' · айсбергов: <b style="color:#fff">'+bergN+'</b> · морской лёд: <b style="color:#9FC5D8">'+(cache.length-bergN)+'</b></div><div class="qk-empty">Нет событий в этой категории.</div>'; return 0; }
+    box.innerHTML='<div class="qk-summary">Событий: '+cache.length+' · айсбергов: <b style="color:#fff">'+bergN+'</b> · морской лёд: <b style="color:#9FC5D8">'+(cache.length-bergN)+'</b></div>'+
+    list.map(function(c){
+      var col=c.berg?'#FFFFFF':'#9FC5D8'; var typ=c.berg?'Айсберг / откол шельфа':'Аномалия морского льда';
+      var d=c.date?String(c.date).slice(0,10):'—';
+      var la=(typeof c.lat==='number')?c.lat.toFixed(2):'—', ln=(typeof c.lng==='number')?c.lng.toFixed(2):'—';
+      return '<div class="qk-card" onclick="window._toggleQk(this)">'+
+        '<span class="qk-dot" style="background:'+col+'"></span>'+
+        '<div class="qk-main">'+
+          '<div class="qk-dom" style="color:'+col+'">'+typ+'</div>'+
+          '<div class="qk-title">'+esc(c.title||'—')+'</div>'+
+          '<div class="qk-meta"><span>'+d+'</span><span>'+la+', '+ln+'</span></div>'+
+          '<div class="qk-detail" style="display:none"><b style="color:'+col+'">'+esc(c.title||'')+'</b><br>Тип: '+typ+'<br>Координаты: '+la+', '+ln+'<br>Дата: '+d+'<br>Источник: NASA EONET</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    return list.length;
+  };
+  window._grdfCryoEnsure=function(){
+    try{
+      var S=window._overlaySources && window._overlaySources.cryo;
+      if(S && !S._cache.length && !S._loading && S.ensure) S.ensure();
+      window.renderCryoList();
+      setTimeout(window.renderCryoList,1600); setTimeout(window.renderCryoList,4200);
+    }catch(e){}
+  };
+  document.addEventListener('click',function(e){
+    var b=e.target.closest?e.target.closest('#cryo-tiers .qt'):null; if(!b) return;
+    document.querySelectorAll('#cryo-tiers .qt').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active'); window._cryoFilter=b.getAttribute('data-cryo')||'all'; window.renderCryoList();
+  });
+  var _oc=window.grdfAlertsTab;
+  window.grdfAlertsTab=function(name){ if(_oc) _oc(name); var c=document.getElementById('ga-cryo'); if(c) c.style.display=(name==='cryo'?'block':'none'); if(name==='cryo'){ try{ window._grdfCryoEnsure&&window._grdfCryoEnsure(); }catch(_){} } };
+  var st=document.createElement('style'); st.textContent='#cryo-tiers{display:flex;gap:6px;padding:10px 14px}#cryo-tiers .qt{padding:5px 12px;background:rgba(6,5,10,0.9);border:0.5px solid rgba(184,151,58,0.25);color:rgba(148,163,184,0.85);font-family:Montserrat,sans-serif;font-size:12px;cursor:pointer;border-radius:4px}#cryo-tiers .qt.active{border-color:#D4AF5A;color:#D4AF5A;background:rgba(184,151,58,0.12)}#cryo-list{padding:0 0 24px}'; document.head.appendChild(st);
+})();
+
 
 
 
@@ -7786,9 +7835,18 @@ function _evM(val, lbl, col) {
   <div id="grdf-alerts-tabs">
     <button class="ga-tab active" data-tab="weather" onclick="grdfAlertsTab('weather')">Экстремальная погода</button>
     <button class="ga-tab" data-tab="quakes" onclick="grdfAlertsTab('quakes')">Землетрясения</button>
+    <button class="ga-tab" data-tab="cryo" onclick="grdfAlertsTab('cryo')">Криосфера</button>
   </div>
   <div id="ga-quakes">
     <div id="quake-list"></div>
+  </div>
+  <div id="ga-cryo" style="display:none">
+    <div id="cryo-tiers">
+      <div class="qt active" data-cryo="all">Все</div>
+      <div class="qt" data-cryo="berg">Айсберги</div>
+      <div class="qt" data-cryo="ice">Морской лёд</div>
+    </div>
+    <div id="cryo-list"><div class="qk-empty">Загрузка криосферы…</div></div>
   </div>
   <div id="ga-weather" style="display:none">
     <div id="weather-list"><div class="qk-empty">Загрузка ленты ЧС…</div></div>
