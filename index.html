@@ -10018,7 +10018,7 @@ window._techGeo = function(ev){
     return {country:cc, region:c[0], lat:c[1]+_dla, lng:c[2]+_dln, source:'country'};
   }catch(_){ return null; }
 };
-window._floc = function(ev){ try{ if(ev.__floc===undefined){ var _r=(ev&&ev.domain==='climate')?window._climateGeo(ev):null; if(!_r){ _r=window._geoResolve(ev); if(_r && window._geoDisputed(ev,_r)) _r=null; } if(!_r && ev&&ev.domain==='technology' && window._techGeo){ _r=window._techGeo(ev); } ev.__floc=_r; } return ev.__floc; }catch(e){ return null; } };
+window._floc = function(ev){ try{ if(ev.__floc===undefined){ var _r=(ev&&ev.domain==='climate')?window._climateGeo(ev):null; if(!_r){ _r=window._geoResolve(ev); if(_r && window._geoDisputed(ev,_r)) _r=null; } if(!_r && ev&&ev.domain==='technology' && window._techGeo){ _r=window._techGeo(ev); } if(!_r){ var _fla=parseFloat(ev.lat); var _fln=parseFloat(ev.lng); if(isNaN(_fla)){_fla=parseFloat(ev.latitude);} if(isNaN(_fln)){_fln=parseFloat(ev.longitude);} if(!isNaN(_fla)&&!isNaN(_fln)){ _r={country:(ev.primary_country||ev.country_code||null), region:(ev.region||''), lat:_fla, lng:_fln, source:'data'}; } } ev.__floc=_r; } return ev.__floc; }catch(e){ return null; } };
 window._geoStatus = function(ev){
   try{
     if(typeof _grdfTier!=='undefined' && _grdfTier!=='FREE') return 'CONFIRMED'; // Signal Pro: пока как было, safety-слой только в FREE
