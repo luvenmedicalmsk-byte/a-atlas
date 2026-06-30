@@ -2913,7 +2913,7 @@ window._overlaySources.cryo = {
     var S=window._overlaySources.cryo;
     if(S._loading || S._cache.length){ window._renderOverlay(); return; }
     S._loading=true;
-    function done(arr){ var _base=arr||[]; try{ var _si=(typeof ALL_EVENTS!=='undefined'?ALL_EVENTS:[]).filter(function(e){ return e && (String(e.source||'')==='NSIDC Sea Ice' || /^Морской лёд/.test(String(e.title||''))); }).map(function(e){ var _la=parseFloat(e.lat!=null?e.lat:e.latitude), _ln=parseFloat(e.lng!=null?e.lng:e.longitude); if(isNaN(_la)||isNaN(_ln)) return null; return {lat:_la,lng:_ln,title:String(e.title||'Морской лёд'),berg:false,date:(e.date||''),mag:null}; }).filter(Boolean); if(_si.length) _base=_base.concat(_si); }catch(_e2){} S._cache=_base; S._loading=false; try{ console.debug('[cryo] EONET событий: '+S._cache.length); }catch(_){}
+    function done(arr){ var _base=arr||[]; try{ var _si=(typeof ALL_EVENTS!=='undefined'?ALL_EVENTS:[]).filter(function(e){ return e && (String(e.source||'')==='NSIDC Sea Ice' || /^Морской лёд/.test(String(e.title||''))); }).map(function(e){ var _la=parseFloat(e.lat!=null?e.lat:e.latitude), _ln=parseFloat(e.lng!=null?e.lng:e.longitude); if(isNaN(_la)||isNaN(_ln)) return null; var _t=String(e.title||'Морской лёд'); var _note=/ниже нормы/.test(_t)?'Площадь морского льда ниже исторической нормы для этой даты (база 1978–2026). Отклонение фиксируется, не прогнозируется.':(/выше нормы/.test(_t)?'Площадь морского льда выше исторической нормы для этой даты (база 1978–2026). Отклонение фиксируется, не прогнозируется.':'Площадь морского льда близка к исторической норме для этой даты (база 1978–2026).'); return {lat:_la,lng:_ln,title:_t,berg:false,_si:true,note:_note,date:(e.date||''),mag:null}; }).filter(Boolean); if(_si.length) _base=_base.concat(_si); }catch(_e2){} S._cache=_base; S._loading=false; try{ console.debug('[cryo] EONET событий: '+S._cache.length); }catch(_){}
       try{ if(window.renderCryoList) window.renderCryoList(); }catch(_e){}
       try{ if(window.grdfRenderRiskPulse) window.grdfRenderRiskPulse(); }catch(_p){}
       window._renderOverlay(); }
@@ -2945,7 +2945,7 @@ window._overlaySources.cryo = {
         if(c.mag!=null){ rad = Math.max(5, Math.min(16, 5+Math.sqrt(Math.abs(c.mag)))); }
         var lbl = c.berg ? 'Айсберг / откол шельфа' : 'Морской лёд';
         var mk=L.circleMarker([c.lat,c.lng],{radius:rad,color:'#FFFFFF',weight:1.4,fillColor:'#FFFFFF',fillOpacity:0.14,className:'cryo-ov'})
-          .bindPopup('<b style="color:#fff">'+lbl+'</b><br><span style="font-size:11px;color:#cbb">'+String(c.title||'').replace(/[<>]/g,'')+'</span>'+(c.date?'<br><span style="font-size:9px;color:#889">'+String(c.date).slice(0,10)+'</span>':'')+'<br><span style="font-size:9px;color:#6f7d8a">Источник: NASA EONET • National Ice Center</span>'+'<br><span style="font-size:9px;color:#6f7d8a">Детекция: спутниковая</span>');
+          .bindPopup('<b style="color:#fff">'+lbl+'</b><br><span style="font-size:11px;color:#cbb">'+String(c.title||'').replace(/[<>]/g,'')+'</span>'+(c.date?'<br><span style="font-size:9px;color:#889">'+String(c.date).slice(0,10)+'</span>':'')+(c.note?'<br><span style="font-size:9px;color:#9FC5D8">'+c.note+'</span>':'')+'<br><span style="font-size:9px;color:#6f7d8a">Источник: '+(c._si?'NSIDC Sea Ice Index':'NASA EONET • National Ice Center')+'</span>'+'<br><span style="font-size:9px;color:#6f7d8a">Детекция: спутниковая</span>');
         group.addLayer(mk);
       });
     }catch(e){}
@@ -3176,7 +3176,7 @@ window._grdfDisasterEnsure=function(){
           '<div class="qk-dom" style="color:'+col+'">'+typ+'</div>'+
           '<div class="qk-title">'+esc(c.title||'—')+'</div>'+
           '<div class="qk-meta"><span>'+d+'</span><span>'+la+', '+ln+'</span></div>'+
-          '<div class="qk-detail" style="display:none"><b style="color:'+col+'">'+esc(c.title||'')+'</b><br>Тип: '+typ+'<br>Координаты: '+la+', '+ln+'<br>Дата: '+d+'<br>Источник: NASA EONET • National Ice Center<br>Детекция: спутниковая</div>'+
+          '<div class="qk-detail" style="display:none"><b style="color:'+col+'">'+esc(c.title||'')+'</b><br>Тип: '+typ+'<br>Координаты: '+la+', '+ln+'<br>Дата: '+d+(c.note?'<br><span style="color:#9FC5D8">'+c.note+'</span>':'')+'<br>Источник: '+(c._si?'NSIDC Sea Ice Index':'NASA EONET • National Ice Center')+'<br>Детекция: спутниковая</div>'+
         '</div>'+
       '</div>';
     }).join('');
