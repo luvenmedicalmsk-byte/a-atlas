@@ -2913,7 +2913,7 @@ window._overlaySources.cryo = {
     var S=window._overlaySources.cryo;
     if(S._loading || S._cache.length){ window._renderOverlay(); return; }
     S._loading=true;
-    function done(arr){ S._cache=arr||[]; S._loading=false; try{ console.debug('[cryo] EONET событий: '+S._cache.length); }catch(_){}
+    function done(arr){ var _base=arr||[]; try{ var _si=(typeof ALL_EVENTS!=='undefined'?ALL_EVENTS:[]).filter(function(e){ return e && (String(e.source||'')==='NSIDC Sea Ice' || /^Морской лёд/.test(String(e.title||''))); }).map(function(e){ var _la=parseFloat(e.lat!=null?e.lat:e.latitude), _ln=parseFloat(e.lng!=null?e.lng:e.longitude); if(isNaN(_la)||isNaN(_ln)) return null; return {lat:_la,lng:_ln,title:String(e.title||'Морской лёд'),berg:false,date:(e.date||''),mag:null}; }).filter(Boolean); if(_si.length) _base=_base.concat(_si); }catch(_e2){} S._cache=_base; S._loading=false; try{ console.debug('[cryo] EONET событий: '+S._cache.length); }catch(_){}
       try{ if(window.renderCryoList) window.renderCryoList(); }catch(_e){}
       try{ if(window.grdfRenderRiskPulse) window.grdfRenderRiskPulse(); }catch(_p){}
       window._renderOverlay(); }
