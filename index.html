@@ -2824,11 +2824,11 @@ window.grdfRenderRiskPulse = function(){
   var cc=(cs&&cs._cache)||[];
   if(cs && !cc.length && !cs._loading && cs.ensure){ try{ cs.ensure(); }catch(_){} }
   var ct=[]; cc.forEach(function(c){ var t=Date.parse(c.date); if(!isNaN(t)) ct.push(t); });
-  var W=spark(wt,COL_W,7,7), Q=spark(qt,COL_Q,7,7), C=spark(ct,COL_C,365,6);
+  var W=spark(wt,COL_W,30,10), Q=spark(qt,COL_Q,30,10), C=spark(ct,COL_C,365,6);
   el.innerHTML=
     '<div class="rp-graphs">'
-    +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">погода '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">'+darr(W.dir)+' '+dtxt(W.dir)+'</span></div>'
-    +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+darr(Q.dir)+' '+dtxt(Q.dir)+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">погода '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">'+darr(W.dir)+' '+dtxt(W.dir)+' \u00b7 месяц</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+darr(Q.dir)+' '+dtxt(Q.dir)+' \u00b7 месяц</span></div>'
     +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+darr(C.dir)+' '+dtxt(C.dir)+' \u00b7 год</span></div>'
     +'</div>';
 };
