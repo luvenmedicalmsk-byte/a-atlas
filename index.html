@@ -2699,6 +2699,8 @@ function qkInBand(m){ return m>=quakeMinMag; }
 
 function renderQuakeMarkers(){
   clearLayer(quakeMarkers);
+  /* землетрясения на карте теперь только через оверлей-тумблер (квадратик); легаси-авто-показ отключён */
+  return;
   const now=Date.now();
   quakeCache.filter(q=>qkInBand(q.mag)).forEach(q=>{
     const imp=qkImpact(q), fresh=(now-q.time)/60000<60;
