@@ -11266,7 +11266,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   var CONF_RU={single:'одиночное',confirmed:'подтверждён',high:'высокое',unconfirmed:'неподтверждён',stale:'устаревшее',verified:'верифицирован'};
   var DOM_RU={climate:'Климат',economy:'Экономика',geopolitics:'Геополитика',technology:'Технологии',social:'Социум'};
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function scol(v){ try{ return window._sevColor(v); }catch(e){ return '#D4AF5A'; } }
+  function scol(v){ try{ if(window._sevColor) return window._sevColor(v); }catch(e){} v=+v||0; return v>=90?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8'; }
   function hcol(h){ return {Critical:'#E24A3B',Escalating:'#FFD700',Healthy:'#FFA07A',Stable:'#A89150',Dormant:'#6b7280',Archived:'#6b7280'}[h]||'#A89150'; }
   function isPro(){ try{ var t=(window.CC&&CC.tier&&CC.tier())||'free'; return !!(t&&t!=='free'); }catch(e){ return false; } }
   function ago(iso){ if(!iso) return '—'; var d=(Date.now()-new Date(iso).getTime())/1000; if(d<0) return 'только что'; if(d<3600) return Math.max(1,Math.round(d/60))+' мин назад'; if(d<86400) return Math.round(d/3600)+' ч назад'; return Math.round(d/86400)+' дн назад'; }
