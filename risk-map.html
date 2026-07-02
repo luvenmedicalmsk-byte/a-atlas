@@ -11155,6 +11155,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     inject();
     // FREE проходит в режим «Процессы»: лента — демонстрация выполненного анализа,
     // монетизация — в карточке процесса (freeDetailHTML), старый апселл убран
+    if(mode==='processes'){
+      try{ if(!isPro() && localStorage.getItem('cc_token') && typeof _ccEstablishTier==='function'){ Promise.resolve(_ccEstablishTier()).then(function(){ try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} }); } }catch(e){}
+    }
     _mode=mode;
     document.querySelectorAll('#grdf-mode-toggle .gproc-mb').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-mode')===mode); });
     var ev=(mode==='events');
