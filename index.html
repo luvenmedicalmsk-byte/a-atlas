@@ -2111,7 +2111,11 @@ async function fetchStats() {
 }
 
 function applyEvents(events, updatedIso) {
-  ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents(events) : events;
+  // ANALYTIC LAYER: события с feed_visible===false кормят аналитику (Radar/процессы),
+  // но в пользовательскую ленту и на карту FREE не попадают.
+  try { window._ANALYTIC_EVENTS = events || []; } catch(_) {}   // полный поток для Radar/Pressure
+  var _feed = (events||[]).filter(function(ev){ return ev && ev.feed_visible !== false; });
+  ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents(_feed) : _feed;
   try{ if(window._signalAudit) window._signalAudit(); }catch(_){}
   try{ window._ARCHIVE_UPDATED = updatedIso || window._ARCHIVE_UPDATED || null; }catch(_e){}
   filtered = filter === 'all' ? [...ALL_EVENTS] : ALL_EVENTS.filter(e => e.domain === filter);
@@ -9935,7 +9939,11 @@ window._radarMetrics = function(ded){
           crossLinks:crossLinks,pressure:pressure,perDom:perDom,dyn:dyn,contrib:contrib,drivers:drivers,pairs:pairs.slice(0,3)};
 };;
 window._signalDataset = function(){
-  var src = (typeof window._liveEvents==='function') ? window._liveEvents() : ((typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : []);
+  // ANALYTIC LAYER: аналитика (Radar/Pressure/Country) работает на ПОЛНОМ потоке
+  // (feed + слабые сигналы feed_visible=false), а не на урезанной ленте FREE.
+  var _full = (typeof window._ANALYTIC_EVENTS!=='undefined' && window._ANALYTIC_EVENTS) ? window._ANALYTIC_EVENTS : null;
+  var src = _full ? _full.slice()
+        : ((typeof window._liveEvents==='function') ? window._liveEvents() : ((typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : []));
   if(typeof NEWS_EVENTS!=='undefined' && NEWS_EVENTS && NEWS_EVENTS.length) src = src.concat(NEWS_EVENTS);
   if(typeof _fixDomain==='function') src.forEach(function(e){ var nd=_fixDomain(e); if(nd) e.domain=nd; });
   // unify with «События»: same source-blocklist + clickbait filters
