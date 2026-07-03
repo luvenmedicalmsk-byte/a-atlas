@@ -11216,6 +11216,20 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   function gcell(k,v,col,d){ return '<div style="flex:1;min-width:64px;display:flex;flex-direction:column;gap:3px"><span style="font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(148,163,184,0.55)">'+k+'</span><span style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:700;line-height:1;color:'+col+'">'+v+'</span><span style="font-size:9px;color:'+(String(d).indexOf('▲')>=0?'#D4AF5A':'#1faacc')+'">'+d+'</span></div>'; }
   function card(s){
     var pr=s.priority||0, sv=s.severity||0, pe=s.pressure||0;
+    // ACCESS TIER (presentation): чувствительный геополитический процесс в FREE —
+    // обобщённая карточка без раскрытия деталей. Аналитика внутри системы не тронута.
+    var _gated=(!isPro() && s.access_tier==='pro');
+    if(_gated){
+      return '<div class="gpc gpc-gated" data-id="'+esc(s.signal_id)+'" data-pro="1">'
+        +'<div class="gpc-edge" style="background:#B8973A"></div>'
+        +'<div class="gpc-type"><span>Геополитика</span></div>'
+        +'<div class="gpc-title" style="color:#c9d3df">'+esc(s.free_title||'Геополитическая динамика')+'</div>'
+        +'<div class="gpc-place" style="color:rgba(148,163,184,0.55)">Зона повышенной чувствительности</div>'
+        +'<div class="gpc-chips"><span class="gpc-ch hl">Активный процесс</span>'
+        +'<span class="gpc-ch" style="color:#B8973A;border-color:#B8973A55">◆ Signal Pro</span></div>'
+        +'<div class="gpc-foot"><span>Детальная аналитика в Signal Pro</span><span></span></div>'
+        +'</div>';
+    }
     return '<div class="gpc" data-id="'+esc(s.signal_id)+'">'
       +(function(){window.__ps=lcStage(s);window.__pc=lcColor(window.__ps);return '<div class="gpc-edge" style="background:'+window.__pc+'"></div>';})()
       +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
@@ -11238,6 +11252,18 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   window.__grdfProcTierRefresh=function(){ try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} };
   function openDetail(id){
     var s=_byId[id]; if(!s) return; window.__grdfLastProcId=id;
+    // gated процесс в FREE — не раскрываем детали, показываем Signal Pro paywall
+    if(!isPro() && s.access_tier==='pro'){
+      var dp=document.getElementById('gproc-d');
+      dp.innerHTML='<div style="padding:32px 22px;text-align:center">'
+        +'<div style="font-size:11px;font-weight:600;font-family:Montserrat,sans-serif;color:#B8973A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px">Signal Pro</div>'
+        +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;color:#e8e4dc;line-height:1.3;margin-bottom:12px">Геополитическая аналитика</div>'
+        +'<div style="font-size:13px;color:#a8b3c0;line-height:1.6;margin-bottom:22px">Детальный анализ военных и геополитических процессов — причинно-следственные связи, хроника, свидетельства, прогнозы и граф связей — доступен в Signal Pro.</div>'
+        +'<div style="font-size:12px;color:rgba(148,163,184,0.6);line-height:1.5">Процесс активно отслеживается системой. Полная аналитика открывается по подписке.</div>'
+        +'</div>';
+      dp.classList.add('on'); document.getElementById('gproc-ov').classList.add('on'); dp.scrollTop=0;
+      return;
+    }
     var d=document.getElementById('gproc-d'); d.innerHTML=detailHTML(s);
     d.classList.add('on'); document.getElementById('gproc-ov').classList.add('on'); d.scrollTop=0;
     Array.prototype.forEach.call(d.querySelectorAll('.gd-conn'),function(el){ el.onclick=function(){ openDetail(el.getAttribute('data-id')); }; });
