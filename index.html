@@ -4154,8 +4154,8 @@ function renderCard(c) {
     sumBlock.innerHTML = `<div class="cc-summary">${_esc(c.summary)}</div>`;
   } else {
     // Blurred placeholder for free users
-    const fake = 'Геополитическая напряжённость остаётся основным драйвером риска. '
-               + 'Структурные факторы продолжают оказывать давление на экономику страны.';
+    const fake = 'Система фиксирует активные сигналы риска по нескольким доменам. '
+               + 'Структурные и климатические факторы продолжают оказывать давление на устойчивость страны.';
     sumBlock.innerHTML =
       `<div class="cc-summary-locked">${_esc(fake)}</div>` +
       `<a class="cc-lock-cta" href="#" onclick="return false">
@@ -11203,7 +11203,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       // FREE: витрина — счётчик наблюдения вместо дашборда системных метрик
       dash='<div style="padding:12px 16px;border-bottom:0.5px solid rgba(184,151,58,0.12)">'
         +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Atlas отслеживает</div>'
-        +'<div style="font-size:12.5px;color:#dbe3ec;line-height:1.5">'+list.length+' активных процессов: климат, экономика, энергетика, технологии, социум. По каждому выполнен полный анализ. Геополитическая аналитика — в Signal Pro.</div>'
+        +'<div style="font-size:12.5px;color:#dbe3ec;line-height:1.5">'+list.length+' активных процессов в реальном времени: климат, экономика, технологии, социум. По каждому — сигналы, эскалация, аномалии и полный анализ.</div>'
         +'</div>';
     }
     else if(g&&g.global_pressure!=null){
