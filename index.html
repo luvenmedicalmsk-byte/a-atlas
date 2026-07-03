@@ -11189,7 +11189,13 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   function mi(k,v){ return '<div class="gpc-mi"><span class="gpc-mk">'+k+'</span><span class="gpc-mv" style="color:'+scol(v)+'">'+(v||0)+'</span></div>'; }
   function renderProc(){
     var pf=document.getElementById('grdf-proc-feed'); if(!pf||!_data) return;
-    var list=(_data.signals||[]).filter(function(s){return s.status!=='archived';}).sort(function(a,b){return (b.pressure||b.priority||0)-(a.pressure||a.priority||0);});
+    var _pro=isPro();
+    var list=(_data.signals||[]).filter(function(s){
+      if(s.status==='archived') return false;
+      // FREE: геополитика и чувствительные процессы полностью скрыты из ленты
+      if(!_pro && s.access_tier==='pro') return false;
+      return true;
+    }).sort(function(a,b){return (b.pressure||b.priority||0)-(a.pressure||a.priority||0);});
     var c=document.getElementById('grdf-sig-count'); if(c) c.textContent=list.length+' процессов';
     var g=_data.global_health||{};
     var dash='';
@@ -11197,7 +11203,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       // FREE: витрина — счётчик наблюдения вместо дашборда системных метрик
       dash='<div style="padding:12px 16px;border-bottom:0.5px solid rgba(184,151,58,0.12)">'
         +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Atlas отслеживает</div>'
-        +'<div style="font-size:12.5px;color:#dbe3ec;line-height:1.5">'+list.length+' активных процессов в пяти доменах. По каждому выполнен полный анализ.</div>'
+        +'<div style="font-size:12.5px;color:#dbe3ec;line-height:1.5">'+list.length+' активных процессов: климат, экономика, энергетика, технологии, социум. По каждому выполнен полный анализ. Геополитическая аналитика — в Signal Pro.</div>'
         +'</div>';
     }
     else if(g&&g.global_pressure!=null){
@@ -11216,20 +11222,6 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   function gcell(k,v,col,d){ return '<div style="flex:1;min-width:64px;display:flex;flex-direction:column;gap:3px"><span style="font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(148,163,184,0.55)">'+k+'</span><span style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:700;line-height:1;color:'+col+'">'+v+'</span><span style="font-size:9px;color:'+(String(d).indexOf('▲')>=0?'#D4AF5A':'#1faacc')+'">'+d+'</span></div>'; }
   function card(s){
     var pr=s.priority||0, sv=s.severity||0, pe=s.pressure||0;
-    // ACCESS TIER (presentation): чувствительный геополитический процесс в FREE —
-    // обобщённая карточка без раскрытия деталей. Аналитика внутри системы не тронута.
-    var _gated=(!isPro() && s.access_tier==='pro');
-    if(_gated){
-      return '<div class="gpc gpc-gated" data-id="'+esc(s.signal_id)+'" data-pro="1">'
-        +'<div class="gpc-edge" style="background:#B8973A"></div>'
-        +'<div class="gpc-type"><span>Геополитика</span></div>'
-        +'<div class="gpc-title" style="color:#c9d3df">'+esc(s.free_title||'Геополитическая динамика')+'</div>'
-        +'<div class="gpc-place" style="color:rgba(148,163,184,0.55)">Зона повышенной чувствительности</div>'
-        +'<div class="gpc-chips"><span class="gpc-ch hl">Активный процесс</span>'
-        +'<span class="gpc-ch" style="color:#B8973A;border-color:#B8973A55">◆ Signal Pro</span></div>'
-        +'<div class="gpc-foot"><span>Детальная аналитика в Signal Pro</span><span></span></div>'
-        +'</div>';
-    }
     return '<div class="gpc" data-id="'+esc(s.signal_id)+'">'
       +(function(){window.__ps=lcStage(s);window.__pc=lcColor(window.__ps);return '<div class="gpc-edge" style="background:'+window.__pc+'"></div>';})()
       +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
