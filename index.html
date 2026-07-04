@@ -2113,12 +2113,10 @@ async function fetchStats() {
 function applyEvents(events, updatedIso) {
   // ANALYTIC LAYER: события с feed_visible===false кормят аналитику (Radar/процессы),
   // но в пользовательскую ленту и на карту FREE не попадают.
-  try { window._ANALYTIC_EVENTS = events || []; } catch(_) {}   // полный поток для Radar/Pressure
-  var _feed0 = (events||[]).filter(function(ev){ return ev && ev.feed_visible !== false; });
-  // Signal geo-granularity: пользовательская лента и карта показывают СТРАНУ
-  // (Россия, Казахстан...), не район — убираем ложную точность вроде «Иркутская
-  // область» для федеральных сигналов. Клонируем, чтобы аналитика (_ANALYTIC_EVENTS)
-  // сохранила регион. Координаты (lat/lng) в клоне не трогаем — маркер остаётся точным.
+  // === Signal geo-granularity: события/лента/карта показывают СТРАНУ (Россия,
+  // Казахстан...), не район. Мутируем регион в ИСХОДНОМ массиве — видят ВСЕ
+  // потребители (лента, карта, grdf, аналитика, фильтры). Координаты (lat/lng)
+  // не трогаем — маркеры на точных точках. ===
   var _ISO2RU = {RU:'Россия',UA:'Украина',KZ:'Казахстан',BY:'Беларусь',US:'США',CN:'Китай',
     IR:'Иран',IL:'Израиль',TR:'Турция',DE:'Германия',FR:'Франция',GB:'Великобритания',
     PL:'Польша',SY:'Сирия',IN:'Индия',PK:'Пакистан',JP:'Япония',KP:'КНДР',KR:'Южная Корея',
@@ -2132,12 +2130,16 @@ function applyEvents(events, updatedIso) {
     if(ev.country_ru) return ev.country_ru;
     var iso = g.country || ev.country_code || ev.event_country || ev.primary_country ||
       (ev.country_codes && ev.country_codes[0]) || (ev.mentioned_countries && ev.mentioned_countries[0]);
-    return (iso && _ISO2RU[iso]) ? _ISO2RU[iso] : null;
+    if(iso && _ISO2RU[iso]) return _ISO2RU[iso];
+    var r = String(ev.region||'');
+    if(/(\bкрай\b|республик|автономн|Москв|Петербург|Севастопол|\bКрым\b|\bобласт)/i.test(r)
+       && !/Украин|Харьков|Донец|Луганск|Запорож|Херсон|Одес|Львов|Киев|Днепр/i.test(r)) return 'Россия';
+    return null;
   }
-  var _feed = _feed0.map(function(ev){
-    var _c = _evCountry(ev);
-    return (_c && ev.region !== _c) ? Object.assign({}, ev, { region: _c }) : ev;
-  });
+  (events||[]).forEach(function(ev){ var _c=_evCountry(ev); if(_c && ev.region!==_c) ev.region=_c; });
+  try { window._ANALYTIC_EVENTS = events || []; } catch(_) {}   // после мутации — страна везде
+  var _feed = (events||[]).filter(function(ev){ return ev && ev.feed_visible !== false; });
+
   ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents(_feed) : _feed;
   try{ if(window._signalAudit) window._signalAudit(); }catch(_){}
   try{ window._ARCHIVE_UPDATED = updatedIso || window._ARCHIVE_UPDATED || null; }catch(_e){}
