@@ -2119,8 +2119,23 @@ function applyEvents(events, updatedIso) {
   // (Россия, Казахстан...), не район — убираем ложную точность вроде «Иркутская
   // область» для федеральных сигналов. Клонируем, чтобы аналитика (_ANALYTIC_EVENTS)
   // сохранила регион. Координаты (lat/lng) в клоне не трогаем — маркер остаётся точным.
+  var _ISO2RU = {RU:'Россия',UA:'Украина',KZ:'Казахстан',BY:'Беларусь',US:'США',CN:'Китай',
+    IR:'Иран',IL:'Израиль',TR:'Турция',DE:'Германия',FR:'Франция',GB:'Великобритания',
+    PL:'Польша',SY:'Сирия',IN:'Индия',PK:'Пакистан',JP:'Япония',KP:'КНДР',KR:'Южная Корея',
+    GE:'Грузия',AM:'Армения',AZ:'Азербайджан',MD:'Молдавия',RS:'Сербия',IQ:'Ирак',
+    AF:'Афганистан',YE:'Йемен',SA:'Саудовская Аравия',EG:'Египет',LY:'Ливия',SD:'Судан',
+    VE:'Венесуэла',BR:'Бразилия',MX:'Мексика',ES:'Испания',IT:'Италия',GR:'Греция'};
+  function _evCountry(ev){
+    if(!ev) return null;
+    var g = ev.geo || {};
+    if(g.country_ru) return g.country_ru;
+    if(ev.country_ru) return ev.country_ru;
+    var iso = g.country || ev.country_code || ev.event_country || ev.primary_country ||
+      (ev.country_codes && ev.country_codes[0]) || (ev.mentioned_countries && ev.mentioned_countries[0]);
+    return (iso && _ISO2RU[iso]) ? _ISO2RU[iso] : null;
+  }
   var _feed = _feed0.map(function(ev){
-    var _c = ev && ev.geo && ev.geo.country_ru;
+    var _c = _evCountry(ev);
     return (_c && ev.region !== _c) ? Object.assign({}, ev, { region: _c }) : ev;
   });
   ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents(_feed) : _feed;
