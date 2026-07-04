@@ -9875,11 +9875,25 @@ window._cleanDesc = function(summary){
   }catch(e){ return String(summary||''); }
 };
 window._displayRegion = function(ev){
-  // единый регион для отображения: климат-акватория -> в ОБОИХ тирах; иначе FREE=резолвер, PRO=пайплайн
+  // Signal geo-granularity: события отображают СТРАНУ (Россия, Казахстан...), не
+  // район — убираем ложную точность. Координаты карты (lat/lng) не трогаем.
   try{
-    if(ev && ev.geo && ev.geo.region){ return ev.geo.region; }
-    var p = window._pinGeo ? window._pinGeo(ev) : '';
-    return p || (ev && ev.region) || '';
+    var g = (ev && ev.geo) || {};
+    if(g.country_ru) return g.country_ru;
+    if(ev && ev.country_ru) return ev.country_ru;
+    var iso = g.country || (ev && (ev.country_code || ev.event_country || ev.primary_country ||
+      (ev.country_codes && ev.country_codes[0]) || (ev.mentioned_countries && ev.mentioned_countries[0])));
+    var M={RU:'Россия',UA:'Украина',KZ:'Казахстан',BY:'Беларусь',US:'США',CN:'Китай',IR:'Иран',
+      IL:'Израиль',TR:'Турция',DE:'Германия',FR:'Франция',GB:'Великобритания',PL:'Польша',SY:'Сирия',
+      IN:'Индия',PK:'Пакистан',JP:'Япония',KP:'КНДР',KR:'Южная Корея',GE:'Грузия',AM:'Армения',
+      AZ:'Азербайджан',MD:'Молдавия',RS:'Сербия',IQ:'Ирак',AF:'Афганистан',YE:'Йемен',
+      SA:'Саудовская Аравия',EG:'Египет',LY:'Ливия',SD:'Судан',VE:'Венесуэла',BR:'Бразилия',
+      MX:'Мексика',ES:'Испания',IT:'Италия',GR:'Греция'};
+    if(iso && M[iso]) return M[iso];
+    var r = String((ev && ev.region) || '');
+    if(/(\bкрай\b|республик|автономн|Москв|Петербург|Севастопол|\bКрым\b|\bобласт)/i.test(r)
+       && !/Украин|Харьков|Донец|Луганск|Запорож|Херсон|Одес|Львов|Киев|Днепр/i.test(r)) return 'Россия';
+    return r;
   }catch(_){ return (ev&&ev.region)||''; }
 };
 window._pinGeo = function(ev){
@@ -10392,8 +10406,8 @@ function grdfRenderSignals(dom){
       + '<div class="sig-main">'
       +   '<div class="grdf-sig-title sig-clamp-h">'+escx((typeof window._headline==='function'?window._headline(ev):((typeof window._cleanSignalText==='function')?window._cleanSignalText(ev.title, ev):ev.title)))+'</div>'
       +   ((typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')?'':_cb)
-      +   '<div class="grdf-sig-meta">'+((!(typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')&&_cb)?'':(function(){var _g=window._pinGeo(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
-      +   '<div class="sig-meta2">'+(ev.date?'<span>'+escx(fdx(ev.date))+'</span>':'')+((ev.domain&&typeof DOMAIN_RU!=='undefined')?'<span style="color:'+((typeof DC!=='undefined'&&DC[ev.domain])||'#9a8a5a')+'">'+escx(DOMAIN_RU[ev.domain]||ev.domain)+'</span>':'')+'</div>'
+      +   '<div class="grdf-sig-meta">'+((!(typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')&&_cb)?'':(function(){var _g=window._displayRegion(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
+      +   '<div class="sig-meta2">'+((ev.domain&&typeof DOMAIN_RU!=='undefined')?'<span style="color:'+((typeof DC!=='undefined'&&DC[ev.domain])||'#9a8a5a')+'">'+escx(DOMAIN_RU[ev.domain]||ev.domain)+'</span>':'')+'</div>'
       +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
       +   _det
       + '</div>'
