@@ -2114,7 +2114,15 @@ function applyEvents(events, updatedIso) {
   // ANALYTIC LAYER: события с feed_visible===false кормят аналитику (Radar/процессы),
   // но в пользовательскую ленту и на карту FREE не попадают.
   try { window._ANALYTIC_EVENTS = events || []; } catch(_) {}   // полный поток для Radar/Pressure
-  var _feed = (events||[]).filter(function(ev){ return ev && ev.feed_visible !== false; });
+  var _feed0 = (events||[]).filter(function(ev){ return ev && ev.feed_visible !== false; });
+  // Signal geo-granularity: пользовательская лента и карта показывают СТРАНУ
+  // (Россия, Казахстан...), не район — убираем ложную точность вроде «Иркутская
+  // область» для федеральных сигналов. Клонируем, чтобы аналитика (_ANALYTIC_EVENTS)
+  // сохранила регион. Координаты (lat/lng) в клоне не трогаем — маркер остаётся точным.
+  var _feed = _feed0.map(function(ev){
+    var _c = ev && ev.geo && ev.geo.country_ru;
+    return (_c && ev.region !== _c) ? Object.assign({}, ev, { region: _c }) : ev;
+  });
   ALL_EVENTS = (typeof window._classifyEvents==='function') ? window._classifyEvents(_feed) : _feed;
   try{ if(window._signalAudit) window._signalAudit(); }catch(_){}
   try{ window._ARCHIVE_UPDATED = updatedIso || window._ARCHIVE_UPDATED || null; }catch(_e){}
