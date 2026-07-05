@@ -1912,7 +1912,7 @@ function renderList() {
     list.innerHTML = '<div style="padding:20px 14px;font-size:11px;color:#6f88ab;font-family:Montserrat,sans-serif">Загрузка сигналов...</div>';
     return;
   }
-  [...filtered].sort((a,b)=>{ const dd=(b.first_seen||b.date||'').localeCompare(a.first_seen||a.date||''); return dd!==0?dd:b.severity-a.severity; }).forEach(ev => {
+  [...filtered].sort((a,b)=>{ const _an=x=>{const d=x.date||'',f=x.first_seen||'';return (f&&(!d||f<d))?f:d;}; const dd=_an(b).localeCompare(_an(a)); return dd!==0?dd:b.severity-a.severity; }).forEach(ev => {
     const col = DC[ev.domain];
     const d = document.createElement('div');
     d.className = 'ei' + (selected?.id===ev.id ? ' sel' : '');
@@ -10367,7 +10367,7 @@ function grdfRenderSignals(dom){
   // A — rank by significance (severity / escalation) first; recency only as tie-break
   var _now=Date.now();
   var _todayStr=new Date(_now).toISOString().slice(0,10);
-  function _ageDays(e){ var t=Date.parse(e.date||''); if(isNaN(t)) return 3; var d=(_now-t)/86400000; return d<0?0:d; }
+  function _ageDays(e){ var t=Date.parse(e.date||''); var f=Date.parse(e.first_seen||''); var a=(!isNaN(f)&&(isNaN(t)||f<t))?f:t; if(isNaN(a)) return 3; var d=(_now-a)/86400000; return d<0?0:d; }
   function _sigOf(e){ return Math.max(parseFloat(e.severity)||0, parseFloat(e.escalation_score)||0); }
   function _rank(e){ return _sigOf(e) - Math.min(_ageDays(e),10)*4; } // significance, decayed by age
   function _effDate(e){ var d=String(e.date||'').slice(0,10); if(!d) return '0'; return d>_todayStr?_todayStr:d; } // future capped to today
