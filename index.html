@@ -1912,7 +1912,7 @@ function renderList() {
     list.innerHTML = '<div style="padding:20px 14px;font-size:11px;color:#6f88ab;font-family:Montserrat,sans-serif">Загрузка сигналов...</div>';
     return;
   }
-  [...filtered].sort((a,b)=>{ const dd=b.date.localeCompare(a.date); return dd!==0?dd:b.severity-a.severity; }).forEach(ev => {
+  [...filtered].sort((a,b)=>{ const dd=(b.first_seen||b.date||'').localeCompare(a.first_seen||a.date||''); return dd!==0?dd:b.severity-a.severity; }).forEach(ev => {
     const col = DC[ev.domain];
     const d = document.createElement('div');
     d.className = 'ei' + (selected?.id===ev.id ? ' sel' : '');
