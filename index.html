@@ -11242,6 +11242,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var list=(_data.signals||[]).filter(function(s){
       if(s.status==='archived') return false;
       if(!_pro && s.access_tier==='pro') return false;
+      // Криминальная хроника — не системный риск: скрыто из ленты для ВСЕХ тиров
+      if(s.process_type==='Покушение'||s.process_type==='Наркотрафик') return false;
       return true;
     });
     // ── ГРУППИРОВКА: тип процесса (главная сущность) → экземпляры (региональные проявления) ──
