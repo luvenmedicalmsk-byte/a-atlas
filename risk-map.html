@@ -11225,35 +11225,96 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     }).catch(function(){ pf.innerHTML='<div style="padding:26px 14px;font-size:11px;color:rgba(148,163,184,0.5);text-align:center">Не удалось загрузить процессы</div>'; });
   }
   function mi(k,v){ return '<div class="gpc-mi"><span class="gpc-mk">'+k+'</span><span class="gpc-mv" style="color:'+scol(v)+'">'+(v||0)+'</span></div>'; }
+  // ── ТИР процесса (по представителю): единое правило "почему он здесь" ──
+  function procTier(s){
+    var pe=(s.pressure||s.priority||0), st=(s.lifecycle_stage||'').toLowerCase(), ph=(s.phase||'').toLowerCase(), status=(s.status||'').toLowerCase();
+    if(pe>=75) return 0;                                                              // Критичные
+    if(ph.indexOf('escalat')>=0||st.indexOf('усилен')>=0||st.indexOf('рост')>=0) return 1; // Усиливающиеся
+    if(s.watchlist) return 3;                                                         // Наблюдение
+    if(status.indexOf('fad')>=0||ph.indexOf('de-escal')>=0||st.indexOf('затух')>=0||st.indexOf('стабил')>=0||st.indexOf('ослаб')>=0) return 4; // Затухающие
+    return 2;                                                                         // Активные
+  }
+  var _PROC_TN=['Критичные','Усиливающиеся','Активные','Наблюдение','Затухающие'];
+  var _PROC_TC=['#E24A3B','#FFD700','#e8e4dc','#B8973A','rgba(148,163,184,0.55)'];
   function renderProc(){
     var pf=document.getElementById('grdf-proc-feed'); if(!pf||!_data) return;
     var _pro=isPro();
     var list=(_data.signals||[]).filter(function(s){
       if(s.status==='archived') return false;
-      // FREE: геополитика и чувствительные процессы полностью скрыты из ленты
       if(!_pro && s.access_tier==='pro') return false;
       return true;
-    }).sort(function(a,b){return (b.pressure||b.priority||0)-(a.pressure||a.priority||0);});
-    var c=document.getElementById('grdf-sig-count'); if(c) c.textContent=list.length+' процессов';
+    });
+    // ── ГРУППИРОВКА: тип процесса (главная сущность) → экземпляры (региональные проявления) ──
+    var groups={};
+    list.forEach(function(s){ var t=s.process_type||s.title||'—'; (groups[t]=groups[t]||[]).push(s); });
+    var blocks=Object.keys(groups).map(function(t){
+      var mem=groups[t].slice().sort(function(a,b){return (b.pressure||b.priority||0)-(a.pressure||a.priority||0);});
+      var macro=mem.filter(function(m){return m.is_macro||/системный/.test(m.title||'');});
+      var rep=macro.length?macro[0]:mem[0];
+      var kids=mem.filter(function(m){return m!==rep;});
+      var terr={}; mem.forEach(function(m){ var p=m.process_place; if(p&&p!=='Глобально') terr[p]=1; });
+      return {type:t, rep:rep, kids:kids, count:mem.length, terr:Object.keys(terr).length,
+              ev:mem.reduce(function(a,m){return a+(m.evidence_count||0);},0), tier:procTier(rep)};
+    });
+    blocks.sort(function(a,b){ return a.tier-b.tier || (b.rep.pressure||b.rep.priority||0)-(a.rep.pressure||a.rep.priority||0); });
+    // ── СТАТИСТИКА по тем же правилам, что список (client-side → всегда совпадает) ──
+    var tc=[0,0,0,0,0]; blocks.forEach(function(b){ tc[b.tier]++; });
+    var c=document.getElementById('grdf-sig-count'); if(c) c.textContent=blocks.length+' процессов';
     var g=_data.global_health||{};
-    var dash='';
-    if(!isPro()){
-      // FREE: без витринного блока — сразу лента процессов
-      dash='';
+    var gp=(g.global_pressure!=null)?Math.round(g.global_pressure):(blocks[0]?Math.round(blocks[0].rep.pressure||0):0);
+    var pc=g.pressure_change_pct;
+    var dash='<div style="display:flex;gap:0;padding:11px 14px;border-bottom:0.5px solid rgba(184,151,58,0.12);flex-wrap:wrap">'
+      +gcell('Давление',gp,scol(gp),pc!=null?(pc>=0?'▲ +'+pc+'%':'▼ '+pc+'%'):'')
+      +gcell('Критичные',tc[0],tc[0]?'#E24A3B':'#e8e4dc','')
+      +gcell('Усиление',tc[1],tc[1]?'#FFD700':'#e8e4dc','')
+      +gcell('Активные',tc[2],'#e8e4dc','')
+      +gcell('Наблюдение',tc[3],tc[3]?'#B8973A':'#e8e4dc','')
+      +'</div>';
+    // ── РЕНДЕР: секции по тиру → карточки типа (главный процесс + раскрытие проявлений) ──
+    var html=dash;
+    for(var ti=0;ti<5;ti++){
+      var bl=blocks.filter(function(b){return b.tier===ti;});
+      if(!bl.length) continue;
+      html+='<div style="padding:15px 14px 5px;font-size:9px;font-weight:600;font-family:Montserrat,sans-serif;letter-spacing:0.14em;text-transform:uppercase;color:'+_PROC_TC[ti]+'">'+_PROC_TN[ti]+' · '+bl.length+'</div>';
+      html+=bl.map(typeCard).join('');
     }
-    else if(g&&g.global_pressure!=null){
-      var pc=g.pressure_change_pct;
-      dash='<div style="display:flex;gap:0;padding:11px 14px;border-bottom:0.5px solid rgba(184,151,58,0.12);flex-wrap:wrap">'
-        +gcell('Давление',Math.round(g.global_pressure),scol(g.global_pressure),pc!=null?(pc>=0?'▲ +'+pc+'%':'▼ '+pc+'%'):'')
-        +gcell('Активные',g.active_processes||0,'#e8e4dc','')
-        +gcell('Усиление',g.escalating_processes||0,g.escalating_processes?'#FFD700':'#e8e4dc','')
-        +gcell('Критические',g.critical_processes||0,g.critical_processes?'#E24A3B':'#e8e4dc','')
-        +gcell('Наблюдение',g.watchlist_count||0,g.watchlist_count?'#B8973A':'#e8e4dc','')
-        +'</div>';
-    }
-    pf.innerHTML=dash+list.slice(0,200).map(card).join('');
-    Array.prototype.forEach.call(pf.querySelectorAll('.gpc'),function(el){ el.onclick=function(){ openDetail(el.getAttribute('data-id')); }; });
+    pf.innerHTML=html;
+    Array.prototype.forEach.call(pf.querySelectorAll('.gpc[data-id]'),function(el){ el.onclick=function(e){ if(e.target&&e.target.className&&(''+e.target.className).indexOf('gpc-exp')>=0) return; openDetail(el.getAttribute('data-id')); }; });
   }
+  function typeCard(b){
+    var s=b.rep, pe=s.pressure||0, sv=s.severity||0;
+    var ps=lcStage(s), pcol=lcColor(ps);
+    var dom=DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—';
+    var scale=[]; scale.push(b.ev+' подтв.');
+    if(b.terr>1) scale.push(b.terr+' территорий');
+    if(b.count>1) scale.push(b.count+' проявлений');
+    var kidsHtml='';
+    if(b.kids.length){
+      kidsHtml='<div class="gpc-kids" id="k_'+esc(s.signal_id)+'" style="display:none;margin-top:8px;border-top:0.5px solid rgba(184,151,58,0.1);padding-top:4px">'
+        +b.kids.slice(0,40).map(childRow).join('')+'</div>';
+    }
+    return '<div class="gpc" data-id="'+esc(s.signal_id)+'">'
+      +'<div class="gpc-edge" style="background:'+pcol+'"></div>'
+      +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
+      +'<div class="gpc-type"><span>'+esc(dom)+'</span></div>'
+      +'<div class="gpc-title">'+esc(b.type)+'</div>'
+      +'<div class="gpc-place">'+esc(s.process_place||'—')+'</div>'
+      +(isPro()?'<div class="gpc-m">'+mi('Приоритет',s.priority||0)+mi('Тяжесть',sv)+mi('Давление',pe)+'</div>':'')
+      +'<div class="gpc-chips"><span class="gpc-ch" style="color:'+pcol+';border-color:'+pcol+'44">'+ps+'</span>'
+        +'<span class="gpc-ch">'+esc(scale.join(' · '))+'</span></div>'
+      +(b.kids.length?'<div class="gpc-exp" onclick="grdfToggleKids(event,\''+esc(s.signal_id)+'\')" style="margin-top:7px;font-size:11px;color:#B8973A;cursor:pointer;user-select:none;-webkit-user-select:none">&#9656; '+b.kids.length+' региональных проявлений</div>':'')
+      +kidsHtml
+    +'</div>';
+  }
+  function childRow(m){
+    var pe=m.pressure||0;
+    return '<div class="gpc-kid" onclick="grdfKidOpen(event,\''+esc(m.signal_id)+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 2px;cursor:pointer;border-bottom:0.5px solid rgba(184,151,58,0.06)">'
+      +'<span style="font-size:12px;color:#c8d0da;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">'+esc(m.process_place||m.title||'—')+'</span>'
+      +'<span style="font-size:11px;color:'+scol(pe)+';flex-shrink:0;margin-left:10px">'+pe+'</span>'
+    +'</div>';
+  }
+  window.grdfToggleKids=function(e,id){ if(e&&e.stopPropagation)e.stopPropagation(); var k=document.getElementById('k_'+id); if(!k)return; var open=k.style.display!=='none'; k.style.display=open?'none':'block'; var t=e&&e.target; if(t){ var n=t.textContent.replace(/^[\u25b8\u25be]\s*/,''); t.innerHTML=(open?'\u25b8 ':'\u25be ')+n; } };
+  window.grdfKidOpen=function(e,id){ if(e&&e.stopPropagation)e.stopPropagation(); openDetail(id); };
   function gcell(k,v,col,d){ return '<div style="flex:1;min-width:64px;display:flex;flex-direction:column;gap:3px"><span style="font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(148,163,184,0.55)">'+k+'</span><span style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:700;line-height:1;color:'+col+'">'+v+'</span><span style="font-size:9px;color:'+(String(d).indexOf('▲')>=0?'#D4AF5A':'#1faacc')+'">'+d+'</span></div>'; }
   function card(s){
     var pr=s.priority||0, sv=s.severity||0, pe=s.pressure||0;
