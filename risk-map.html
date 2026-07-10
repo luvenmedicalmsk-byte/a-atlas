@@ -9852,7 +9852,7 @@ window._headline = function(ev){
     t=t.replace(/\s*\([^)]*$/,'');
     var dot=t.search(/[.!?]\s+[А-ЯA-Z]/); if(dot>40) t=t.slice(0,dot+1);
     t=t.replace(/[\s:;,.…—–-]+$/,'');
-    if(t.length>104){ var cut=t.slice(0,104); var sp=cut.lastIndexOf(' '); if(sp>60) cut=cut.slice(0,sp); t=cut.replace(/[\s,;:—–-]+$/,'')+'…'; }
+    if(t.length>90){ var win=t.slice(0,90); var cb=Math.max(win.lastIndexOf(', '),win.lastIndexOf('; '),win.lastIndexOf(' — '),win.lastIndexOf(' – ')); if(cb>=55){ t=win.slice(0,cb).replace(/[\s,;:—–-]+$/,'')+'…'; } else { var sp=win.lastIndexOf(' '); if(sp>55) win=win.slice(0,sp); t=win.replace(/[\s,;:—–-]+$/,'')+'…'; } }
     if(!t || t.length<6) return raw;
     return t.charAt(0).toUpperCase()+t.slice(1);
   }catch(e){ return String((ev&&ev.title)||''); }
