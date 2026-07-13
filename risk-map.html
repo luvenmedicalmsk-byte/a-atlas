@@ -11197,6 +11197,10 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var m=ms/60000; if(m<60){var x=Math.round(m); return x+' '+_pl(x,['минута','минуты','минут'])+' назад';}
     var h=m/60; if(h<24){var x=Math.round(h); return x+' '+_pl(x,['час','часа','часов'])+' назад';}
     var dd=Math.round(h/24); if(dd===1) return 'вчера'; return dd+' '+_pl(dd,['день','дня','дней'])+' назад'; }
+  function ageDur(iso){ if(!iso) return '—'; var ms=Date.now()-new Date(iso).getTime(); if(ms<0) return 'только что';
+    var hh=ms/3600000; if(hh<1){var x=Math.max(1,Math.round(ms/60000)); return x+' '+_pl(x,['минута','минуты','минут']);}
+    if(hh<24){var x=Math.round(hh); return x+' '+_pl(x,['час','часа','часов']);}
+    var dd=Math.round(hh/24); return dd+' '+_pl(dd,['день','дня','дней']); }
   function plProc(n){ return _pl(n,['связанный процесс','связанных процесса','связанных процессов']); }
   function plSvid(n){ return _pl(n,['свидетельство','свидетельства','свидетельств']); }
   function ago(iso){ if(!iso) return '—'; var d=(Date.now()-new Date(iso).getTime())/1000; if(d<0) return 'только что'; if(d<3600) return Math.max(1,Math.round(d/60))+' мин назад'; if(d<86400) return Math.round(d/3600)+' ч назад'; return Math.round(d/86400)+' дн назад'; }
@@ -11205,9 +11209,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   var css='#grdf-mode-toggle{display:flex;gap:6px;padding:2px 16px 10px}'
    +'.gproc-mb{flex:1;background:transparent;border:0.5px solid rgba(184,151,58,0.3);color:rgba(148,163,184,0.75);font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;letter-spacing:0.06em;padding:8px 6px;border-radius:6px;cursor:pointer;transition:.15s}'
    +'.gproc-mb.active{background:rgba(184,151,58,0.14);border-color:#D4AF5A;color:#D4AF5A}'
-   +'#grdf-proc-feed .gpc{position:relative;padding:13px 14px 12px 17px;border-bottom:0.5px solid rgba(184,151,58,0.1);cursor:pointer}'
+   +'#grdf-proc-feed .gpc{position:relative;padding:14px 15px 13px 15px;border-bottom:0.5px solid rgba(184,151,58,0.09);cursor:pointer}'
    +'#grdf-proc-feed .gpc:active{background:rgba(184,151,58,0.05)}'
-   +'.gpc .gpc-edge{position:absolute;left:0;top:0;bottom:0;width:3px}'
+   +'.gpc .gpc-edge{display:none}'
    +'.gpc .gpc-type{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(148,163,184,0.6);font-weight:500;display:flex;justify-content:space-between}'
    +'.gpc .gpc-title{font-family:"Cormorant Garamond",serif;font-size:19px;font-weight:600;color:#e8e4dc;line-height:1.15;margin:4px 0 2px}'
    +'.gpc .gpc-place{font-size:11px;color:rgba(148,163,184,0.82);margin-bottom:9px}'
@@ -11241,9 +11245,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
    +'.gd-dm .v{font-family:"Cormorant Garamond",serif;font-size:20px;font-weight:600;margin-top:2px}'
    +'.gd-dm .s{font-size:9px;color:rgba(148,163,184,0.6)}'
    +'.gd-tl{position:relative;padding-left:16px}'
-   +'.gd-tl::before{content:"";position:absolute;left:3px;top:3px;bottom:3px;width:1px;background:rgba(184,151,58,0.3)}'
-   +'.gd-ti{position:relative;padding:0 0 12px 4px}'
-   +'.gd-ti::before{content:"";position:absolute;left:-16px;top:4px;width:6px;height:6px;border-radius:50%;background:#B8973A;box-shadow:0 0 0 3px #0c0a12}'
+   +'.gd-tl::before{content:"";position:absolute;left:3px;top:4px;bottom:4px;width:2px;border-radius:2px;background:linear-gradient(180deg,rgba(184,151,58,0.55),rgba(184,151,58,0.2))}'
+   +'.gd-ti{position:relative;padding:0 0 16px 6px}'
+   +'.gd-ti::before{content:"";position:absolute;left:-17px;top:3px;width:9px;height:9px;border-radius:50%;background:#D4AF5A;border:1.5px solid #0c0a12;box-shadow:0 0 0 2px rgba(184,151,58,0.35)}'
    +'.gd-ti .e{font-size:12px;color:#e8e4dc} .gd-ti .dt{font-size:10.5px;color:rgba(148,163,184,0.7)} .gd-ti .t{font-size:9px;color:rgba(148,163,184,0.45)}'
    +'.gd-ev{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)}'
    +'.gd-ev:last-child{border:0} .gd-ev .t{font-size:12px;color:#e8e4dc;line-height:1.3} .gd-ev .m{font-size:10px;color:rgba(148,163,184,0.6);margin-top:2px} .gd-ev .s{font-family:"Cormorant Garamond",serif;font-size:15px;font-weight:600;flex-shrink:0}'
@@ -11251,11 +11255,11 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
    +'.gd-conn:active{border-color:#D4AF5A;color:#D4AF5A}'
    +'.gd-cl{font-size:10px;color:rgba(148,163,184,0.6);text-transform:uppercase;letter-spacing:0.07em;margin:0 0 5px}'
    +'.gd-pill{display:inline-block;font-size:10.5px;padding:3px 8px;border-radius:5px;border:0.5px solid rgba(255,255,255,0.08);color:rgba(148,163,184,0.8);margin:0 5px 5px 0}'
-   +'.gd-note{font-family:"Cormorant Garamond",serif;font-size:14px;color:#e8e4dc;line-height:1.5}'
+   +'.gd-note{font-family:Montserrat,sans-serif;font-size:13.5px;color:#dcd9d1;line-height:1.65;font-weight:400}'
    +'.gd-empty{font-size:12px;color:rgba(148,163,184,0.45);font-style:italic}'
    +'.gd-fb{display:flex;align-items:center;gap:9px;font-size:11.5px;margin-bottom:7px}'
    +'.gd-fb .l{width:100px;color:rgba(148,163,184,0.7)} .gd-fb .t{flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden} .gd-fb .t i{display:block;height:100%} .gd-fb .v{width:36px;text-align:right;color:#e8e4dc}'
-   +'.gd-exp{margin-bottom:10px} .gd-exp .q{font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:#D4AF5A;margin-bottom:3px} .gd-exp .a{font-size:12.5px;color:#e8e4dc;line-height:1.4}';
+   +'.gd-exp{margin-bottom:12px} .gd-exp .q{font-size:10px;letter-spacing:0.05em;text-transform:uppercase;color:#D4AF5A;margin-bottom:4px} .gd-exp .a{font-family:Montserrat,sans-serif;font-size:13px;color:#dcd9d1;line-height:1.6}';
   var st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
 
   // ── инъекция переключателя + панели процессов + оверлея ──
@@ -11301,10 +11305,11 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var f=document.getElementById('grdf-sig-feed'), pf=document.getElementById('grdf-proc-feed'), fil=document.getElementById('grdf-sig-filters');
     if(f) f.style.display=ev?'':'none';
     if(fil) fil.style.display=ev?'':'none';
+    var _sw=document.getElementById('grdf-sic-switch'); if(_sw) _sw.style.display='none'; // Оперативная/Контекст — только в Хронологии, не в Процессах
     if(pf) pf.style.display=ev?'none':'';
     if(_explEl) _explEl.style.display=ev?'':'none';
     var _pd=document.getElementById('grdf-proc-desc'); if(_pd) _pd.style.display=ev?'none':'';
-    if(!ev) loadProc(); else { var c=document.getElementById('grdf-sig-count'); if(c&&window.renderList){ try{renderList();}catch(_){} } }
+    if(!ev) loadProc(); else { if(typeof grdfRenderSignals==='function'){ try{ grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(_){} } var c=document.getElementById('grdf-sig-count'); if(c&&window.renderList){ try{renderList();}catch(_){} } }
   };
   function loadProc(){
     var pf=document.getElementById('grdf-proc-feed'); if(!pf) return;
@@ -11436,7 +11441,10 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   function closeDetail(){ document.getElementById('gproc-d').classList.remove('on'); document.getElementById('gproc-ov').classList.remove('on'); }
   window.grdfProcCloseDetail=closeDetail;
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeDetail(); });
-  function connG(label,ids){ ids=(ids||[]).filter(function(i){return _byId[i];}); if(!ids.length) return ''; return '<div style="margin-bottom:10px"><div class="gd-cl">'+label+'</div>'+ids.map(function(i){return '<span class="gd-conn" data-id="'+esc(i)+'">'+esc(_byId[i].title)+'</span>';}).join('')+'</div>'; }
+  function connG(label,ids){ ids=(ids||[]).filter(function(i){return _byId[i];}); if(!ids.length) return '';
+    var _CM={'Причина для':['#E24A3B','→'],'Следствие':['#1faacc','←'],'Усиливает':['#FFD700','▲'],'Подавляет':['#5fae7a','▼'],'Связанные':['rgba(148,163,184,0.75)','•']};
+    var cm=_CM[label]||['rgba(148,163,184,0.75)','•'];
+    return '<div style="margin-bottom:11px"><div class="gd-cl" style="color:'+cm[0]+';font-weight:600"><span style="display:inline-block;width:14px">'+cm[1]+'</span>'+label+'</div>'+ids.map(function(i){return '<span class="gd-conn" data-id="'+esc(i)+'" style="border-color:'+cm[0]+'66">'+esc(_byId[i].title)+'</span>';}).join('')+'</div>'; }
   window.__grdfProcTierRefresh=function(){ try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} };
   function openDetail(id){
     var s=_byId[id]; if(!s) return; window.__grdfLastProcId=id;
@@ -11533,10 +11541,10 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     // Сводка
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
       +'<p class="gd-note" style="margin-bottom:11px">'+esc(ex.why_exists||'')+'</p>'
-      +'<div class="gd-kv"><div class="k">Тип</div><div class="v">'+esc(_procDisp(s.process_type))+'</div>'
-      +'<div class="k">Стадия</div><div class="v" style="color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div>'
-      +'<div class="k">Первое обнаружение</div><div class="v">'+humanAge(s.first_seen)+'</div>'
-      +'<div class="k">Обновление</div><div class="v">'+ago(s.last_seen||s.last_update)+'</div></div></div>';
+      +'<div class="gd-kv"><div class="k">Тип процесса</div><div class="v">'+esc(_procDisp(s.process_type))+'</div>'
+      +'<div class="k">Текущая стадия</div><div class="v" style="color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div>'
+      +'<div class="k">Возраст процесса</div><div class="v">'+ageDur(s.first_seen)+'</div>'
+      +'<div class="k">Последнее обновление</div><div class="v">'+ago(s.last_seen||s.last_update)+'</div></div></div>';
     // Состав процесса (только если объединены >1)
     if(s.merged_count>1){
       H+='<div class="gd-sec"><div class="gd-sh">Состав процесса</div>'
@@ -11553,8 +11561,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'<div class="c"><div class="k">Скорость</div><div class="v" style="font-size:13px;color:rgba(148,163,184,0.85)">'+(((v.severity_per_h||0)>0.05)?'развивается':'без изменений')+'</div></div>'
       +'<div class="c"><div class="k">Ускорение</div><div class="v" style="font-size:13px;color:rgba(148,163,184,0.85)">'+(s.acceleration>0.02?'ускоряется':(s.acceleration<-0.02?'замедляется':'без изменений'))+'</div></div>'
       +'<div class="c"><div class="k">Стадия</div><div class="v" style="font-size:14px;color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div></div></div>'
-      +'<div class="gd-cl">Прогноз следующего шага</div>'
-      +[['Усиление',fc.escalation,'#FFD700'],['Стабилизация',fc.stabilization,'#1faacc'],['Распад',fc.decay,'#6b7280']].map(function(f){ return '<div class="gd-fb"><span class="l">'+f[0]+'</span><span class="t"><i style="width:'+Math.round((f[1]||0)*100)+'%;background:'+f[2]+'"></i></span><span class="v">'+Math.round((f[1]||0)*100)+'%</span></div>'; }).join('')
+      +(((fc.escalation||0)+(fc.stabilization||0)+(fc.decay||0)>0)?('<div class="gd-cl">Прогноз следующего шага</div>'
+      +[['Усиление',fc.escalation,'#FFD700'],['Стабилизация',fc.stabilization,'#1faacc'],['Распад',fc.decay,'#6b7280']].map(function(f){ return '<div class="gd-fb"><span class="l">'+f[0]+'</span><span class="t"><i style="width:'+Math.round((f[1]||0)*100)+'%;background:'+f[2]+'"></i></span><span class="v">'+Math.round((f[1]||0)*100)+'%</span></div>'; }).join('')):'')
       +(s.critical_transition?'<p style="color:#FFD700;font-size:11px;margin-top:8px">⚠ Признаки критического перехода</p>':'')+'</div>';
     // Хроника
     if(s.timeline&&s.timeline.length){ H+='<div class="gd-sec"><div class="gd-sh">Хроника</div><div class="gd-tl">'
@@ -11578,7 +11586,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(am&&am.note) mem+='<p class="gd-note">'+esc(am.note)+'</p>';
     if(rec&&rec.label) mem+='<p class="gd-note" style="margin-top:7px">Циклический: '+esc(rec.label)+' ('+rec.occurrences+' повт.)</p>';
     if(sim.length) mem+='<div style="margin-top:10px"><div class="gd-cl">Похожие процессы</div>'+sim.map(function(x){return '<span class="gd-pill">'+esc((x.signature||'').split('|')[1]||x.signature)+(x.typical_outcome?' → '+esc(x.typical_outcome):'')+'</span>';}).join('')+'</div>';
-    H+='<div class="gd-sec"><div class="gd-sh">Наиболее вероятное развитие</div>'+(mem||'<p class="gd-empty">Недостаточно накопленной истории.</p>')+'</div>';
+    if(mem){ H+='<div class="gd-sec"><div class="gd-sh">Наиболее вероятное развитие</div>'+mem+'</div>'; }
+    else if((s.evidence_count||0)>=2 || (s.timeline&&s.timeline.length>=2)){ H+='<div class="gd-sec"><div class="gd-sh">Наиболее вероятное развитие</div><p class="gd-note" style="color:rgba(148,163,184,0.75)">Прогноз пока недоступен. Для построения модели требуется накопление последовательных наблюдений.</p></div>'; }
     // Объяснение
     H+='<div class="gd-sec"><div class="gd-sh">Объяснение</div>'
       +[['Почему создан',ex.why_exists],['Почему такой Приоритет',ex.why_priority],['Почему такая Фаза',ex.why_phase],['Почему такое Доверие',ex.why_confidence]].filter(function(x){return x[1];}).map(function(x){return '<div class="gd-exp"><div class="q">'+x[0]+'</div><div class="a">'+esc(x[1])+'</div></div>';}).join('')
