@@ -1830,10 +1830,16 @@ let filter = 'all';
 // FEATURE → Human Dimension. Реальные события НИКОГДА не теряются (fail-safe: всё
 // нераспознанное → оперативная). Роутинг чисто презентационный: ALL_EVENTS/метрики/
 // процессы/аналитика (signals.json, Radar) НЕ трогаются. Откат: SIC_ROUTING=false.
+// ФИЧА SIGNAL PRO: разделение Оперативная/Контекст активно ТОЛЬКО для Pro-тира; во
+// FREE лента как раньше (без переключателя, без сплита).
 window.SIC_ROUTING = true;
 window._SIC_VIEW = 'operational';        // активная вкладка списка: 'operational'|'context'
+window._sicRoutingOn = function(){        // роутинг активен = мастер-флаг И тир Signal Pro
+  try{ return !!window.SIC_ROUTING && (typeof _grdfTier!=='undefined') && _grdfTier==='SIGNAL_PRO'; }
+  catch(e){ return false; }
+};
 window._sicLane = function(ev){
-  if(!window.SIC_ROUTING) return 'operational';
+  if(!window._sicRoutingOn()) return 'operational';
   var s = ev && ev.sic_class;
   if(s === 'COMMENTARY') return 'context';
   if(s === 'BACKGROUND') return 'background';
@@ -1891,7 +1897,7 @@ function renderMarkers() {
   const now = Date.now();
   const cutoff = now - MAX_EVENT_AGE_MS;
   const fresh = filtered.filter(ev => {
-    if (window.SIC_ROUTING && window._sicLane(ev) !== 'operational') return false; // карта = только реальные события (COMMENTARY/BACKGROUND/FEATURE → Контекст)
+    if (window._sicRoutingOn() && window._sicLane(ev) !== 'operational') return false; // карта = только реальные события (COMMENTARY/BACKGROUND/FEATURE → Контекст)
     if (ev.lifecycle_type === 'ARCHIVE') return false; // архив — analysis-слой, не на live-карте
     if (!ev.lat || !ev.lng || isNaN(ev.lat) || isNaN(ev.lng)) return false;
     if (window._floc && !window._floc(ev)) return false; // все тиры: на карте только impact-резолвнутые (KDDI->Япония, штормы->акватория, нерезолвимые скрыты)
@@ -1939,7 +1945,7 @@ function renderList() {
   const list = document.getElementById('ev-list');
   list.innerHTML = '';
   // SIC routing (канарейка): переключатель Оперативная ↔ Контекст
-  if (window.SIC_ROUTING) {
+  if (window._sicRoutingOn()) {
     const _oper = (filtered||[]).filter(e=>window._sicLane(e)==='operational').length;
     const _ctx  = (filtered||[]).length - _oper;
     const sw = document.createElement('div');
@@ -1950,11 +1956,11 @@ function renderList() {
     sw.querySelectorAll('.sic-tab').forEach(function(b){ b.onclick=function(){ window._SIC_VIEW=b.dataset.view; renderList(); }; });
     list.appendChild(sw);
   }
-  const _view = window.SIC_ROUTING ? (filtered||[]).filter(window._sicInView) : (filtered||[]);
+  const _view = window._sicRoutingOn() ? (filtered||[]).filter(window._sicInView) : (filtered||[]);
   if (!_view || !_view.length) {
     const _em = document.createElement('div');
     _em.style.cssText = 'padding:20px 14px;font-size:11px;color:#6f88ab;font-family:Montserrat,sans-serif';
-    _em.textContent = (window.SIC_ROUTING && window._SIC_VIEW==='context') ? 'Нет материалов в контексте' : 'Загрузка сигналов...';
+    _em.textContent = (window._sicRoutingOn() && window._SIC_VIEW==='context') ? 'Нет материалов в контексте' : 'Загрузка сигналов...';
     list.appendChild(_em);
     return;
   }
@@ -1962,7 +1968,7 @@ function renderList() {
     const col = DC[ev.domain];
     const d = document.createElement('div');
     d.className = 'ei' + (selected?.id===ev.id ? ' sel' : '');
-    var _ctxTag = (window.SIC_ROUTING && window._SIC_VIEW==='context') ? '<span class="sic-ctx-tag">'+esc(window._sicLaneLabel(ev))+'</span>' : '';
+    var _ctxTag = (window._sicRoutingOn() && window._SIC_VIEW==='context') ? '<span class="sic-ctx-tag">'+esc(window._sicLaneLabel(ev))+'</span>' : '';
     d.innerHTML = `<div class="ei-tag" style="color:${col}"><div class="ei-dot" style="background:${col}"></div>${DL[ev.domain]||ev.domain}${_ctxTag}</div><div class="ei-title">${esc(ev.title)}</div><div class="ei-meta"><span>${esc(ev.region)}</span><span>${fd(ev.date)}</span></div><div class="ei-bar"><div class="ei-fill" style="width:${ev.severity}%;background:${sc(ev.severity)}"></div></div>`;
     d.onclick = () => { try{ if(window.atlasTrackMaterial) atlasTrackMaterial(ev.id||ev.title); }catch(_e){} var _fc=(window._floc?window._floc(ev):null); var _la=_fc?_fc.lat:ev.lat, _ln=_fc?_fc.lng:ev.lng; if(_la&&_ln){ try{ map.setView([_la,_ln], Math.max(map.getZoom()||3,4)); L.popup({maxWidth:240}).setLatLng([_la,_ln]).setContent(_evPopup(ev)).openOn(map); }catch(_){} } };
     list.appendChild(d);
@@ -7912,7 +7918,7 @@ function _evM(val, lbl, col) {
     <button class="grdf-sig-pill" data-d="technology">Технологии</button>
     <button class="grdf-sig-pill" data-d="social">Социум</button>
   </div>
-  <div id="grdf-sic-switch" class="grdf-sig-filters" style="padding-top:0;border-top:0.5px solid rgba(184,151,58,0.08)">
+  <div id="grdf-sic-switch" class="grdf-sig-filters" style="padding-top:0;border-top:0.5px solid rgba(184,151,58,0.08);display:none">
     <button class="grdf-sig-pill active" data-view="operational">Оперативная лента</button>
     <button class="grdf-sig-pill" data-view="context">Контекст</button>
   </div>
@@ -10432,7 +10438,10 @@ function grdfRenderSignals(dom){
   }
   // SIC routing (канарейка): раздели ленту на Оперативную (реальные события) и Контекст
   // (заявления/аналитика/прогнозы). Реальное никогда не теряется (fail-safe: нераспознанное→оператив).
-  if(window.SIC_ROUTING){
+  var _sicSw=document.getElementById('grdf-sic-switch');           // ФИЧА PRO: переключатель виден только Pro-тиру
+  if(_sicSw) _sicSw.style.display = window._sicRoutingOn() ? '' : 'none';
+  if(!window._sicRoutingOn()) window._SIC_VIEW='operational';
+  if(window._sicRoutingOn()){
     var _sicOp=[], _sicCx=[];
     items.forEach(function(e){ (window._sicLane(e)==='operational'?_sicOp:_sicCx).push(e); });
     try{
@@ -10470,7 +10479,7 @@ function grdfRenderSignals(dom){
       + '<div class="sig-main">'
       +   '<div class="grdf-sig-title sig-clamp-h">'+escx((typeof window._headline==='function'?window._headline(ev):((typeof window._cleanSignalText==='function')?window._cleanSignalText(ev.title, ev):ev.title)))+'</div>'
       +   ((typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')?'':_cb)
-      +   '<div class="grdf-sig-meta">'+((!(typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')&&_cb)?'':(function(){var _g=window._displayRegion(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span>'+((window.SIC_ROUTING&&window._SIC_VIEW==='context')?'<span class="sig-domtag" style="color:rgba(148,163,184,0.7);border:0.5px solid rgba(148,163,184,0.25);padding:0 5px;border-radius:2px;margin-right:4px">'+escx(window._sicLaneLabel(ev))+'</span>':'')+'<span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
+      +   '<div class="grdf-sig-meta">'+((!(typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')&&_cb)?'':(function(){var _g=window._displayRegion(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span>'+((window._sicRoutingOn()&&window._SIC_VIEW==='context')?'<span class="sig-domtag" style="color:rgba(148,163,184,0.7);border:0.5px solid rgba(148,163,184,0.25);padding:0 5px;border-radius:2px;margin-right:4px">'+escx(window._sicLaneLabel(ev))+'</span>':'')+'<span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
       +   '<div class="sig-meta2">'+((ev.domain&&typeof DOMAIN_RU!=='undefined')?'<span style="color:'+((typeof DC!=='undefined'&&DC[ev.domain])||'#9a8a5a')+'">'+escx(DOMAIN_RU[ev.domain]||ev.domain)+'</span>':'')+'</div>'
       +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
       +   _det
