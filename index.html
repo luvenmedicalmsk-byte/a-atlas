@@ -11284,6 +11284,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     pf.innerHTML=html;
     Array.prototype.forEach.call(pf.querySelectorAll('.gpc[data-id]'),function(el){ el.onclick=function(e){ if(e.target&&e.target.className&&(''+e.target.className).indexOf('gpc-exp')>=0) return; openDetail(el.getAttribute('data-id')); }; });
   }
+  // Хроника события = «Военные удары»; процесс/макро-карточка = «Военный конфликт».
+  var _PROC_DISP={'Военные удары':'Военный конфликт'};
+  function _procDisp(t){ return _PROC_DISP[t]||t||'—'; }
   function typeCard(b){
     var s=b.rep, pe=s.pressure||0, sv=s.severity||0;
     var ps=lcStage(s), pcol=lcColor(ps);
@@ -11300,7 +11303,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'<div class="gpc-edge" style="background:'+pcol+'"></div>'
       +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
       +'<div class="gpc-type"><span>'+esc(dom)+'</span></div>'
-      +'<div class="gpc-title">'+esc(b.type)+'</div>'
+      +'<div class="gpc-title">'+esc(_procDisp(b.type))+'</div>'
       +'<div class="gpc-place">'+esc(s.process_place||'—')+'</div>'
       +(isPro()?'<div class="gpc-m">'+mi('Приоритет',s.priority||0)+mi('Тяжесть',sv)+mi('Давление',pe)+'</div>':'')
       +'<div class="gpc-chips"><span class="gpc-ch" style="color:'+pcol+';border-color:'+pcol+'44">'+ps+'</span>'
@@ -11436,7 +11439,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     // Сводка
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
       +'<p class="gd-note" style="margin-bottom:11px">'+esc(ex.why_exists||'')+'</p>'
-      +'<div class="gd-kv"><div class="k">Тип</div><div class="v">'+esc(s.process_type||'—')+'</div>'
+      +'<div class="gd-kv"><div class="k">Тип</div><div class="v">'+esc(_procDisp(s.process_type))+'</div>'
       +'<div class="k">Стадия</div><div class="v" style="color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div>'
       +'<div class="k">Первое обнаружение</div><div class="v">'+humanAge(s.first_seen)+'</div>'
       +'<div class="k">Обновление</div><div class="v">'+ago(s.last_seen||s.last_update)+'</div></div></div>';
