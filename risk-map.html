@@ -90,6 +90,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
 .ei{padding:10px 13px;border-bottom:1px solid rgba(184,151,58,0.06);cursor:pointer;transition:background 0.12s}
 .ei:hover{background:rgba(184,151,58,0.04)}
 .ei.sel{background:rgba(184,151,58,0.07);border-left:2px solid #B8973A}
+.sic-switch{display:flex;gap:0;border-bottom:1px solid rgba(184,151,58,0.16);background:rgba(6,5,10,0.98);position:sticky;top:0;z-index:3}
+.sic-tab{flex:1;padding:9px 6px;border:none;background:transparent;color:rgba(148,163,184,0.62);font-family:'Montserrat',sans-serif;font-size:9.5px;letter-spacing:0.09em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;white-space:nowrap}
+.sic-tab:hover{color:#D4AF5A}
+.sic-tab.active{color:#D4AF5A;border-bottom-color:#B8973A}
+.sic-tab span{margin-left:5px;font-size:9px;color:rgba(184,151,58,0.85);font-weight:600}
+.sic-ctx-tag{display:inline-block;font-family:'Montserrat',sans-serif;font-size:7.5px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(148,163,184,0.65);border:0.5px solid rgba(148,163,184,0.25);border-radius:2px;padding:1px 5px;margin-left:6px;vertical-align:middle}
 .ei-tag{font-size:8px;letter-spacing:0.16em;text-transform:uppercase;font-weight:500;margin-bottom:3px;display:flex;align-items:center;gap:3px}
 .ei-dot{width:3px;height:3px;border-radius:50%}
 .ei-title{font-size:11px;color:#cbd5e1;line-height:1.4;margin-bottom:3px}
@@ -1819,6 +1825,29 @@ loadCountriesGeo();
 let ALL_EVENTS = [];
 let filtered = [];
 let filter = 'all';
+// ── SIC ROUTING (Canary): маршрутизация ЛЕНТЫ СОБЫТИЙ по sic_class ─────────────
+// EVENT/PROCESS/none → оперативная лента; COMMENTARY → Контекст; BACKGROUND → справка;
+// FEATURE → Human Dimension. Реальные события НИКОГДА не теряются (fail-safe: всё
+// нераспознанное → оперативная). Роутинг чисто презентационный: ALL_EVENTS/метрики/
+// процессы/аналитика (signals.json, Radar) НЕ трогаются. Откат: SIC_ROUTING=false.
+window.SIC_ROUTING = true;
+window._SIC_VIEW = 'operational';        // активная вкладка списка: 'operational'|'context'
+window._sicLane = function(ev){
+  if(!window.SIC_ROUTING) return 'operational';
+  var s = ev && ev.sic_class;
+  if(s === 'COMMENTARY') return 'context';
+  if(s === 'BACKGROUND') return 'background';
+  if(s === 'FEATURE')    return 'human';
+  return 'operational';                  // EVENT/PROCESS/none/unknown → лента
+};
+window._sicLaneLabel = function(ev){
+  var s = ev && ev.sic_class;
+  return s==='BACKGROUND' ? 'Справка' : s==='FEATURE' ? 'Человеческое измерение' : 'Контекст';
+};
+window._sicInView = function(ev){        // событие принадлежит активной вкладке?
+  var op = window._sicLane(ev)==='operational';
+  return window._SIC_VIEW==='operational' ? op : !op;
+};
 let selected = null;
 let markersLayer = L.layerGroup().addTo(map);
 
@@ -1862,6 +1891,7 @@ function renderMarkers() {
   const now = Date.now();
   const cutoff = now - MAX_EVENT_AGE_MS;
   const fresh = filtered.filter(ev => {
+    if (window.SIC_ROUTING && window._sicLane(ev) !== 'operational') return false; // карта = только реальные события (COMMENTARY/BACKGROUND/FEATURE → Контекст)
     if (ev.lifecycle_type === 'ARCHIVE') return false; // архив — analysis-слой, не на live-карте
     if (!ev.lat || !ev.lng || isNaN(ev.lat) || isNaN(ev.lng)) return false;
     if (window._floc && !window._floc(ev)) return false; // все тиры: на карте только impact-резолвнутые (KDDI->Япония, штормы->акватория, нерезолвимые скрыты)
@@ -1908,15 +1938,32 @@ function updateStats() {
 function renderList() {
   const list = document.getElementById('ev-list');
   list.innerHTML = '';
-  if (!filtered || !filtered.length) {
-    list.innerHTML = '<div style="padding:20px 14px;font-size:11px;color:#6f88ab;font-family:Montserrat,sans-serif">Загрузка сигналов...</div>';
+  // SIC routing (канарейка): переключатель Оперативная ↔ Контекст
+  if (window.SIC_ROUTING) {
+    const _oper = (filtered||[]).filter(e=>window._sicLane(e)==='operational').length;
+    const _ctx  = (filtered||[]).length - _oper;
+    const sw = document.createElement('div');
+    sw.className = 'sic-switch';
+    sw.innerHTML =
+      '<button class="sic-tab'+(window._SIC_VIEW==='operational'?' active':'')+'" data-view="operational">Оперативная лента<span>'+_oper+'</span></button>'+
+      '<button class="sic-tab'+(window._SIC_VIEW==='context'?' active':'')+'" data-view="context">Контекст<span>'+_ctx+'</span></button>';
+    sw.querySelectorAll('.sic-tab').forEach(function(b){ b.onclick=function(){ window._SIC_VIEW=b.dataset.view; renderList(); }; });
+    list.appendChild(sw);
+  }
+  const _view = window.SIC_ROUTING ? (filtered||[]).filter(window._sicInView) : (filtered||[]);
+  if (!_view || !_view.length) {
+    const _em = document.createElement('div');
+    _em.style.cssText = 'padding:20px 14px;font-size:11px;color:#6f88ab;font-family:Montserrat,sans-serif';
+    _em.textContent = (window.SIC_ROUTING && window._SIC_VIEW==='context') ? 'Нет материалов в контексте' : 'Загрузка сигналов...';
+    list.appendChild(_em);
     return;
   }
-  [...filtered].sort((a,b)=>{ const _an=x=>{const d=x.date||'',f=x.first_seen||'';return (f&&(!d||f<d))?f:d;}; const dd=_an(b).localeCompare(_an(a)); return dd!==0?dd:b.severity-a.severity; }).forEach(ev => {
+  [..._view].sort((a,b)=>{ const _an=x=>{const d=x.date||'',f=x.first_seen||'';return (f&&(!d||f<d))?f:d;}; const dd=_an(b).localeCompare(_an(a)); return dd!==0?dd:b.severity-a.severity; }).forEach(ev => {
     const col = DC[ev.domain];
     const d = document.createElement('div');
     d.className = 'ei' + (selected?.id===ev.id ? ' sel' : '');
-    d.innerHTML = `<div class="ei-tag" style="color:${col}"><div class="ei-dot" style="background:${col}"></div>${DL[ev.domain]||ev.domain}</div><div class="ei-title">${esc(ev.title)}</div><div class="ei-meta"><span>${esc(ev.region)}</span><span>${fd(ev.date)}</span></div><div class="ei-bar"><div class="ei-fill" style="width:${ev.severity}%;background:${sc(ev.severity)}"></div></div>`;
+    var _ctxTag = (window.SIC_ROUTING && window._SIC_VIEW==='context') ? '<span class="sic-ctx-tag">'+esc(window._sicLaneLabel(ev))+'</span>' : '';
+    d.innerHTML = `<div class="ei-tag" style="color:${col}"><div class="ei-dot" style="background:${col}"></div>${DL[ev.domain]||ev.domain}${_ctxTag}</div><div class="ei-title">${esc(ev.title)}</div><div class="ei-meta"><span>${esc(ev.region)}</span><span>${fd(ev.date)}</span></div><div class="ei-bar"><div class="ei-fill" style="width:${ev.severity}%;background:${sc(ev.severity)}"></div></div>`;
     d.onclick = () => { try{ if(window.atlasTrackMaterial) atlasTrackMaterial(ev.id||ev.title); }catch(_e){} var _fc=(window._floc?window._floc(ev):null); var _la=_fc?_fc.lat:ev.lat, _ln=_fc?_fc.lng:ev.lng; if(_la&&_ln){ try{ map.setView([_la,_ln], Math.max(map.getZoom()||3,4)); L.popup({maxWidth:240}).setLatLng([_la,_ln]).setContent(_evPopup(ev)).openOn(map); }catch(_){} } };
     list.appendChild(d);
   });
