@@ -7912,6 +7912,10 @@ function _evM(val, lbl, col) {
     <button class="grdf-sig-pill" data-d="technology">Технологии</button>
     <button class="grdf-sig-pill" data-d="social">Социум</button>
   </div>
+  <div id="grdf-sic-switch" class="grdf-sig-filters" style="padding-top:0;border-top:0.5px solid rgba(184,151,58,0.08)">
+    <button class="grdf-sig-pill active" data-view="operational">Оперативная лента</button>
+    <button class="grdf-sig-pill" data-view="context">Контекст</button>
+  </div>
   <div id="grdf-sig-feed"></div>
 </div>
 
@@ -10426,6 +10430,19 @@ function grdfRenderSignals(dom){
     // домен — по значимости (с лёгким затуханием по свежести)
     items.sort(function(a,b){ var s=_rank(b)-_rank(a); return s!==0?s:String(b.date||'').localeCompare(String(a.date||'')); });
   }
+  // SIC routing (канарейка): раздели ленту на Оперативную (реальные события) и Контекст
+  // (заявления/аналитика/прогнозы). Реальное никогда не теряется (fail-safe: нераспознанное→оператив).
+  if(window.SIC_ROUTING){
+    var _sicOp=[], _sicCx=[];
+    items.forEach(function(e){ (window._sicLane(e)==='operational'?_sicOp:_sicCx).push(e); });
+    try{
+      var _swb=document.querySelector('#grdf-sic-switch [data-view="operational"]');
+      var _swc=document.querySelector('#grdf-sic-switch [data-view="context"]');
+      if(_swb) _swb.innerHTML='Оперативная лента <span style="opacity:.7">'+_sicOp.length+'</span>';
+      if(_swc) _swc.innerHTML='Контекст <span style="opacity:.7">'+_sicCx.length+'</span>';
+    }catch(_e){}
+    items = (window._SIC_VIEW==='context') ? _sicCx : _sicOp;
+  }
   if(cnt){ var n=items.length,m10=n%10,m100=n%100,w=(m10===1&&m100!==11)?'событие':((m10>=2&&m10<=4&&(m100<10||m100>=20))?'события':'событий'); cnt.textContent=n+' '+w; }
   if(!items.length){ feed.innerHTML='<div style="padding:24px 14px;font-size:11px;color:rgba(148,163,184,0.5);text-align:center">Нет событий в этом домене</div>'; return; }
   var DLx=(typeof DL!=='undefined')?DL:{}, DCx=(typeof DC!=='undefined')?DC:{};
@@ -10453,7 +10470,7 @@ function grdfRenderSignals(dom){
       + '<div class="sig-main">'
       +   '<div class="grdf-sig-title sig-clamp-h">'+escx((typeof window._headline==='function'?window._headline(ev):((typeof window._cleanSignalText==='function')?window._cleanSignalText(ev.title, ev):ev.title)))+'</div>'
       +   ((typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')?'':_cb)
-      +   '<div class="grdf-sig-meta">'+((!(typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')&&_cb)?'':(function(){var _g=window._displayRegion(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span><span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
+      +   '<div class="grdf-sig-meta">'+((!(typeof _grdfTier!=='undefined'&&_grdfTier==='FREE')&&_cb)?'':(function(){var _g=window._displayRegion(ev);return _g?'<span><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:4px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.6"/></svg>'+escx(_g)+'</span>':'';})())+'<span>'+fdx(ev.date)+'</span>'+((window.SIC_ROUTING&&window._SIC_VIEW==='context')?'<span class="sig-domtag" style="color:rgba(148,163,184,0.7);border:0.5px solid rgba(148,163,184,0.25);padding:0 5px;border-radius:2px;margin-right:4px">'+escx(window._sicLaneLabel(ev))+'</span>':'')+'<span class="sig-domtag" style="color:'+col+'">'+escx(DLx[ev.domain]||ev.domain||'')+'</span></div>'
       +   '<div class="sig-meta2">'+((ev.domain&&typeof DOMAIN_RU!=='undefined')?'<span style="color:'+((typeof DC!=='undefined'&&DC[ev.domain])||'#9a8a5a')+'">'+escx(DOMAIN_RU[ev.domain]||ev.domain)+'</span>':'')+'</div>'
       +   (_mk?'<div class="sig-markers">'+_mk+'</div>':'')
       +   _det
@@ -10475,6 +10492,18 @@ function grdfRenderSignals(dom){
     for(var i=0;i<pills.length;i++) pills[i].classList.remove('active');
     b.classList.add('active');
     grdfRenderSignals(b.getAttribute('data-d'));
+  });
+})();
+
+(function(){
+  var sw=document.getElementById('grdf-sic-switch');
+  if(sw) sw.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.grdf-sig-pill') : null; if(!b) return;
+    var pills=sw.querySelectorAll('.grdf-sig-pill');
+    for(var i=0;i<pills.length;i++) pills[i].classList.remove('active');
+    b.classList.add('active');
+    window._SIC_VIEW = b.getAttribute('data-view');
+    grdfRenderSignals(_grdfSigFilter||'all');
   });
 })();
 
