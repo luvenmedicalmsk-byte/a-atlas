@@ -11233,7 +11233,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
    +'#gproc-d .gd-x{position:absolute;top:18px;right:20px;font-size:20px;color:rgba(148,163,184,0.6);cursor:pointer;line-height:1}'
    +'#gproc-d .gd-type{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(148,163,184,0.6);font-weight:500}'
    +'#gproc-d h2{font-family:"Cormorant Garamond",serif;font-size:27px;font-weight:600;color:#e8e4dc;margin:5px 0 2px;line-height:1.1}'
-   +'#gproc-d .gd-place{color:rgba(148,163,184,0.82);font-size:12px}'
+   +'#gproc-d .gd-place{color:rgba(148,163,184,0.82);font-size:12px;margin-top:2px}'+'#gproc-d .gd-sysbadge{display:inline-block;margin:6px 0 0;font-family:Montserrat,sans-serif;font-size:8.5px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(184,151,58,0.9);border:0.5px solid rgba(184,151,58,0.4);border-radius:4px;padding:2px 7px}'+'.gd-ti.gd-obs::before{background:transparent;border:1.5px solid rgba(148,163,184,0.5);box-shadow:none}'+'.gd-ti.gd-obs .e{color:rgba(148,163,184,0.75);font-style:italic;font-family:Montserrat,sans-serif;font-size:11.5px}'+'.gd-ti.gd-obs .t{color:rgba(148,163,184,0.4)}'
    +'.gd-sec{padding:17px 22px;border-bottom:0.5px solid rgba(255,255,255,0.05)}'
    +'.gd-sh{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:#D4AF5A;font-weight:600;margin-bottom:11px;display:flex;align-items:center;gap:8px}'
    +'.gd-sh::after{content:"";flex:1;height:1px;background:rgba(255,255,255,0.06)}'
@@ -11386,6 +11386,23 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     // префикс титула процесса: «Военные удары — X» → «Военный конфликт — X» (по всем странам)
     return String(t).replace(/^Военные удары(\s*—)/,'Военный конфликт$1');
   }
+  // п.13 — заголовок = только тип; гео и «системный процесс» — отдельно
+  function _titleType(s){ if(s&&s.process_type) return _procDisp(s.process_type);
+    var t=_procDisp((s&&s.title)||''); t=t.replace(/\s*\(системный процесс\)\s*/i,''); t=t.split(' — ')[0]; return t||'—'; }
+  function _isSys(s){ return /системн\w* процесс/i.test((s&&s.title)||'') || !!(s&&(s.merged_count>1||s.is_macro)); }
+  // п.6 — grounded-лид объяснения из реальных полей процесса (не шаблон)
+  function _explLead(s){ var P=[]; var typ=_titleType(s), place=s.process_place||'', ec=s.evidence_count||0, mc=s.merged_count||0;
+    P.push('Процесс «'+typ+'»'+(place?(' — '+place):'')+' сформирован из '+ec+' '+plSvid(ec)+(mc>1?(', объединяя '+mc+' '+plProc(mc)):'')+'.');
+    var cs=(s.countries||[]).map(cn); if(cs.length) P.push('Географический охват: '+cs.slice(0,8).join(', ')+(cs.length>8?' и др.':'')+'.');
+    var dm=[]; if(s.pressure!=null)dm.push('давление '+s.pressure); if(s.severity!=null)dm.push('тяжесть '+s.severity); if(s.priority!=null)dm.push('приоритет '+s.priority);
+    if(dm.length) P.push('Показатели на текущий момент: '+dm.join(', ')+'; стадия — '+lcStage(s)+'.'); return P.join(' '); }
+  // п.9 — OBSERVATION: наблюдения из реальных данных (не событие, не меняет метрики)
+  function _procObs(s){ var o=[], stage=(lcStage(s)||'').toLowerCase(), ph=(s.phase||'').toLowerCase();
+    var ec=s.evidence_count||0, tl=(s.timeline||[]).length;
+    if(ec>tl && (ec-tl)>0) o.push('Зафиксировано '+(ec-tl)+' '+plSvid(ec-tl)+' сверх ключевых событий — ведётся мониторинг активности.');
+    if(/актив|усилен|рост|escalat/.test(stage)||/actie|escalat|active/.test(ph)) o.push('Продолжаются измерения состояния; система отслеживает динамику процесса.');
+    else if(/затух|стабил|ослаб|dormant|de-escal/.test(stage)) o.push('Ведётся оценка состояния: выраженной новой активности не зарегистрировано.');
+    return o.slice(0,2); }
   function typeCard(b){
     var s=b.rep, pe=s.pressure||0, sv=s.severity||0;
     var ps=lcStage(s), pcol=lcColor(ps);
@@ -11474,7 +11491,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var ex=s.explain||{};
     var H='<div class="gd-head"><div class="gd-x" onclick="grdfProcCloseDetail()">✕</div>'
       +'<div class="gd-type">'+esc(DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—')+'</div>'
-      +'<h2>'+esc(_procDisp(s.title))+'</h2><div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
+      +'<h2>'+esc(_titleType(s))+'</h2>'+(_isSys(s)?'<div class="gd-sysbadge">Системный процесс</div>':'')+'<div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
     // ── Блок 1: Atlas обнаружил развитие процесса ──
     var intro=ex.why_exists?esc(ex.why_exists):('Atlas зафиксировал развитие процесса'+(s.process_place?' — '+esc(s.process_place):'')+' и объединил независимые свидетельства в единую аналитическую картину.');
     intro+=' Система определила текущую стадию развития и ведёт непрерывное наблюдение'+(s.first_seen?' с момента первого обнаружения — '+humanAge(s.first_seen):'')+'.';
@@ -11537,7 +11554,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var am=s.atlas_memory, rec=s.recurrence, sim=s.similar_processes||[];
     var H='<div class="gd-head"><div class="gd-x" onclick="grdfProcCloseDetail()">✕</div>'
       +'<div class="gd-type">'+esc(DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—')+(s.watchlist?' · ◆ наблюдение':'')+'</div>'
-      +'<h2>'+esc(_procDisp(s.title))+'</h2><div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
+      +'<h2>'+esc(_titleType(s))+'</h2>'+(_isSys(s)?'<div class="gd-sysbadge">Системный процесс</div>':'')+'<div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
     // Сводка
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
       +'<p class="gd-note" style="margin-bottom:11px">'+esc(ex.why_exists||'')+'</p>'
@@ -11566,6 +11583,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +(s.critical_transition?'<p style="color:#FFD700;font-size:11px;margin-top:8px">⚠ Признаки критического перехода</p>':'')+'</div>';
     // Хроника
     if(s.timeline&&s.timeline.length){ H+='<div class="gd-sec"><div class="gd-sh">Хроника</div><div class="gd-tl">'
+      +_procObs(s).map(function(o){ return '<div class="gd-ti gd-obs"><div class="e">◇ '+esc(o)+'</div><div class="t">наблюдение</div></div>'; }).join('')
       +s.timeline.slice().reverse().map(function(t){ return '<div class="gd-ti"><div class="e">'+esc(t.event)+'</div>'+(t.detail?'<div class="dt">'+esc(t.detail)+'</div>':'')+'<div class="t">'+esc((t.t||'').replace('T',' ').slice(0,16))+'</div></div>'; }).join('')+'</div></div>'; }
     // Свидетельства
     H+='<div class="gd-sec"><div class="gd-sh">Свидетельства · '+(s.evidence_count||0)+'</div>'
@@ -11590,6 +11608,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     else if((s.evidence_count||0)>=2 || (s.timeline&&s.timeline.length>=2)){ H+='<div class="gd-sec"><div class="gd-sh">Наиболее вероятное развитие</div><p class="gd-note" style="color:rgba(148,163,184,0.75)">Прогноз пока недоступен. Для построения модели требуется накопление последовательных наблюдений.</p></div>'; }
     // Объяснение
     H+='<div class="gd-sec"><div class="gd-sh">Объяснение</div>'
+      +'<p class="gd-note" style="margin-bottom:11px">'+esc(_explLead(s))+'</p>'
       +[['Почему создан',ex.why_exists],['Почему такой Приоритет',ex.why_priority],['Почему такая Фаза',ex.why_phase],['Почему такое Доверие',ex.why_confidence]].filter(function(x){return x[1];}).map(function(x){return '<div class="gd-exp"><div class="q">'+x[0]+'</div><div class="a">'+esc(x[1])+'</div></div>';}).join('')
       
       +'</div>';
