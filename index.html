@@ -11286,7 +11286,12 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   }
   // Хроника события = «Военные удары»; процесс/макро-карточка = «Военный конфликт».
   var _PROC_DISP={'Военные удары':'Военный конфликт'};
-  function _procDisp(t){ return _PROC_DISP[t]||t||'—'; }
+  function _procDisp(t){
+    if(!t) return '—';
+    if(_PROC_DISP[t]) return _PROC_DISP[t];
+    // префикс титула процесса: «Военные удары — X» → «Военный конфликт — X» (по всем странам)
+    return String(t).replace(/^Военные удары(\s*—)/,'Военный конфликт$1');
+  }
   function typeCard(b){
     var s=b.rep, pe=s.pressure||0, sv=s.severity||0;
     var ps=lcStage(s), pcol=lcColor(ps);
@@ -11315,7 +11320,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   function childRow(m){
     var pe=m.pressure||0;
     return '<div class="gpc-kid" onclick="grdfKidOpen(event,\''+esc(m.signal_id)+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 2px;cursor:pointer;border-bottom:0.5px solid rgba(184,151,58,0.06)">'
-      +'<span style="font-size:12px;color:#c8d0da;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">'+esc(m.process_place||m.title||'—')+'</span>'
+      +'<span style="font-size:12px;color:#c8d0da;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">'+esc(m.process_place||_procDisp(m.title)||'—')+'</span>'
       +'<span style="font-size:11px;color:'+scol(pe)+';flex-shrink:0;margin-left:10px">'+pe+'</span>'
     +'</div>';
   }
@@ -11328,7 +11333,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +(function(){window.__ps=lcStage(s);window.__pc=lcColor(window.__ps);return '<div class="gpc-edge" style="background:'+window.__pc+'"></div>';})()
       +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
       +'<div class="gpc-type"><span>'+esc(DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—')+'</span></div>'
-      +'<div class="gpc-title">'+esc(s.title)+'</div>'
+      +'<div class="gpc-title">'+esc(_procDisp(s.title))+'</div>'
       +'<div class="gpc-place">'+esc(s.process_place||'—')+(s.actor?' · '+esc(s.actor)+(s.target?' → '+esc(s.target):''):'')+'</div>'
       +(isPro()?'<div class="gpc-m">'+mi('Приоритет',pr)+mi('Тяжесть',sv)+mi('Давление',pe)+'</div>':'')
       +'<div class="gpc-chips"><span class="gpc-ch hl">'+(PHASE_RU[s.phase]||s.phase)+'</span>'
@@ -11372,7 +11377,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var ex=s.explain||{};
     var H='<div class="gd-head"><div class="gd-x" onclick="grdfProcCloseDetail()">✕</div>'
       +'<div class="gd-type">'+esc(DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—')+'</div>'
-      +'<h2>'+esc(s.title)+'</h2><div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
+      +'<h2>'+esc(_procDisp(s.title))+'</h2><div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
     // ── Блок 1: Atlas обнаружил развитие процесса ──
     var intro=ex.why_exists?esc(ex.why_exists):('Atlas зафиксировал развитие процесса'+(s.process_place?' — '+esc(s.process_place):'')+' и объединил независимые свидетельства в единую аналитическую картину.');
     intro+=' Система определила текущую стадию развития и ведёт непрерывное наблюдение'+(s.first_seen?' с момента первого обнаружения — '+humanAge(s.first_seen):'')+'.';
@@ -11435,7 +11440,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var am=s.atlas_memory, rec=s.recurrence, sim=s.similar_processes||[];
     var H='<div class="gd-head"><div class="gd-x" onclick="grdfProcCloseDetail()">✕</div>'
       +'<div class="gd-type">'+esc(DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—')+(s.watchlist?' · ◆ наблюдение':'')+'</div>'
-      +'<h2>'+esc(s.title)+'</h2><div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
+      +'<h2>'+esc(_procDisp(s.title))+'</h2><div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
     // Сводка
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
       +'<p class="gd-note" style="margin-bottom:11px">'+esc(ex.why_exists||'')+'</p>'
