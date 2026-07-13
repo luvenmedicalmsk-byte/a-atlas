@@ -1834,9 +1834,13 @@ let filter = 'all';
 // FREE лента как раньше (без переключателя, без сплита).
 window.SIC_ROUTING = true;
 window._SIC_VIEW = 'operational';        // активная вкладка списка: 'operational'|'context'
-window._sicRoutingOn = function(){        // роутинг активен = мастер-флаг И тир Signal Pro
-  try{ return !!window.SIC_ROUTING && (typeof _grdfTier!=='undefined') && _grdfTier==='SIGNAL_PRO'; }
-  catch(e){ return false; }
+window._sicRoutingOn = function(){        // роутинг активен = мастер-флаг И платный тир (Signal Pro/strategic/elite/admin)
+  try{
+    if(!window.SIC_ROUTING) return false;
+    var t=''; try{ t=String((window.CC&&CC.tier&&CC.tier())||'').toLowerCase(); }catch(e){}
+    if(t && t!=='free') return true;       // авторитетный тир из сессии (не кэш _grdfTier)
+    return (typeof _grdfTier!=='undefined' && _grdfTier==='SIGNAL_PRO'); // fallback
+  }catch(e){ return false; }
 };
 window._sicLane = function(ev){
   if(!window._sicRoutingOn()) return 'operational';
