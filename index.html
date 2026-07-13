@@ -11362,8 +11362,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var pc=g.pressure_change_pct;
     var dash='<div style="display:flex;gap:0;padding:11px 14px;border-bottom:0.5px solid rgba(184,151,58,0.12);flex-wrap:wrap">'
       +gcell('Давление',gp,scol(gp),pc!=null?(pc>=0?'▲ +'+pc+'%':'▼ '+pc+'%'):'')
-      +gcell('Критичные',tc[0],tc[0]?'#E24A3B':'#e8e4dc','')
-      +gcell('Усиление',tc[1],tc[1]?'#FFD700':'#e8e4dc','')
+      +gcell('Критические',tc[0],tc[0]?'#E24A3B':'#e8e4dc','')
+      +gcell('Усиливаются',tc[1],tc[1]?'#FFD700':'#e8e4dc','')
       +gcell('Активные',tc[2],'#e8e4dc','')
       +gcell('Наблюдение',tc[3],tc[3]?'#B8973A':'#e8e4dc','')
       +'</div>';
