@@ -10198,7 +10198,98 @@ window._radarPressDetail = function(){
   try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(_e){}
 };
 (function(){var s=document.createElement('style');s.textContent="#grdf-signalpro{padding:4px 14px 22px}.sp-section{margin-top:6px;border-top:0.5px solid rgba(184,151,58,.18);padding-top:16px}.sp-head{display:flex;align-items:center;gap:8px}.sp-badge{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:.1em;color:#E8E0D0}.sp-sub{font-size:10px;color:rgba(232,224,208,0.45);letter-spacing:.04em;margin:3px 0 12px;font-family:'Montserrat',sans-serif}.sp-body{position:relative}.sp-blocks{display:flex;flex-direction:column;gap:8px}.sp-block{background:rgba(255,255,255,.025);border:0.5px solid rgba(255,255,255,.08);border-radius:8px;padding:11px 13px}.sp-block-h{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E8E0D0;margin-bottom:7px;font-family:'Montserrat',sans-serif}.sp-p{font-size:12px;line-height:1.5;color:rgba(232,224,208,0.9);margin:0;font-family:'Montserrat',sans-serif}.sp-key{color:#f1e8d0}.sp-lead{font-size:11px;color:rgba(232,224,208,0.6);margin:0 0 6px;font-family:'Montserrat',sans-serif}.sp-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}.sp-ul li{font-size:12px;color:rgba(232,224,208,0.9);padding-left:13px;position:relative;font-family:'Montserrat',sans-serif;line-height:1.4}.sp-ul li:before{content:'';position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#64748b}.sp-dyn{display:flex;align-items:center;gap:8px;padding:3px 0;font-family:'Montserrat',sans-serif}.sp-dyn-ar{font-size:13px;width:12px;text-align:center}.sp-dyn-d{font-size:12px;color:rgba(232,224,208,0.9);flex:1}.sp-dyn-v{font-size:12px;font-weight:600;color:rgba(232,224,208,0.9)}.sp-note{font-size:11px;color:rgba(232,224,208,0.6);margin:8px 0 0;font-style:italic;font-family:'Montserrat',sans-serif}.sp-chain{font-size:12px;color:rgba(232,224,208,0.9);padding:4px 0;font-family:'Montserrat',sans-serif;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.sp-arrow{color:#B8973A;font-weight:600}.sp-body.sp-locked .sp-blocks{filter:blur(6px);pointer-events:none;user-select:none;opacity:.55}.sp-overlay{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 16px;background:linear-gradient(180deg,rgba(6,5,10,.5),rgba(6,5,10,.82));border-radius:8px}.sp-lock-ico{font-size:22px;margin-bottom:6px}.sp-lock-h{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;letter-spacing:.2em;color:#D4AF5A;margin-bottom:8px}.sp-lock-t{font-size:11px;line-height:1.55;color:rgba(232,224,208,0.9);max-width:300px;margin-bottom:14px;font-family:'Montserrat',sans-serif}.sp-cta{background:transparent;color:#E3B23C;border:1px solid #E3B23C;border-radius:26px;padding:15px 24px;font-size:13.5px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;letter-spacing:.02em;width:100%}";document.head.appendChild(s);})();
+/* ═══ WEEKLY SYSTEM DYNAMICS v1.1 (SPEC: docs/adr/spec/Weekly-System-Dynamics-Spec-v1.md) ═══
+   Блок «Что изменилось за 7 дней» сравнивал 151 событие против 8 (лента живёт 3 дня), у 2 из 5
+   доменов базы нет вовсе → подставлялся хардкод +100%; при базе в 2 события формула давала +591%.
+   Дефект не в UI: неверно выбрана измеряемая сущность.
+   Теперь: структура системного давления по ПРОЦЕССАМ, две независимые оси.
+   A — приток новых очагов; B — эволюция существующих (Δ severity, пункты).
+   Только status='active' (dormant/fading маскировали до половины динамики).
+   OFF (WSD_V2=false) → legacy-рендер. */
+window.WSD_V2 = true;
+window._WSD = { ready:false, loading:false, dom:null };
+window._wsdRefresh = function(){
+  try{ var L=window._WSD_last; if(L&&L.el&&L.d) window._spRender(L.el,L.d); }catch(_){}
+};
+
+window._wsdCompute = function(signals){
+  var DOMS=['climate','geopolitics','economy','technology','social'];
+  var DAY=86400000, now=Date.now(), out={};
+  DOMS.forEach(function(d){ out[d]={A:null,B:null,stA:'none',stB:'none',base:0,neu:0,nh:0}; });
+  (signals||[]).forEach(function(s){
+    if(s.status!=='active') return;                    // SPEC §4.0: dormant/fading вне расчёта
+    var d=s.primary_domain||((s.domains||[])[0]); if(!out[d]) return;
+    var fs=Date.parse(s.first_seen||'')||0; if(!fs) return;
+    var o=out[d], old=(now-fs)>=7*DAY;
+    if(old){
+      o.base++;
+      var h=s.severity_history||[];                    // SPEC §4.1: ось B — только по базе
+      if(h.length>=2){
+        var p=h.slice().sort(function(a,b){ return String(a.t)<String(b.t)?-1:1; });
+        var a=parseFloat(p[0].v), b=parseFloat(p[p.length-1].v);
+        if(!isNaN(a)&&!isNaN(b)){ o.nh++; o._sum=(o._sum||0)+(b-a); }
+      }
+    } else o.neu++;                                    // новый процесс = новый очаг (в ось B не входит)
+  });
+  DOMS.forEach(function(d){
+    var o=out[d];
+    // ── ось A: приток
+    if(o.base>0){ o.A=Math.round(100*o.neu/o.base); o.stA=(o.base<3)?'low':'ok'; }
+    else { o.A=null; o.stA='none'; }                   // SPEC §6.1: НЕ +100%
+    // ── ось B: три состояния (SPEC §6.2)
+    if(o.nh>=3){ o.B=Math.round(10*o._sum/o.nh)/10; o.stB='value'; }
+    else if(o.nh>0){ o.B=null; o.stB='forming'; }
+    else { o.B=null; o.stB='none'; }
+  });
+  return out;
+};
+
+window._wsdLoad = function(cb){
+  if(window._WSD.ready){ cb&&cb(); return; }
+  if(window._WSD.loading){ return; }
+  window._WSD.loading=true;
+  fetch('https://raw.githubusercontent.com/luvenmedicalmsk-byte/secrett-archive/main/docs/signals.json?v='+Date.now(),{cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      window._WSD.dom=window._wsdCompute(d&&d.signals);
+      window._WSD.ready=true; window._WSD.loading=false;
+      try{ if(typeof window._wsdRefresh==='function') window._wsdRefresh(); }catch(_){}
+      cb&&cb();
+    })
+    .catch(function(){ window._WSD.loading=false; });
+};
+
+window._wsdHtml = function(){
+  var M=window._WSD.dom; if(!M) return '';
+  var DL={climate:'Климат',geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум'};
+  var rows=['climate','geopolitics','economy','technology','social'].map(function(d){
+    var o=M[d]; if(!o) return '';
+    // ось A
+    var aTxt, aCol='rgba(232,224,208,0.5)';
+    if(o.stA==='none') aTxt='нет базы';
+    else { aTxt=(o.A>0?'+':'')+o.A+'%'; if(o.A>0) aCol='#ef4444'; if(o.stA==='low') aTxt+=' · низкая база (n='+o.base+')'; }
+    // ось B — наблюдательный режим: знак и величина, без ярлыка «значимо» (SPEC §5.1)
+    var bTxt, bCol='rgba(232,224,208,0.5)';
+    if(o.stB==='value'){
+      var lbl=o.B>0?'Усиление':(o.B<0?'Снижение':'Без изменений');
+      bTxt=lbl+' ('+(o.B>0?'+':'')+o.B+' п.)';
+      bCol=o.B>0?'#ef4444':(o.B<0?'#22c55e':'rgba(232,224,208,0.5)');
+    } else if(o.stB==='forming') bTxt='Недостаточно истории';
+    else bTxt='—';
+    return '<div style="display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:0.5px solid rgba(184,151,58,.08)">'
+      +'<span style="flex:0 0 84px;font-size:11px;color:#cbd5e1">'+DL[d]+'</span>'
+      +'<span style="flex:0 0 96px;font-size:11px;color:'+aCol+'">'+aTxt+'</span>'
+      +'<span style="flex:1;font-size:11px;color:'+bCol+'">'+bTxt+'</span></div>';
+  }).join('');
+  return '<div style="display:flex;gap:8px;padding:0 0 5px;font-family:Montserrat,sans-serif;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,224,208,0.45)">'
+    +'<span style="flex:0 0 84px">Домен</span><span style="flex:0 0 96px">Новые очаги</span>'
+    +'<span style="flex:1">Состояние существующих</span></div>'+rows
+    +'<p class="sp-note">Считается по процессам Atlas (живые: active). Новый процесс — новый очаг, '
+    +'а не «рост на N%». Порог значимости калибруется по мере накопления истории.</p>';
+};
+
 window._spRender = function(el,d){
+  try{ if(window.WSD_V2){ window._WSD_last={el:el,d:d}; window._wsdLoad(); } }catch(_){}
   var DL=(window._rDL?window._rDL():{climate:'Климат',geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум'});
   function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function ul(arr){ return '<ul class="sp-ul">'+(arr||[]).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'; }
@@ -10225,7 +10316,9 @@ window._spRender = function(el,d){
   var cascHtml=(d.cascades||[]).map(function(c){ var chain=Array.isArray(c)?c:(c.chain||[]); var imp=(!Array.isArray(c)&&c.impact)?c.impact:''; return '<div class="sp-chain">'+chain.map(esc).join(' <span class="sp-arrow">→</span> ')+(imp?badge(imp):'')+'</div>'; }).join('');
   var blocks=
      block('Интерпретация системы','<p class="sp-p">'+esc(d.interpretation)+'</p>')
-    +block('Что изменилось за 7 дней','<div style="display:flex;flex-wrap:wrap;gap:14px;margin:0 0 12px;padding:9px 11px;border:0.5px solid rgba(184,151,58,.18);border-radius:8px;background:rgba(184,151,58,.03);font-family:Montserrat,sans-serif;font-size:9.5px;color:rgba(232,224,208,0.6);letter-spacing:.02em"><span><span style="color:#ef4444;font-weight:700">↑</span> рост давления</span><span><span style="color:#22c55e;font-weight:700">↓</span> снижение давления</span><span><span style="color:rgba(232,224,208,0.6);font-weight:700">→</span> без изменений</span></div>'+(rowsHtml||'<p class="sp-p">Недостаточно данных для оценки динамики.</p>')+'<p class="sp-note">'+esc((d.change&&d.change.note)||'')+'</p>')
+    +((window.WSD_V2 && window._WSD && window._WSD.ready)
+      ? block('Структура системного давления · 7 дней', window._wsdHtml())
+      : block('Что изменилось за 7 дней','<div style="display:flex;flex-wrap:wrap;gap:14px;margin:0 0 12px;padding:9px 11px;border:0.5px solid rgba(184,151,58,.18);border-radius:8px;background:rgba(184,151,58,.03);font-family:Montserrat,sans-serif;font-size:9.5px;color:rgba(232,224,208,0.6);letter-spacing:.02em"><span><span style="color:#ef4444;font-weight:700">↑</span> рост давления</span><span><span style="color:#22c55e;font-weight:700">↓</span> снижение давления</span><span><span style="color:rgba(232,224,208,0.6);font-weight:700">→</span> без изменений</span></div>'+(rowsHtml||'<p class="sp-p">Недостаточно данных для оценки динамики.</p>')+'<p class="sp-note">'+esc((d.change&&d.change.note)||'')+'</p>'))
     +block('Основные последствия','<p class="sp-lead">Наиболее вероятные зоны распространения давления:</p>'+((d.consequences&&d.consequences.length)?ul(d.consequences):'<p class="sp-p">Выраженных зон распространения не выявлено.</p>'))
     +block('Формирующиеся тенденции',emHtml?('<p class="sp-lead">Наблюдаются ранние признаки усиления:</p>'+emHtml):'<p class="sp-p">Выраженных усиливающихся слабых сигналов не наблюдается.</p>')
     +block('Каскадные сценарии',cascHtml||'<p class="sp-p">Каскадные цепочки пока не формируются.</p>')
