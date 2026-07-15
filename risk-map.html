@@ -9284,6 +9284,12 @@ function grdfRenderCountryPanel(cc) {
   function _riskLabel(v){ return window._sevLabel(v); }
   function _riskLabelCol(v){ return window._sevColor(v); }
   var ews = fr((c.ews_score!=null)?c.ews_score:gri*0.95);
+  /* ②+③ CANONICAL TRUTH: бэк отдаёт null, когда нет ни событий, ни процессов.
+     Числовые ews/cri остаются для расчётов, но ОТОБРАЖАЕМ честное «—», а не gri*0.95
+     (фабрикация) и не 0 (читается как «спокойно»). */
+  var _ewsNA = (c.ews_score==null), _criNA = (c.cri_score==null);
+  var _ewsDisp = _ewsNA ? '—' : ews, _criDisp = _criNA ? '—' : cri;
+  var _ewsLvl = _ewsNA ? 'нет данных' : _lvl(ews), _criLvl = _criNA ? 'нет данных' : _lvl(cri);
   var status = getStatus(gri);
   var statusCol = STATUS_COLORS[status]||'#10B981';
   var dom = c.dominant_domain||'economy';
@@ -9329,8 +9335,8 @@ function grdfRenderCountryPanel(cc) {
   var _lvl=function(v){ v=+v||0; if(v>=71)return 'Высокое давление'; if(v>=51)return 'Повышенное давление'; if(v>=26)return 'Умеренное давление'; return 'Низкое давление'; };
   html += '<div class="grdf-metrics">';
   html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'GRI\')"><div class="grdf-metric-val" style="color:'+statusCol+'">'+gri+'</div><div class="grdf-metric-lbl">GRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(gri)+'</div>'+_miniDelta(c.gri_delta_7d)+'</div>';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'EWS\')"><div class="grdf-metric-val" style="color:'+(ews>=80?'#ef4444':ews>=65?'#f97316':'#eab308')+'">'+ews+'</div><div class="grdf-metric-lbl">EWS <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(ews)+'</div>'+_miniDelta(c.ews_delta_7d)+'</div>';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:#f59e0b">'+cri+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(cri)+'</div>'+_miniCri+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'EWS\')"><div class="grdf-metric-val" style="color:'+(_ewsNA?'rgba(232,224,208,0.35)':ews>=80?'#ef4444':ews>=65?'#f97316':'#eab308')+'">'+_ewsDisp+'</div><div class="grdf-metric-lbl">EWS <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_ewsLvl+'</div>'+(_ewsNA?'':_miniDelta(c.ews_delta_7d))+'</div>';
+  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:'+(_criNA?'rgba(232,224,208,0.35)':'#f59e0b')+'">'+_criDisp+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_criLvl+'</div>'+(_criNA?'':_miniCri)+'</div>';
   html += '</div>';
   html += '<div id="grdf-idx-info" class="grdf-idx-info"></div>';
   try{ html += _nowSummary(c, gri, ews, cri, dom, isSig); }catch(_e){}
