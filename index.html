@@ -8814,7 +8814,10 @@ function _grdfContextHtml(c){
     if(cnLc){ var t=((e.title||'')+' '+(e.region||'')).toLowerCase(); return t.indexOf(cnLc)>=0; }
     return false;
   });
-  if(!evs.length) return '';
+  /* СТАТИЧНАЯ КАРТОЧКА: раньше при пустой ленте (evs=[]) функция выходила и уносила
+     ВСЕ 12 блоков — «Источники давления … Методология оценки». У стран с редким потоком
+     (TR/EG/SA…) карточка схлопывалась при первом же затишье, хотя процессы живы.
+     Структура едина для всех стран; блоки, зависящие от событий, честно пишут «нет данных». */
   function card(label, inner){
     return '<details class="grdf-acc" style="margin:0 14px 10px;padding:11px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">'
       + '<summary class="grdf-acc-h" style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>';
@@ -8865,7 +8868,7 @@ function _grdfContextHtml(c){
       return '<div style="font-size:11px;color:#94a3b8;padding:3px 0;display:flex;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[e.domain]||'#888')+';margin-top:4px;flex-shrink:0"></span><span>'+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+_attrB(e)+(function(){var X=c.country;var r=(e.event_country===X)?'Произошло в стране':((e.impact_countries&&e.impact_countries.indexOf(X)>=0)?'Влияет на страну':((e.primary_country===X||e.country_code===X||e.iso===X)?'Основной объект сигнала':'Упоминается в тексте'));var cf=(r==='Произошло в стране')?(e.attribution_confidence||'low'):((r==='Основной объект сигнала')?'medium':'low');var D=cf==='high'?['●','Высокая','#5fae7a']:(cf==='medium'?['◐','Средняя','#caa45a']:['○','Низкая','#8a93a6']);return '<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'+r+' · <span style="color:'+D[2]+'">'+D[0]+' '+D[1]+'</span></span>';})()+'</span></div>'; }).join('');
     _more='<details style="margin-top:9px"><summary style="cursor:pointer;color:#6f88ab;font-size:11px;list-style:none">Показать все сигналы ('+_total+')</summary><div style="margin-top:6px">'+_all+'</div></details>';
   }
-  H+=card('Главные драйверы риска', drv+_more);
+  H+=card('Главные драйверы риска', (drv? drv+_more : '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>'));
   // ── 6. Каскадный риск (CRI) ──
   var _g=parseFloat(c.risk_score)||0, _t=_next(_g), _m=c.gri_delta_7d;
   var _traj=(_t==null)?'<span style="color:#6f88ab">верхний уровень</span>'
@@ -8887,7 +8890,7 @@ function _grdfContextHtml(c){
     var f4=regs.map(function(r){ var hot=(rc[r]>=Math.max(2,_mx*0.6));
       return '<span style="display:inline-block;font-size:11px;color:'+(hot?'#e8eef5':'#94a3b8')+';background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.10);border-radius:6px;padding:3px 9px;margin:0 5px 5px 0">'+esc(r)+' <span style="color:#6f88ab">'+rc[r]+'</span></span>'; }).join('');
     H+=card('Горячие регионы', f4);
-  }
+  } else { H+=card('Горячие регионы', '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>'); }
 
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
   // ── 5. Прогноз риска (линейная проекция + сценарии модели) ──
