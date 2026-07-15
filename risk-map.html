@@ -8868,6 +8868,28 @@ function _grdfContextHtml(c){
       return '<div style="font-size:11px;color:#94a3b8;padding:3px 0;display:flex;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:'+(DOM_COLORS[e.domain]||'#888')+';margin-top:4px;flex-shrink:0"></span><span>'+esc(ttl)+(e.region?' <span style="color:#6f88ab">— '+esc(e.region)+'</span>':'')+_attrB(e)+(function(){var X=c.country;var r=(e.event_country===X)?'Произошло в стране':((e.impact_countries&&e.impact_countries.indexOf(X)>=0)?'Влияет на страну':((e.primary_country===X||e.country_code===X||e.iso===X)?'Основной объект сигнала':'Упоминается в тексте'));var cf=(r==='Произошло в стране')?(e.attribution_confidence||'low'):((r==='Основной объект сигнала')?'medium':'low');var D=cf==='high'?['●','Высокая','#5fae7a']:(cf==='medium'?['◐','Средняя','#caa45a']:['○','Низкая','#8a93a6']);return '<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'+r+' · <span style="color:'+D[2]+'">'+D[0]+' '+D[1]+'</span></span>';})()+'</span></div>'; }).join('');
     _more='<details style="margin-top:9px"><summary style="cursor:pointer;color:#6f88ab;font-size:11px;list-style:none">Показать все сигналы ('+_total+')</summary><div style="margin-top:6px">'+_all+'</div></details>';
   }
+  /* Лента может не содержать событий страны (окно свежести 3 дня), но снапшот несёт
+     драйверы из ПРОЦЕССОВ по каноническому месту либо из базового профиля. Рендерим их
+     в том же виде — блок «Главные драйверы риска» одинаков для всех 37 стран. */
+  if(!drv){
+    var _sd=(c.drivers||[]);
+    if(_sd.length){
+      var _byD={}; _sd.forEach(function(d){ var dd=d.domain||'other'; (_byD[dd]=_byD[dd]||[]).push(d); });
+      drv=Object.keys(_byD).sort(function(a,b){ return _byD[b].length-_byD[a].length; }).map(function(dd){
+        var _l=_byD[dd].slice().sort(function(a,b){ return (b.severity||0)-(a.severity||0); });
+        var _h='<div style="display:flex;align-items:center;gap:7px;margin:9px 0 4px">'
+          +'<span style="width:8px;height:8px;border-radius:50%;background:'+(DOM_COLORS[dd]||'#888')+';flex-shrink:0"></span>'
+          +'<b style="color:#cbd5e1;font-size:12px">'+(DOM_LABELS[dd]||dd)+'</b>'
+          +'<span style="color:#6f88ab;font-size:11px">'+_l.length+' проц.'+(ds0[dd]!=null?' · уровень '+Math.round(ds0[dd]):'')+'</span></div>';
+        var _it=_l.map(function(d){ var _n=String(d.name||'').replace(/\s+/g,' ').trim(); if(_n.length>56) _n=_n.slice(0,56)+'…';
+          return '<div style="font-size:11px;color:#94a3b8;padding:2px 0 2px 15px">• '+esc(_n)
+            +'<span style="display:block;font-size:9px;margin:1px 0 0 12px;letter-spacing:.03em;color:#6f88ab">'
+            +esc(String(d.impact||'').slice(0,110))+'</span></div>'; }).join('');
+        return _h+_it;
+      }).join('');
+      _more='';
+    }
+  }
   H+=card('Главные драйверы риска', (drv? drv+_more : '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>'));
   // ── 6. Каскадный риск (CRI) ──
   var _g=parseFloat(c.risk_score)||0, _t=_next(_g), _m=c.gri_delta_7d;
