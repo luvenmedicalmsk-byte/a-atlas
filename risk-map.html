@@ -11730,8 +11730,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'<div class="k">Место</div><div class="v">'+esc(s.process_place||'—')+'</div>'
       +(s.actor?'<div class="k">Актор</div><div class="v">'+esc(s.actor)+'</div>':'')
       +(s.target?'<div class="k">Объект</div><div class="v">'+esc(s.target)+'</div>':'')
-      +'<div class="k">Страны</div><div class="v">'+((s.countries||[]).map(cn).join(', ')||'—')+'</div>'
-      +'<div class="k">Затронуто</div><div class="v">'+((s.affected_regions||[]).join(', ')||'—')+'</div></div></div>';
+      +'<div class="k">Страны</div><div class="v">'+((s.countries||[]).map(function(c){c=String(c||'').toUpperCase();return (window._CNRU&&window._CNRU[c])||c;}).join(', ')||'—')+'</div>'
+      +(((s.affected_regions||[]).length)?('<div class="k">Затронуто</div><div class="v">'+s.affected_regions.map(function(c){var u=String(c||'').toUpperCase();return (window._CNRU&&window._CNRU[u])||c;}).join(', ')+'</div>'):'')+'</div></div>';
     // Память
     var mem='';
     if(s.expected_next&&s.expected_next.length) mem+='<p class="gd-note" style="font-size:12.5px;margin-bottom:8px">На основе накопленного опыта аналогичных процессов система ожидает наиболее вероятное развитие:</p><div style="margin-bottom:10px"><div class="gd-cl">Наиболее вероятные последствия</div>'+s.expected_next.map(function(x){return '<span class="gd-pill" style="color:#D4AF5A;border-color:rgba(184,151,58,0.35)">'+esc(x)+'</span>';}).join('')+'</div>';
