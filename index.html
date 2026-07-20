@@ -11455,11 +11455,14 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       // ── PREVIEW-СЛОЙ (Этап 3): подмешиваем preview-процессы, signals.json НЕ трогается ──
       fetch(PREVIEW_URL+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(pv){
         (pv.processes||[]).forEach(function(p){
-          var sig={ signal_id:p.process_id, is_preview:true, preview_type:p.process_type,
+          var _pvSev=(p.severity!=null?p.severity:(p.confidence?Math.round(p.confidence*100):50));
+          var _pvPres=(p.pressure!=null?p.pressure:_pvSev);
+          var sig={ signal_id:p.process_id, is_preview:true, preview_type:p.process_type, process_type:p.title,
             title:p.title, domain:(p.process_type==='financial_stability'?'economy':'geopolitics'),
-            process_place:(p.places&&p.places.join(', '))||'—', severity:(p.severity!=null?p.severity:(p.confidence?Math.round(p.confidence*100):50)),
-            pressure:(p.pressure!=null?p.pressure:null), phase:'active', health:'Preview',
-            countries:p.places||[], _preview:p };
+            primary_domain:(p.process_type==='financial_stability'?'economy':'geopolitics'),
+            process_place:(p.places&&p.places.join(', '))||'—', severity:_pvSev,
+            pressure:_pvPres, priority:_pvSev, phase:'active', lifecycle_stage:'active', health:'Preview',
+            evidence_count:(p.member_count||0), countries:p.places||[], _preview:p };
           _data.signals=_data.signals||[]; _data.signals.unshift(sig); _byId[sig.signal_id]=sig;
         });
         renderProc();
