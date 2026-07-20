@@ -11553,6 +11553,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(/актив|усилен|рост|escalat/.test(stage)||/actie|escalat|active/.test(ph)) o.push('Продолжаются измерения состояния; система отслеживает динамику процесса.');
     else if(/затух|стабил|ослаб|dormant|de-escal/.test(stage)) o.push('Ведётся оценка состояния: выраженной новой активности не зарегистрировано.');
     return o.slice(0,2); }
+  var _PVBADGE='<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;letter-spacing:.08em;color:#0a0a0a;background:#B8973A;border-radius:3px;padding:2px 6px 2px 4px;margin-right:7px;vertical-align:2px"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5 18a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-8.5V3"/><path d="M8 14h8"/></svg>PREVIEW</span>';
+  function _pvCleanTitle(t){ return String(t||'').replace(/^[🧪\s]+/,'').replace(/^Инфраструктурный процесс — /,'Инфраструктура: ').replace(/^Финансовая устойчивость.*/,'Финансовая устойчивость'); }
   function _previewFields(p){
     var H='<div style="margin-top:7px;padding:7px 9px;border-left:2px solid rgba(184,151,58,.4);font-size:10.5px;line-height:1.6;color:#b8c2cf">';
     if(p.process_type==='infrastructure'){
@@ -11579,21 +11581,21 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(b.terr>1) scale.push(b.terr+' территорий');
     if(b.count>1) scale.push(b.count+' проявлений');
     var kidsHtml='';
-    if(b.kids.length){
+    var _pvInner=(s.is_preview&&s._preview)?_previewFields(s._preview):'';
+    if(b.kids.length || _pvInner){
       kidsHtml='<div class="gpc-kids" id="k_'+esc(s.signal_id)+'" style="display:none;margin-top:8px;border-top:0.5px solid rgba(184,151,58,0.1);padding-top:4px">'
-        +b.kids.slice(0,40).map(childRow).join('')+'</div>';
+        +_pvInner+b.kids.slice(0,40).map(childRow).join('')+'</div>';
     }
     return '<div class="gpc" data-id="'+esc(s.signal_id)+'">'
       +'<div class="gpc-edge" style="background:'+pcol+'"></div>'
       +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
       +'<div class="gpc-type"><span>'+esc(dom)+'</span></div>'
-      +'<div class="gpc-title">'+(s.is_preview?'<span style="display:inline-block;font-size:8px;font-weight:700;letter-spacing:.08em;color:#0a0a0a;background:#B8973A;border-radius:3px;padding:1px 5px;margin-right:6px;vertical-align:1px">PREVIEW</span>':'')+esc(s.is_preview?s.title:_procDisp(b.type))+'</div>'
+      +'<div class="gpc-title">'+(s.is_preview?_PVBADGE:'')+esc(s.is_preview?_pvCleanTitle(s.title):_procDisp(b.type))+'</div>'
       +'<div class="gpc-place">'+esc(s.process_place||'—')+'</div>'
-      +(s.is_preview&&s._preview?_previewFields(s._preview):'')
       +(isPro()?'<div class="gpc-m">'+mi('Приоритет',s.priority||0)+mi('Тяжесть',sv)+mi('Давление',pe)+'</div>':'')
       +'<div class="gpc-chips"><span class="gpc-ch" style="color:'+pcol+';border-color:'+pcol+'44">'+ps+'</span>'
         +'<span class="gpc-ch">'+esc(scale.join(' · '))+'</span></div>'
-      +(b.kids.length?'<div class="gpc-exp" onclick="grdfToggleKids(event,\''+esc(s.signal_id)+'\')" style="margin-top:7px;font-size:11px;color:#B8973A;cursor:pointer;user-select:none;-webkit-user-select:none">&#9656; '+b.kids.length+' региональных проявлений</div>':'')
+      +((b.kids.length||s.is_preview)?'<div class="gpc-exp" onclick="grdfToggleKids(event,\''+esc(s.signal_id)+'\')" style="margin-top:7px;font-size:11px;color:#B8973A;cursor:pointer;user-select:none;-webkit-user-select:none">&#9656; '+(b.kids.length?(b.kids.length+' региональных проявлений'):'подробности процесса')+'</div>':'')
       +kidsHtml
     +'</div>';
   }
