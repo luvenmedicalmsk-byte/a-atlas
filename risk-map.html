@@ -11922,7 +11922,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         _relH+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
         _relH+='<span style="color:rgba(232,224,208,0.92);font-size:13px"><span style="color:'+_acol+';margin-right:5px">'+esc(r.arrow||"·")+'</span>'+esc(r.target_title||"процесс")+'</span>';
         _relH+='<span style="color:#8a93a6;font-size:11px">'+_rc+'%</span></div>';
-        _relH+='<div style="font-size:11px;color:'+_acol+';margin-top:2px">'+esc(r.label||"связан")+'</div>';
+        _relH+='<div style="font-size:11px;color:'+_acol+';margin-top:2px">'+esc(r.natural_phrase||r.label||"связан")+'</div>';
         if(r.explanation){ _relH+='<div style="font-size:10.5px;color:#6f7d8a;margin-top:3px;line-height:1.4">'+esc(r.explanation)+'</div>'; }
         _relH+='</div>';
       });
