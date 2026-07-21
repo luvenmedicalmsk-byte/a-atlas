@@ -11912,19 +11912,26 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       if(_im.explanation){ _imH+='<p class="gd-note" style="line-height:1.5;color:#8a93a6;margin-top:7px;font-size:11.5px">'+esc(_im.explanation)+'</p>'; }
       H+='<div class="gd-sec"><div class="gd-sh">Системная значимость</div>'+_imH+'</div>';
     }
-    // ADR-018: Связанные процессы
+    // ADR-023: Связанные процессы с семантической классификацией (группировка по классам)
     if(s.relationships && s.relationships.length){
       var _relH='';
-      s.relationships.forEach(function(r){
-        var _rc=Math.round((r.confidence||0)*100);
-        var _acol=(r.relationship_type==="amplifies"||r.relationship_type==="causes")?"#e0a458":(r.relationship_type==="suppresses")?"#7fb069":"rgba(148,163,184,0.8)";
-        _relH+='<div style="padding:8px 0;border-bottom:0.5px solid rgba(184,151,58,0.08)" onclick="openDetail(\''+esc(r.target_process)+'\')">';
-        _relH+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
-        _relH+='<span style="color:rgba(232,224,208,0.92);font-size:13px"><span style="color:'+_acol+';margin-right:5px">'+esc(r.arrow||"·")+'</span>'+esc(r.target_title||"процесс")+'</span>';
-        _relH+='<span style="color:#8a93a6;font-size:11px">'+_rc+'%</span></div>';
-        _relH+='<div style="font-size:11px;color:'+_acol+';margin-top:2px">'+esc(r.natural_phrase||r.label||"связан")+'</div>';
-        if(r.explanation){ _relH+='<div style="font-size:10.5px;color:#6f7d8a;margin-top:3px;line-height:1.4">'+esc(r.explanation)+'</div>'; }
-        _relH+='</div>';
+      // группируем по семантическому классу (A/B/C/E — причинные, уже отсортированы)
+      var _CLS_LBL={A:"Прямое влияние",B:"Последствия",C:"Реакция системы",E:"Стратегический контекст"};
+      var _CLS_COL={A:"#e0a458",B:"#D4AF5A",C:"#9b7fc7",E:"#7f9bc7"};
+      var _grouped={};
+      s.relationships.forEach(function(r){ var c=r.sem_class||"A"; if(!_grouped[c])_grouped[c]=[]; _grouped[c].push(r); });
+      ["A","B","C","E"].forEach(function(cls){
+        var arr=_grouped[cls]; if(!arr||!arr.length) return;
+        _relH+='<div style="font-size:9.5px;letter-spacing:0.06em;text-transform:uppercase;color:'+_CLS_COL[cls]+';margin:12px 0 5px;font-weight:600">'+_CLS_LBL[cls]+'</div>';
+        arr.forEach(function(r){
+          var _rc=Math.round((r.confidence||0)*100);
+          _relH+='<div style="padding:7px 0;border-bottom:0.5px solid rgba(184,151,58,0.08)" onclick="openDetail(\''+esc(r.target_process)+'\')">';
+          _relH+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
+          _relH+='<span style="color:rgba(232,224,208,0.92);font-size:13px">'+esc(r.target_title||"процесс")+'</span>';
+          _relH+='<span style="color:#8a93a6;font-size:11px">'+_rc+'%</span></div>';
+          _relH+='<div style="font-size:11px;color:'+_CLS_COL[cls]+';margin-top:2px">'+esc(r.class_phrase||r.natural_phrase||"связан")+'</div>';
+          _relH+='</div>';
+        });
       });
       var _ctxH='';
       // ADR-018 Phase 5: системная роль (бейдж + объяснение)
@@ -11937,6 +11944,16 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       }
       if(s.relationship_context){ _ctxH+='<p class="gd-note" style="line-height:1.5;color:rgba(212,175,90,0.82);margin-bottom:9px;font-size:12px">'+esc(s.relationship_context)+'</p>'; }
       H+='<div class="gd-sec"><div class="gd-sh">Связанные процессы</div>'+_ctxH+_relH+'</div>';
+    }
+    // ADR-023 Этап 5: Контекст-блок — параллельные процессы (НЕ причинность, RELSEM-8)
+    if(s.context_processes && s.context_processes.length){
+      var _cxH='<div style="font-size:11px;color:#8a93a6;line-height:1.6;margin-bottom:6px">Развивается одновременно, без причинной связи:</div>';
+      _cxH+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+      s.context_processes.forEach(function(c){
+        _cxH+='<span style="font-size:11.5px;color:rgba(232,224,208,0.8);padding:4px 10px;border-radius:12px;background:rgba(148,163,184,0.08);border:0.5px solid rgba(148,163,184,0.15);cursor:pointer" onclick="openDetail(\''+esc(c.target_process)+'\')">'+esc(c.target_title||"процесс")+'</span>';
+      });
+      _cxH+='</div>';
+      H+='<div class="gd-sec"><div class="gd-sh">Сопутствующие процессы</div>'+_cxH+'</div>';
     }
     // ADR-019 Phase 2: Каскад-дерево (тип перехода + сила ребра + ветвление + дисклеймер)
     if(s.cascade && s.cascade.tree && s.cascade.tree.length){
