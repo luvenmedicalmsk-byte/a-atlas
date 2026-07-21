@@ -10555,10 +10555,10 @@ function grdfRenderSignals(dom){
   var feed = document.getElementById('grdf-sig-feed');
   var cnt  = document.getElementById('grdf-sig-count');
   if(!feed) return;
-  var src = (typeof window._liveEvents==='function') ? window._liveEvents() : ((typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : []);
-  if(typeof NEWS_EVENTS!=='undefined' && NEWS_EVENTS && NEWS_EVENTS.length) src = src.concat(NEWS_EVENTS);
-  // safety net: re-bin obvious military/conflict news mis-tagged as climate/social
-  src.forEach(function(e){ var nd=_fixDomain(e); if(nd) e.domain=nd; });
+  // ЕДИНЫЙ ИСТОЧНИК (как карта и радар): _signalDataset() — одинаковое число событий везде
+  var src = (typeof window._signalDataset==='function') ? window._signalDataset()
+          : ((typeof window._liveEvents==='function') ? window._liveEvents() : ((typeof ALL_EVENTS!=='undefined' && ALL_EVENTS) ? ALL_EVENTS.slice() : []));
+  // _signalDataset уже применил NEWS + _fixDomain + блок-лист + clickbait + шум + дедуп
   var items = (dom==='all') ? src.slice() : src.filter(function(e){ return e.domain===dom; });
   // Source curation — hide items whose source label is on the blocklist (exact match, география не трогается)
   items = items.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
