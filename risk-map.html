@@ -11598,12 +11598,19 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       H+='<div><span style="color:#8a93a6">События:</span> '+(p.member_count||0)+' · <span style="color:#8a93a6">гео-охват:</span> '+(p.geo_spread||0)+' · <span style="color:#8a93a6">уверенность:</span> '+Math.round((p.confidence||0)*100)+'%</div>';
       if(p.evidence&&p.evidence.length) H+='<div style="margin-top:4px;color:#8a93a6">Свидетельства:</div>'+p.evidence.slice(0,3).map(function(e){return '<div style="color:#94a3b8;padding-left:8px">• '+esc(e)+'</div>';}).join('');
     } else if(p.process_type==='financial_stability'){
-      H+='<div><span style="color:#8a93a6">FSS:</span> <b style="color:#D4AF5A">'+(p.fss!=null?p.fss:'—')+'</b>/100 · <span style="color:#8a93a6">давление:</span> '+(p.pressure!=null?p.pressure:'—')+'</div>';
+      var _isSyn=(p.synthetic===true);
+      H+='<div><span style="color:#8a93a6">FSS:</span> <b style="color:#D4AF5A">'+(p.fss!=null?p.fss:'—')+'</b>/100 · <span style="color:#8a93a6">давление:</span> '+(p.pressure!=null?p.pressure:'—')+((p.status)?' · <span style="color:#8a93a6">'+esc(p.status)+'</span>':'')+'</div>';
       if(p.active_indicators&&p.active_indicators.length){
-        H+='<div style="margin-top:4px;color:#8a93a6">Индикаторы (synthetic):</div>';
-        H+=p.active_indicators.map(function(i){return '<div style="color:#94a3b8;padding-left:8px">• '+esc(i.name)+': '+esc(i.value)+' <span style="color:#6f7d8a">['+esc(i.status)+']</span></div>';}).join('');
+        H+='<div style="margin-top:4px;color:#8a93a6">Индикаторы'+(_isSyn?' (synthetic)':' · '+esc((p.active_indicators[0]&&p.active_indicators[0].source)||'ЦБ РФ'))+':</div>';
+        H+=p.active_indicators.map(function(i){
+          var _dir=(i.direction==='up')?'▲':(i.direction==='down')?'▼':'·';
+          var _dcol=(i.direction==='up')?'#e0a458':(i.direction==='down')?'#7fb069':'#6f7d8a';
+          var _vel=(i.velocity!=null&&i.velocity!==0)?(' <span style="color:'+_dcol+'">'+_dir+' '+i.velocity+'%</span>'):'';
+          return '<div style="color:#94a3b8;padding-left:8px">• '+esc(i.name)+': <b>'+esc(i.value)+'</b>'+_vel+'</div>';
+        }).join('');
       }
-      H+='<div style="margin-top:4px;font-size:9px;color:#6f7d8a">'+esc(p.note||'')+'</div>';
+      if(p.reasons&&p.reasons.length){ H+='<div style="margin-top:4px;font-size:9px;color:#6f7d8a">'+esc(p.reasons.join('; '))+'</div>'; }
+      else if(p.note){ H+='<div style="margin-top:4px;font-size:9px;color:#6f7d8a">'+esc(p.note)+'</div>'; }
     }
     return H+'</div>';
   }
@@ -11615,7 +11622,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(b.terr>1) scale.push(b.terr+' территорий');
     if(b.count>1) scale.push(b.count+' проявлений');
     var kidsHtml='';
-    var _pvInner=(s.is_preview&&s._preview)?_previewFields(s._preview):'';
+    var _pvInner=((s.is_preview||s.is_production)&&s._preview)?_previewFields(s._preview):'';
     if(b.kids.length || _pvInner){
       kidsHtml='<div class="gpc-kids" id="k_'+esc(s.signal_id)+'" style="display:none;margin-top:8px;border-top:0.5px solid rgba(184,151,58,0.1);padding-top:4px">'
         +_pvInner+b.kids.slice(0,40).map(childRow).join('')+'</div>';
