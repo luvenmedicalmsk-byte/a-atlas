@@ -11802,6 +11802,25 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         +((s.included_processes&&s.included_processes.length>1)?'<div class="gd-cl" style="margin-top:9px">Развитие процесса</div>'+s.included_processes.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join(''):'')
         +'</div>';
     }
+    // ADR-017: Объяснение (почему процесс существует / почему в этой стадии)
+    if(s.explanation){
+      var _ex=s.explanation;
+      var _exH='';
+      if(_ex.origin&&_ex.origin.text){ _exH+='<div class="gd-kv"><div class="k">Происхождение</div><div class="v" style="font-size:12px;line-height:1.5">'+esc(_ex.origin.text)+'</div></div>'; }
+      if(_ex.attachment&&_ex.attachment.text){
+        _exH+='<p class="gd-note" style="margin:8px 0 4px">'+esc(_ex.attachment.text)+'</p>';
+        var _crit=_ex.attachment.criteria||[];
+        if(_crit.length){ _exH+='<div style="font-size:11px;color:#8a93a6;line-height:1.7">'+_crit.map(function(c){return '✓ '+esc(c[0]);}).join('<br>')+'</div>'; }
+        else if(_ex.attachment.reasons){ _exH+='<div style="font-size:11px;color:#8a93a6;line-height:1.7">'+_ex.attachment.reasons.map(function(r){return '• '+esc(r);}).join('<br>')+'</div>'; }
+      }
+      if(_ex.lifecycle_transition){ var _lt=_ex.lifecycle_transition; _exH+='<div class="gd-cl" style="margin-top:9px">Переход стадии</div><p class="gd-note">'+esc(_lt.from)+' → '+esc(_lt.to)+': '+esc(_lt.reason)+'</p>'; }
+      if(_ex.evolution&&_ex.evolution.changes&&_ex.evolution.changes.length){ _exH+='<div class="gd-cl" style="margin-top:9px">Изменения</div><p class="gd-note">'+esc(_ex.evolution.text)+'</p>'; }
+      if(_ex.merge&&_ex.merge.text){ _exH+='<div class="gd-cl" style="margin-top:9px">Объединение</div><p class="gd-note">'+esc(_ex.merge.text)+'</p>'; }
+      if(_exH){
+        var _conf=(_ex.confidence!=null)?Math.round(_ex.confidence*100):null;
+        H+='<div class="gd-sec"><div class="gd-sh">Объяснение'+(_conf!=null?' <span style="font-size:10px;color:#8a93a6;font-weight:400">· уверенность '+_conf+'%</span>':'')+'</div>'+_exH+'</div>';
+      }
+    }
     // Динамика
     H+='<div class="gd-sec"><div class="gd-sh">Динамика</div><div class="gd-dm">'
       +'<div class="c"><div class="k">Давление</div><div class="v" style="color:'+scol(s.pressure)+'">'+(s.pressure||0)+'</div></div>'
