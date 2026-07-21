@@ -11857,7 +11857,15 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         _relH+='</div>';
       });
       var _ctxH='';
-      if(s.relationship_context){ _ctxH='<p class="gd-note" style="line-height:1.5;color:rgba(212,175,90,0.82);margin-bottom:9px;font-size:12px">'+esc(s.relationship_context)+'</p>'; }
+      // ADR-018 Phase 5: системная роль (бейдж + объяснение)
+      if(s.system_role && s.system_role.role!=="isolated"){
+        var _sr=s.system_role;
+        _ctxH+='<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:14px;background:rgba(184,151,58,0.08);border:0.5px solid '+esc(_sr.role_hex||"#B8973A")+'40;margin-bottom:9px">';
+        _ctxH+='<span style="font-size:13px">'+esc(_sr.role_badge||"")+'</span>';
+        _ctxH+='<span style="font-size:12px;color:'+esc(_sr.role_hex||"#D4AF5A")+';font-weight:600;letter-spacing:0.02em">'+esc(_sr.role_summary||_sr.role_label||"")+'</span></div>';
+        if(_sr.role_explanation){ _ctxH+='<p class="gd-note" style="line-height:1.5;color:#8a93a6;margin-bottom:9px;font-size:11.5px">'+esc(_sr.role_explanation)+'</p>'; }
+      }
+      if(s.relationship_context){ _ctxH+='<p class="gd-note" style="line-height:1.5;color:rgba(212,175,90,0.82);margin-bottom:9px;font-size:12px">'+esc(s.relationship_context)+'</p>'; }
       H+='<div class="gd-sec"><div class="gd-sh">Связанные процессы</div>'+_ctxH+_relH+'</div>';
     }
     // Динамика
