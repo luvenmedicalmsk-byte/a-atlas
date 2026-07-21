@@ -11882,6 +11882,24 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       if(s.relationship_context){ _ctxH+='<p class="gd-note" style="line-height:1.5;color:rgba(212,175,90,0.82);margin-bottom:9px;font-size:12px">'+esc(s.relationship_context)+'</p>'; }
       H+='<div class="gd-sec"><div class="gd-sh">Связанные процессы</div>'+_ctxH+_relH+'</div>';
     }
+    // ADR-019: Возможный каскад влияния
+    if(s.cascade && s.cascade.levels && s.cascade.levels.length){
+      var _cas=s.cascade;
+      var _casH='';
+      if(_cas.summary){ _casH+='<p class="gd-note" style="line-height:1.55;color:rgba(212,175,90,0.82);margin-bottom:10px;font-size:12px">'+esc(_cas.summary)+'</p>'; }
+      _cas.levels.forEach(function(lvl, li){
+        var _pct=Math.round((lvl[0]&&lvl[0].confidence||0)*100);
+        _casH+='<div style="margin-top:'+(li?9:2)+'px"><div style="font-size:10.5px;color:#8a93a6;letter-spacing:0.04em;margin-bottom:4px">УРОВЕНЬ '+(li+1)+' · связь '+_pct+'%</div>';
+        lvl.forEach(function(n){
+          var _viaTxt=(n.via==="amplifies")?"усиливает":(n.via==="causes")?"формирует":"влияет";
+          _casH+='<div style="padding:5px 0;padding-left:'+(li*10)+'px;font-size:12.5px;color:rgba(232,224,208,0.88)" onclick="openDetail(\''+esc(n.process_id)+'\')">';
+          _casH+='<span style="color:rgba(148,163,184,0.6);font-size:10px;margin-right:5px">'+esc(_viaTxt)+' →</span>'+esc(n.title||"процесс")+'</div>';
+        });
+        _casH+='</div>';
+      });
+      if(_cas.cross_domain){ _casH+='<div style="margin-top:9px;font-size:10.5px;color:#e0a458">Межотраслевой каскад · затрагивает '+(_cas.domains_touched||[]).length+' домена</div>'; }
+      H+='<div class="gd-sec"><div class="gd-sh">Возможный каскад влияния</div>'+_casH+'</div>';
+    }
     // Динамика
     H+='<div class="gd-sec"><div class="gd-sh">Динамика</div><div class="gd-dm">'
       +'<div class="c"><div class="k">Давление</div><div class="v" style="color:'+scol(s.pressure)+'">'+(s.pressure||0)+'</div></div>'
