@@ -11775,6 +11775,25 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'<div class="k">Текущая стадия</div><div class="v" style="color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div>'
       +'<div class="k">Возраст процесса</div><div class="v">'+ageDur(s.first_seen)+'</div>'
       +'<div class="k">Последнее обновление</div><div class="v">'+ago(s.last_seen||s.last_update)+'</div></div></div>';
+    // Financial-секция: FSS + реальные индикаторы (ЦБ РФ) для financial_stability
+    if(s._preview && s._preview.process_type==='financial_stability'){
+      var _fp=s._preview;
+      H+='<div class="gd-sec"><div class="gd-sh">Финансовая устойчивость</div>'
+        +'<div class="gd-kv"><div class="k">Индекс устойчивости (FSS)</div><div class="v" style="color:#D4AF5A">'+(_fp.fss!=null?_fp.fss:'—')+'/100</div>'
+        +'<div class="k">Финансовое давление</div><div class="v">'+(_fp.pressure!=null?_fp.pressure:'—')+'</div>'
+        +'<div class="k">Статус</div><div class="v">'+esc(_fp.status||'—')+'</div></div>';
+      if(_fp.active_indicators&&_fp.active_indicators.length){
+        H+='<div class="gd-cl">Индикаторы · '+esc((_fp.active_indicators[0]&&_fp.active_indicators[0].source)||'ЦБ РФ')+'</div>';
+        H+=_fp.active_indicators.map(function(i){
+          var _dir=(i.direction==='up')?'▲':(i.direction==='down')?'▼':'·';
+          var _dcol=(i.direction==='up')?'#e0a458':(i.direction==='down')?'#7fb069':'rgba(148,163,184,0.7)';
+          var _vel=(i.velocity!=null&&i.velocity!==0)?('<span style="color:'+_dcol+';margin-left:6px">'+_dir+' '+i.velocity+'%</span>'):'';
+          return '<div class="gd-ev"><div><div class="t">'+esc(i.name)+'</div><div class="m">'+esc(i.source||'')+'</div></div><div class="s" style="color:#e8e4dc;font-size:15px">'+esc(i.value)+_vel+'</div></div>';
+        }).join('');
+      }
+      if(_fp.reasons&&_fp.reasons.length){ H+='<p class="gd-note" style="margin-top:9px">'+esc(_fp.reasons.join('; '))+'</p>'; }
+      H+='</div>';
+    }
     // Состав процесса (только если объединены >1)
     if(s.merged_count>1){
       H+='<div class="gd-sec"><div class="gd-sh">Состав процесса</div>'
