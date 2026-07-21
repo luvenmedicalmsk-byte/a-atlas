@@ -11456,7 +11456,10 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var f=document.getElementById('grdf-sig-feed'), pf=document.getElementById('grdf-proc-feed'), fil=document.getElementById('grdf-sig-filters');
     if(f) f.style.display=ev?'':'none';
     if(fil) fil.style.display=ev?'':'none';
-    var _sw=document.getElementById('grdf-sic-switch'); if(_sw) _sw.style.display='none'; // Оперативная/Контекст — только в Хронологии, не в Процессах
+    // Оперативная/Контекст — СТРОГО только в Хронологии (events), никогда в Процессах.
+    // Детерминированно: показываем сразу если events И Pro-тир (не ждём async grdfRenderSignals — устраняет мигание/гонку тира)
+    var _sw=document.getElementById('grdf-sic-switch');
+    if(_sw){ _sw.style.display = (ev && window._sicRoutingOn && window._sicRoutingOn()) ? '' : 'none'; }
     if(pf) pf.style.display=ev?'none':'';
     if(_explEl) _explEl.style.display=ev?'':'none';
     var _pd=document.getElementById('grdf-proc-desc'); if(_pd) _pd.style.display=ev?'none':'';
@@ -11652,7 +11655,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var _CM={'Причина для':['#E24A3B','→'],'Следствие':['#1faacc','←'],'Усиливает':['#FFD700','▲'],'Подавляет':['#5fae7a','▼'],'Связанные':['rgba(148,163,184,0.75)','•']};
     var cm=_CM[label]||['rgba(148,163,184,0.75)','•'];
     return '<div style="margin-bottom:11px"><div class="gd-cl" style="color:'+cm[0]+';font-weight:600"><span style="display:inline-block;width:14px">'+cm[1]+'</span>'+label+'</div>'+ids.map(function(i){return '<span class="gd-conn" data-id="'+esc(i)+'" style="border-color:'+cm[0]+'66">'+esc(_byId[i].title)+'</span>';}).join('')+'</div>'; }
-  window.__grdfProcTierRefresh=function(){ try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} };
+  window.__grdfProcTierRefresh=function(){ try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} 
+    // после резолва тира: обновить видимость SIC-переключателя сразу (только в Хронологии, устраняет «появляется через обновление»)
+    try{ var _sw=document.getElementById('grdf-sic-switch'); if(_sw){ var _inSig=(typeof _grdfNav!=='undefined'&&_grdfNav==='signals'&&(typeof _mode==='undefined'||_mode==='events')); _sw.style.display=(_inSig&&window._sicRoutingOn&&window._sicRoutingOn())?'':'none'; } }catch(e){} };
   function openDetail(id){
     var s=_byId[id]; if(!s) return; window.__grdfLastProcId=id;
     // gated процесс в FREE — не раскрываем детали, показываем Signal Pro paywall
