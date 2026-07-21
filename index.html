@@ -11856,7 +11856,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         if(r.explanation){ _relH+='<div style="font-size:10.5px;color:#6f7d8a;margin-top:3px;line-height:1.4">'+esc(r.explanation)+'</div>'; }
         _relH+='</div>';
       });
-      H+='<div class="gd-sec"><div class="gd-sh">Связанные процессы</div>'+_relH+'</div>';
+      var _ctxH='';
+      if(s.relationship_context){ _ctxH='<p class="gd-note" style="line-height:1.5;color:rgba(212,175,90,0.82);margin-bottom:9px;font-size:12px">'+esc(s.relationship_context)+'</p>'; }
+      H+='<div class="gd-sec"><div class="gd-sh">Связанные процессы</div>'+_ctxH+_relH+'</div>';
     }
     // Динамика
     H+='<div class="gd-sec"><div class="gd-sh">Динамика</div><div class="gd-dm">'
