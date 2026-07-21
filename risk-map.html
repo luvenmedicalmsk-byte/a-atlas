@@ -11856,6 +11856,22 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       var _hasContent=!!(_ex.human_summary||(_ex.meaning&&_ex.meaning.current_state)||(_ex.what_changed&&_ex.what_changed.length)||_techH);
       if(_exH && _hasContent){ H+='<div class="gd-sec"><div class="gd-sh">Объяснение</div>'+_exH+'</div>'; }
     }
+    // ADR-020: Системная значимость (компактный блок со звёздами)
+    if(s.importance && s.importance.score>0){
+      var _im=s.importance;
+      var _stars='';
+      for(var _si=0;_si<5;_si++){ _stars+='<span style="color:'+(_si<_im.stars?"#D4AF5A":"rgba(148,163,184,0.25)")+';font-size:15px">\u2605</span>'; }
+      var _imH='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
+      _imH+='<div>'+_stars+'</div>';
+      _imH+='<div style="font-size:13px;color:#D4AF5A;font-weight:600">'+esc(_im.centrality||"")+'</div></div>';
+      var _facts=[];
+      if(_im.connects_processes>0){ _facts.push('Соединяет '+_im.connects_processes+' процессов'); }
+      if(_im.cascade_reach>0){ _facts.push('Каскад: '+_im.cascade_reach+' процессов'); }
+      if(_im.domains_connected>1){ _facts.push('Связывает '+_im.domains_connected+' домена'); }
+      if(_facts.length){ _imH+='<div style="font-size:12px;color:rgba(232,224,208,0.82);line-height:1.7">'+_facts.map(function(x){return '· '+esc(x);}).join('<br>')+'</div>'; }
+      if(_im.explanation){ _imH+='<p class="gd-note" style="line-height:1.5;color:#8a93a6;margin-top:7px;font-size:11.5px">'+esc(_im.explanation)+'</p>'; }
+      H+='<div class="gd-sec"><div class="gd-sh">Системная значимость</div>'+_imH+'</div>';
+    }
     // ADR-018: Связанные процессы
     if(s.relationships && s.relationships.length){
       var _relH='';
