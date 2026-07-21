@@ -3946,11 +3946,13 @@ window.CC = {
 function _tierRank(t){ return ({free:0,signal:1,strategic:2,elite:3,admin:4})[t]||0; }
 window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-need-tier'){ var _pro=false; try{ _pro=_tierRank(CC.tier())>=1; }catch(e){} if(ev.source){ try{ ev.source.postMessage({t:'atlas-tier',pro:_pro,rank:_tierRank(CC.tier())},'*'); }catch(e){} } } });
 // Никогда не понижаем тариф из ответов отдельных эндпоинтов — только повышаем.
-function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _clientCaps=_getClientCaps(t); try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} } }
+function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _clientCaps=_getClientCaps(t); try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} } try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }
 // Авторитетный тариф из сессии — не зависит от того, какой эндпоинт ответил первым.
 async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} if(d&&d.customer_type){localStorage.setItem('cc_ctype',String(d.customer_type));}else{localStorage.removeItem('cc_ctype');} }catch(_s){} } }catch(e){} }
 window._ccRefreshTier=_ccEstablishTier;
-try{ _ccEstablishTier(); }catch(e){}
+// единый source of truth для видимости SIC-переключателя (устраняет гонку тира: показываем ТОЛЬКО в Хронологии+events+Pro)
+window._grdfSyncSicSwitch=function(){ try{ var _sw=document.getElementById('grdf-sic-switch'); if(!_sw) return; var _nav=(typeof _grdfNav!=='undefined')?_grdfNav:''; var _md=(typeof _mode!=='undefined')?_mode:'events'; var _show=(_nav==='signals' && _md==='events' && window._sicRoutingOn && window._sicRoutingOn()); _sw.style.display=_show?'':'none'; }catch(e){} };
+try{ _ccEstablishTier().then(function(){ try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }); }catch(e){}
 
 // ── Fetch helpers ──────────────────────────────────────────────────────────
 window._COV_TOTALS=window._COV_TOTALS||null;
@@ -11458,8 +11460,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(fil) fil.style.display=ev?'':'none';
     // Оперативная/Контекст — СТРОГО только в Хронологии (events), никогда в Процессах.
     // Детерминированно: показываем сразу если events И Pro-тир (не ждём async grdfRenderSignals — устраняет мигание/гонку тира)
-    var _sw=document.getElementById('grdf-sic-switch');
-    if(_sw){ _sw.style.display = (ev && window._sicRoutingOn && window._sicRoutingOn()) ? '' : 'none'; }
+    if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch();
     if(pf) pf.style.display=ev?'none':'';
     if(_explEl) _explEl.style.display=ev?'':'none';
     var _pd=document.getElementById('grdf-proc-desc'); if(_pd) _pd.style.display=ev?'none':'';
