@@ -8015,6 +8015,7 @@ function _evM(val, lbl, col) {
       <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#D4AF5A;line-height:1.22;letter-spacing:0.05em;margin-bottom:8px">Системный анализ</div>
       <div style="font-family:'Montserrat',sans-serif;font-size:11px;color:rgba(232,224,208,0.6);line-height:1.7;letter-spacing:0.03em">Системный анализ объединяет результаты аналитических движков Atlas Intelligence. Система автоматически анализирует тысячи сигналов, сопоставляет их с историческими моделями и формирует стратегические выводы без участия человека. Ниже представлены результаты анализа текущей глобальной ситуации.</div>
     </div>
+    <div id="grdf-system-state"></div>
     <div id="grdf-atlas-brief"></div>
     <div id="grdf-atlas-market"></div>
     <div id="grdf-atlas-dynamics"></div>
@@ -9752,6 +9753,41 @@ window.grdfNavTo = function(tab) {
   }
 }
 
+var _sysStateCache=null;
+function grdfRenderSystemState(){
+  var box=document.getElementById('grdf-system-state'); if(!box) return;
+  function draw(st){
+    if(!st||!st.health){ box.innerHTML=''; return; }
+    var h=st.health;
+    var H='<div style="margin-bottom:18px;padding:14px;border:0.5px solid rgba(184,151,58,0.18);border-radius:4px;background:rgba(184,151,58,0.03)">';
+    H+='<div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:#D4AF5A;margin-bottom:4px">Состояние системы</div>';
+    if(st.balance){ H+='<div style="font-size:11px;color:#e0a458;margin-bottom:10px">Характер: '+st.balance.label+' · '+st.balance.note+'</div>'; }
+    // health-показатели сеткой
+    var cells=[['Активных процессов',h.active_processes],['Центральных узлов',h.central_nodes],['Каскадов',h.cascades],['Междоменных',h.cross_domain_cascades],['Средняя глубина',h.avg_cascade_depth],['Средняя значимость',h.avg_importance]];
+    H+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">';
+    cells.forEach(function(c){ H+='<div><div style="font-size:22px;font-family:\'Cormorant Garamond\',serif;color:rgba(232,224,208,0.95)">'+c[1]+'</div><div style="font-size:9.5px;color:#8a93a6;letter-spacing:0.03em;text-transform:uppercase">'+c[0]+'</div></div>'; });
+    H+='</div>';
+    // карта давления
+    if(st.pressure_map&&st.pressure_map.length){
+      H+='<div style="font-size:10px;color:#8a93a6;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:7px">Карта давления</div>';
+      st.pressure_map.forEach(function(p){
+        var w=Math.max(3,p.percent);
+        H+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">';
+        H+='<div style="width:78px;font-size:11px;color:rgba(232,224,208,0.8)">'+p.domain_ru+'</div>';
+        H+='<div style="flex:1;height:8px;background:rgba(148,163,184,0.1);border-radius:2px;overflow:hidden"><div style="width:'+w+'%;height:100%;background:linear-gradient(90deg,#B8973A,#D4AF5A)"></div></div>';
+        H+='<div style="width:34px;text-align:right;font-size:10.5px;color:#8a93a6">'+p.percent+'%</div></div>';
+      });
+    }
+    // резюме
+    if(st.summary){ H+='<p style="font-size:11.5px;color:rgba(232,224,208,0.75);line-height:1.55;margin-top:12px">'+st.summary+'</p>'; }
+    if(st.disclaimer){ H+='<p style="font-size:9.5px;color:#8a93a6;font-style:italic;margin-top:6px">'+st.disclaimer+'</p>'; }
+    H+='</div>';
+    box.innerHTML=H;
+  }
+  if(_sysStateCache){ draw(_sysStateCache); return; }
+  fetch('system_state.json?t='+Date.now()).then(function(r){return r.json();}).then(function(st){ _sysStateCache=st; draw(st); }).catch(function(){ box.innerHTML=''; });
+}
+window.grdfRenderSystemState=grdfRenderSystemState;
 function connSetMode(m){
   var tabs=document.querySelectorAll('.conn-tab'); for(var i=0;i<tabs.length;i++){ tabs[i].classList.toggle('active', tabs[i].getAttribute('data-cmode')===m); }
   var fr=document.getElementById('conn-frame'); var aw=document.getElementById('conn-analysis-wrap');
@@ -9760,6 +9796,7 @@ function connSetMode(m){
     if(aw){ if(!aw._moved){ var inner=document.querySelector('.grdf-analytics-screen-inner'); if(inner){ aw.appendChild(inner); aw._moved=true; } } aw.style.display='block'; }
     try{ grdfLoadAccuracyData(); }catch(e){}
     try{ grdfRenderAtlas(); }catch(e){}
+    try{ grdfRenderSystemState(); }catch(e){}
   } else {
     if(aw) aw.style.display='none';
     if(fr){ fr.style.display='block'; try{ if(fr.contentWindow) fr.contentWindow.postMessage({t:'atlas-set-mode', mode:m}, '*'); }catch(e){} }
