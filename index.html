@@ -11842,6 +11842,22 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       var _hasContent=!!(_ex.human_summary||(_ex.meaning&&_ex.meaning.current_state)||(_ex.what_changed&&_ex.what_changed.length)||_techH);
       if(_exH && _hasContent){ H+='<div class="gd-sec"><div class="gd-sh">Объяснение</div>'+_exH+'</div>'; }
     }
+    // ADR-018: Связанные процессы
+    if(s.relationships && s.relationships.length){
+      var _relH='';
+      s.relationships.forEach(function(r){
+        var _rc=Math.round((r.confidence||0)*100);
+        var _acol=(r.relationship_type==="amplifies"||r.relationship_type==="causes")?"#e0a458":(r.relationship_type==="suppresses")?"#7fb069":"rgba(148,163,184,0.8)";
+        _relH+='<div style="padding:8px 0;border-bottom:0.5px solid rgba(184,151,58,0.08)" onclick="openDetail(\''+esc(r.target_process)+'\')">';
+        _relH+='<div style="display:flex;justify-content:space-between;align-items:baseline">';
+        _relH+='<span style="color:rgba(232,224,208,0.92);font-size:13px"><span style="color:'+_acol+';margin-right:5px">'+esc(r.arrow||"·")+'</span>'+esc(r.target_title||"процесс")+'</span>';
+        _relH+='<span style="color:#8a93a6;font-size:11px">'+_rc+'%</span></div>';
+        _relH+='<div style="font-size:11px;color:'+_acol+';margin-top:2px">'+esc(r.label||"связан")+'</div>';
+        if(r.explanation){ _relH+='<div style="font-size:10.5px;color:#6f7d8a;margin-top:3px;line-height:1.4">'+esc(r.explanation)+'</div>'; }
+        _relH+='</div>';
+      });
+      H+='<div class="gd-sec"><div class="gd-sh">Связанные процессы</div>'+_relH+'</div>';
+    }
     // Динамика
     H+='<div class="gd-sec"><div class="gd-sh">Динамика</div><div class="gd-dm">'
       +'<div class="c"><div class="k">Давление</div><div class="v" style="color:'+scol(s.pressure)+'">'+(s.pressure||0)+'</div></div>'
