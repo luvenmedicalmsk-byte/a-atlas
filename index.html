@@ -3958,7 +3958,7 @@ function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _c
 async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} if(d&&d.customer_type){localStorage.setItem('cc_ctype',String(d.customer_type));}else{localStorage.removeItem('cc_ctype');} }catch(_s){} } }catch(e){} }
 window._ccRefreshTier=_ccEstablishTier;
 // единый source of truth для видимости SIC-переключателя (устраняет гонку тира: показываем ТОЛЬКО в Хронологии+events+Pro)
-window._grdfSyncSicSwitch=function(){ try{ var _sw=document.getElementById('grdf-sic-switch'); if(!_sw) return; var _nav=(typeof _grdfNav!=='undefined')?_grdfNav:''; var _md=(typeof _mode!=='undefined')?_mode:'events'; var _inChrono=(_nav==='signals' && _md==='events'); _sw.style.display=_inChrono?'':'none'; }catch(e){} };
+window._grdfSyncSicSwitch=function(){ try{ var _sw=document.getElementById('grdf-sic-switch'); if(!_sw) return; var _sc=document.getElementById('grdf-signals-screen'); var _md=(typeof _mode!=='undefined')?_mode:'events'; var _inChrono=(_sc && _sc.classList.contains('visible') && _md==='events'); _sw.style.display=_inChrono?'':'none'; }catch(e){} };
 try{ _ccEstablishTier().then(function(){ try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }); }catch(e){}
 
 // ── Fetch helpers ──────────────────────────────────────────────────────────
@@ -10602,8 +10602,9 @@ function grdfRenderSignals(dom){
   }
   // SIC routing (канарейка): раздели ленту на Оперативную (реальные события) и Контекст
   // (заявления/аналитика/прогнозы). Реальное никогда не теряется (fail-safe: нераспознанное→оператив).
-  var _sicSw=document.getElementById('grdf-sic-switch');           // статичен в Хронологии (как домены); роутинг lane — ниже
-  // не трогаем display здесь: видимостью управляет _grdfSyncSicSwitch (только Хронология/Процессы), устраняет скачки от async-тира
+  var _sicSw=document.getElementById('grdf-sic-switch');           // статичен в Хронологии (как домены)
+  // синхронизируем видимость при КАЖДОМ рендере ленты (включая смену домена Климат<->Геополитика)
+  if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch();
   // Разделение lane работает ВСЕГДА (switch статичен как домены). Счётчики обновляются независимо от тира.
   var _sicOp=[], _sicCx=[];
   items.forEach(function(e){ (window._sicLane2(e)==='operational'?_sicOp:_sicCx).push(e); });
