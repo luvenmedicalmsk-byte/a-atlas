@@ -2590,20 +2590,20 @@ function showLiveIndicator(state, count) {
   if (!icon || !text) return;
 
   if (state === 'connected') {
-    icon.textContent = '🟩';
+    icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" style="vertical-align:middle"><circle cx="8" cy="8" r="5" fill="#22c55e"/></svg>';
     text.textContent = 'Активно';
     text.style.color = '#cbd5e1';
   } else if (state === 'update') {
-    icon.textContent = '🟨';
+    icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" style="vertical-align:middle"><circle cx="8" cy="8" r="5" fill="#eab308"/></svg>';
     text.textContent = count ? `Пришли новые события · +${count}` : 'Пришли новые события';
     text.style.color = '#D4AF5A';
     setTimeout(() => {
-      icon.textContent = '🟩';
+      icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" style="vertical-align:middle"><circle cx="8" cy="8" r="5" fill="#22c55e"/></svg>';
       text.textContent = 'Активно';
       text.style.color = '#cbd5e1';
     }, 4000);
   } else {
-    icon.textContent = '⬛️';
+    icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" style="vertical-align:middle"><circle cx="8" cy="8" r="5" fill="rgba(203,213,225,0.35)"/></svg>';
     text.textContent = 'Соединение прервано';
     text.style.color = 'rgba(203,213,225,0.4)';
   }
@@ -11761,6 +11761,20 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'</div></div>';
     return H;
   }
+  function _roleSvg(icon, hex){
+    var c=hex||'#B8973A';
+    var paths={
+      'alert':'<circle cx="8" cy="8" r="7" fill="none" stroke="'+c+'" stroke-width="1.4"/><line x1="8" y1="4.5" x2="8" y2="9" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.3" r="0.9" fill="'+c+'"/>',
+      'up':'<path d="M8 3 L13 10 L9.5 10 L9.5 13 L6.5 13 L6.5 10 L3 10 Z" fill="'+c+'"/>',
+      'down':'<path d="M8 13 L3 6 L6.5 6 L6.5 3 L9.5 3 L9.5 6 L13 6 Z" fill="'+c+'"/>',
+      'transit':'<path d="M2 8 L5 5 L5 7 L11 7 L11 5 L14 8 L11 11 L11 9 L5 9 L5 11 Z" fill="'+c+'"/>',
+      'node':'<path d="M8 2 L14 8 L8 14 L2 8 Z" fill="none" stroke="'+c+'" stroke-width="1.3"/><circle cx="8" cy="8" r="2" fill="'+c+'"/>',
+      'check':'<path d="M3 8.5 L6.5 12 L13 4.5" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+      'dot':'<circle cx="8" cy="8" r="3" fill="none" stroke="'+c+'" stroke-width="1.3"/>'
+    };
+    var p=paths[icon]||paths['dot'];
+    return '<svg width="14" height="14" viewBox="0 0 16 16" style="flex-shrink:0;vertical-align:middle">'+p+'</svg>';
+  }
   function detailHTML(s){
     if(!isPro()) return freeDetailHTML(s);   // FREE — демонстрация выполненного анализа
     var g=s.dna||{}, fc=s.forecast||{}, v=s.velocity||{}, ce=s.confidence_evolution||{}, ex=s.explain||{};
@@ -11861,7 +11875,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       if(s.system_role && s.system_role.role!=="isolated"){
         var _sr=s.system_role;
         _ctxH+='<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:14px;background:rgba(184,151,58,0.08);border:0.5px solid '+esc(_sr.role_hex||"#B8973A")+'40;margin-bottom:9px">';
-        _ctxH+='<span style="font-size:13px">'+esc(_sr.role_badge||"")+'</span>';
+        _ctxH+=_roleSvg(_sr.role_icon||"dot", _sr.role_hex);
         _ctxH+='<span style="font-size:12px;color:'+esc(_sr.role_hex||"#D4AF5A")+';font-weight:600;letter-spacing:0.02em">'+esc(_sr.role_summary||_sr.role_label||"")+'</span></div>';
         if(_sr.role_explanation){ _ctxH+='<p class="gd-note" style="line-height:1.5;color:#8a93a6;margin-bottom:9px;font-size:11.5px">'+esc(_sr.role_explanation)+'</p>'; }
       }
