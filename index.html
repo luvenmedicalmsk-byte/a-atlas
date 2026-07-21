@@ -11821,6 +11821,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         if(_mn.scale){ _row+='<span style="margin-left:4px"><span style="color:#8a93a6;font-size:11px">Масштаб:</span> <span style="color:rgba(232,224,208,0.9)">'+esc(_mn.scale.text)+'</span></span>'; }
         if(_row){ _exH+='<div style="margin-top:9px;font-size:13px">'+_row+'</div>'; }
       }
+      // ── ADR-017 Phase 4: Почему важно наблюдать (доменная аналитическая значимость) ──
+      if(_ex.why_watch){ _exH+='<div class="gd-cl" style="margin-top:11px">Почему сейчас важно наблюдать</div><p class="gd-note" style="line-height:1.55;color:rgba(212,175,90,0.85)">'+esc(_ex.why_watch)+'</p>'; }
       // ── Что изменилось (только реальные) ──
       var _wc=_ex.what_changed||[];
       if(_wc.length){ _exH+='<div class="gd-cl" style="margin-top:11px">Что изменилось</div><div style="font-size:12px;color:rgba(232,224,208,0.85);line-height:1.8">'+_wc.map(function(c){return '• '+esc(c);}).join('<br>')+'</div>'; }
