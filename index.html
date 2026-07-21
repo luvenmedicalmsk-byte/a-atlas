@@ -3958,7 +3958,7 @@ function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _c
 async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} if(d&&d.customer_type){localStorage.setItem('cc_ctype',String(d.customer_type));}else{localStorage.removeItem('cc_ctype');} }catch(_s){} } }catch(e){} }
 window._ccRefreshTier=_ccEstablishTier;
 // единый source of truth для видимости SIC-переключателя (устраняет гонку тира: показываем ТОЛЬКО в Хронологии+events+Pro)
-window._grdfSyncSicSwitch=function(){ try{ var _sw=document.getElementById('grdf-sic-switch'); if(!_sw) return; var _sc=document.getElementById('grdf-signals-screen'); var _md=(typeof _mode!=='undefined')?_mode:'events'; var _inChrono=(_sc && _sc.classList.contains('visible') && _md==='events'); _sw.style.display=_inChrono?'':'none'; }catch(e){} };
+window._grdfSyncSicSwitch=function(){ /* switch управляется в grdfSetMode как домен-фильтры — здесь ничего не трогаем (устранены скачки) */ };
 try{ _ccEstablishTier().then(function(){ try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }); }catch(e){}
 
 // ── Fetch helpers ──────────────────────────────────────────────────────────
@@ -11465,6 +11465,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var f=document.getElementById('grdf-sig-feed'), pf=document.getElementById('grdf-proc-feed'), fil=document.getElementById('grdf-sig-filters');
     if(f) f.style.display=ev?'':'none';
     if(fil) fil.style.display=ev?'':'none';
+    var _sicSwEl=document.getElementById('grdf-sic-switch'); if(_sicSwEl) _sicSwEl.style.display=ev?'':'none';  // switch = зеркало домен-фильтров (виден в events, скрыт в processes)
     // Оперативная/Контекст — СТРОГО только в Хронологии (events), никогда в Процессах.
     // Детерминированно: показываем сразу если events И Pro-тир (не ждём async grdfRenderSignals — устраняет мигание/гонку тира)
     if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch();
