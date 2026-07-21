@@ -9708,6 +9708,9 @@ window.grdfNavTo = function(tab) {
     if(sigScreen) sigScreen.classList.add('visible');
     if(drawer) drawer.style.display='none';
     if(sheet) { sheet.className=''; _grdfSheetSnap=0; }
+    // switch виден в Хронологии по умолчанию (первый заход = режим events). Скрыт только если открыты Процессы.
+    var _sicSwNav=document.getElementById('grdf-sic-switch');
+    if(_sicSwNav){ var _isProc=(typeof _mode!=='undefined' && _mode==='processes'); _sicSwNav.style.display=_isProc?'none':''; }
     grdfRenderSignals(_grdfSigFilter||'all');
   } else if(tab==='matrix'){
     if(matrixScreen) matrixScreen.classList.add('visible');
