@@ -7905,7 +7905,7 @@ function _evM(val, lbl, col) {
     <button class="grdf-nav-btn" id="grdf-nav-countries" onclick="grdfNavTo('countries')">
       <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><span>Страны</span>
     </button>
-    <button class="grdf-nav-btn" id="grdf-nav-system" onclick="grdfNavTo('system')">
+    <button class="grdf-nav-btn" id="grdf-nav-system" style="display:none" onclick="grdfNavTo('system')">
       <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><line x1="10.7" y1="6.6" x2="6.3" y2="16"/><line x1="13.3" y1="6.6" x2="17.7" y2="16"/><line x1="7" y1="18" x2="17" y2="18"/></svg></span><span>Система</span>
     </button>
     
@@ -9690,6 +9690,7 @@ window.grdfRenderAtlas = function(){
     .catch(function(){ bEl.innerHTML='<div class="sp-block" style="margin:0"><div class="sp-p" style="opacity:.5">Не удалось загрузить сводку.</div></div>'; });
 };
 
+function _isAdminAtlas(){ try{ return String((window.CC&&CC.tier&&CC.tier())||'free').toLowerCase()==='admin'; }catch(e){ return false; } }
 window.grdfRenderSystem = function(){
   var el=document.getElementById('grdf-system-body'); if(!el) return;
   var all=[]; try{ all=(typeof _byId!=='undefined')?Object.keys(_byId).map(function(k){return _byId[k];}):[]; }catch(e){}
@@ -9745,6 +9746,8 @@ window.grdfRenderSystem = function(){
   el.innerHTML=H;
 };
 window.grdfNavTo = function(tab) {
+  if(tab==='system' && !_isAdminAtlas()){ tab='map'; }
+  try{ var _sb=document.getElementById('grdf-nav-system'); if(_sb) _sb.style.display=_isAdminAtlas()?'':'none'; }catch(_e){}
   // No _isMobile guard: CSS handles visibility, JS handles behavior
   _grdfNav = tab;
   if(window._radarTimer && tab!=='radar'){ clearInterval(window._radarTimer); window._radarTimer=null; }
@@ -11847,7 +11850,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var _CM={'Причина для':['#E24A3B','→'],'Следствие':['#1faacc','←'],'Усиливает':['#FFD700','▲'],'Подавляет':['#5fae7a','▼'],'Связанные':['rgba(148,163,184,0.75)','•']};
     var cm=_CM[label]||['rgba(148,163,184,0.75)','•'];
     return '<div style="margin-bottom:11px"><div class="gd-cl" style="color:'+cm[0]+';font-weight:600"><span style="display:inline-block;width:14px">'+cm[1]+'</span>'+label+'</div>'+ids.map(function(i){return '<span class="gd-conn" data-id="'+esc(i)+'" style="border-color:'+cm[0]+'66">'+esc(_byId[i].title)+'</span>';}).join('')+'</div>'; }
-  window.__grdfProcTierRefresh=function(){ try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} 
+  window.__grdfProcTierRefresh=function(){ try{ var _sbn=document.getElementById('grdf-nav-system'); if(_sbn) _sbn.style.display=(typeof _isAdminAtlas==='function'&&_isAdminAtlas())?'':'none'; }catch(_e){} try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} 
  };
   function openDetail(id){
     var s=_byId[id]; if(!s) return; window.__grdfLastProcId=id;
