@@ -11935,8 +11935,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       scen.push({key:'C',title:decaying?'Стабилизация и затухание':'Уплотнение в текущих границах',desc:decaying?'Приток новых свидетельств снижается, процесс переходит к затуханию.':'Процесс уплотняется внутри текущей географии без выхода за её пределы.',logic:decaying?'Стадия жизненного цикла ('+esc(stage)+') указывает на снижение активности.':'Свидетельства концентрируются в уже охваченных зонах; масштаб растёт, охват — нет.',objects:places.slice(0,3),why:decaying?'Траектория жизненного цикла процесса.':'Плотность свидетельств выше охвата.',prio:decaying?'Средний':'Низкий',ind:decaying?['Снижение повторяемости','Отсутствие новой географии']:['Рост повторяемости','Стабильная география']});
       var _po={'Высокий':3,'Средний':2,'Низкий':1};scen.sort(function(a,b){return _po[b.prio]-_po[a.prio];});
       var H='<div class="gd-sec" style="background:rgba(155,127,196,0.05);border:0.5px solid rgba(155,127,196,0.25);border-radius:10px;padding:13px;margin-top:6px">';
-      H+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#06050A;background:'+C+';border-radius:4px;padding:2px 8px;font-family:Montserrat,sans-serif">Эксперимент</span><span style="font-size:13.5px;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif">Сценарии развития процесса</span></div>';
-      H+='<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.7);margin-top:7px">Аналитический слой поверх процесса. Не участвует в расчёте риска, не прогноз — структурные направления, выведенные из текущих связей, географии и жизненного цикла процесса.</p>';
+      H+='<div style="font-size:13px;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif">Сценарии развития процесса</div>';
       scen.forEach(function(sc){var pc=(sc.prio==='Высокий'?'#e0a458':sc.prio==='Средний'?'#D4AF5A':'rgba(148,163,184,0.7)');
         H+='<div style="margin-top:11px;padding:11px;background:rgba(148,163,184,0.04);border:0.5px solid rgba(148,163,184,0.15);border-radius:9px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:700;color:#dfe4ea">Сценарий '+sc.key+' \u00b7 '+esc(sc.title)+'</span><span style="font-size:10px;font-weight:700;color:'+pc+';border:0.5px solid '+pc+'55;border-radius:4px;padding:2px 7px">'+sc.prio+'</span></div><p class="gd-note" style="font-size:12px;margin-top:6px">'+esc(sc.desc)+'</p><div style="margin-top:7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Системная логика</div><div style="font-size:11.5px;color:#c8d0da;margin-top:2px">'+esc(sc.logic)+'</div>';
         if(sc.objects&&sc.objects.length){H+='<div style="margin-top:7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Вовлечены</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">'+sc.objects.map(function(o){return '<span style="font-size:11px;color:#c8d0da;background:rgba(155,127,196,0.1);border:0.5px solid rgba(155,127,196,0.25);border-radius:5px;padding:2px 8px">'+esc(String(o))+'</span>';}).join('')+'</div>';}
@@ -11970,8 +11969,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       var imp=s.importance||{};var conn=imp.connects_processes||0;var pr=s.pressure||0;var geoN=s.geo_spread||(s.places||[]).length||0;
       var srcTitle=_ecgRu(s.entity_class_group||'')||_pvCleanTitle(s.title||'текущий процесс');
       var H='<div class="gd-sec" style="background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.28);border-radius:10px;padding:13px;margin-top:6px">';
-      H+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#06050A;background:'+C+';border-radius:4px;padding:2px 8px;font-family:Montserrat,sans-serif">Эксперимент</span><span style="font-size:13.5px;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif">Возможные переходы системы</span></div>';
-      H+='<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.7);margin-top:7px">Не прогноз события. Наиболее логичные направления системной эволюции, выведенные из текущей причинно-следственной структуры. «Если структура продолжит развиваться без изменений — следующими кандидатами становятся процессы ниже.»</p>';
+      H+='<div style="font-size:13px;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif">Возможные переходы системы</div>';
       if(!fwd.length){H+='<div style="margin-top:11px;padding:11px;background:rgba(148,163,184,0.04);border:0.5px solid rgba(148,163,184,0.15);border-radius:9px;display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(148,163,184,0.8)">'+_hsRing('rgba(148,163,184,0.6)')+'<span>Недостаточно данных — forward-связей в Relationship Layer пока нет. Переходы появятся при росте связности процесса.</span></div></div>';return H;}
       fwd.forEach(function(r){
         var tgt=_pvCleanTitle(r.target_title||'процесс');var conf=r.confidence||0;
@@ -11989,6 +11987,46 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       });
       H+='<p class="gd-note" style="font-size:10px;color:rgba(148,163,184,0.55);margin-top:9px">System Transition Intelligence не прогнозирует события. Порядок = сила структурных оснований, не вероятность.</p></div>';
       return H;
+    }
+    // ══ ADR-030 System Impact Intelligence (Experimental) — цепочка распространения по графу ══
+    function _impactIntel(s){
+      if(!window._SCEN_EXP)return '';
+      var pt=s.process_type||'';if(pt==='observation'||pt==='detection'||pt==='financial_stability')return '';
+      var evc=(s.evidence_count||(s.evidence||[]).length||0);if(evc<3)return '';
+      var C='#c98fb0';
+      function fwdBest(node){var r=((node&&node.relationships)||[]).filter(function(x){return x.sem_class==='B'||x.sem_class==='A';});if(!r.length)return null;r.sort(function(a,b){var wa=(a.sem_class==='B'?2:1)+(a.confidence||0),wb=(b.sem_class==='B'?2:1)+(b.confidence||0);return wb-wa;});return r[0];}
+      var chain=[],cur=s,seen={};seen[s.process_id||s.id||'']=1;
+      for(var d=0;d<4;d++){var e=fwdBest(cur);if(!e)break;var tid=e.target_process;if(!tid||seen[tid])break;seen[tid]=1;var tnode=(typeof _byId!=='undefined'&&_byId[tid])||null;chain.push({title:_pvCleanTitle(e.target_title||'процесс'),phrase:e.class_phrase||e.natural_phrase||'',conf:e.confidence||0,node:tnode});if(!tnode)break;cur=tnode;}
+      if(!chain.length)return '';
+      var geoN=s.geo_spread||(s.places||[]).length||0,pr=s.pressure||0,conn=(s.importance||{}).connects_processes||0;
+      var srcTitle=_ecgRu(s.entity_class_group||'')||_pvCleanTitle(s.title||'текущий процесс');
+      function impType(i,conf){if(geoN>=2&&i===0)return 'Расширение охвата';if(conf>=0.7)return 'Рост давления';if(conn>=2)return 'Рост связности';return 'Рост нагрузки';}
+      function statOf(conf){return conf>=0.7?'Усиливается':conf>=0.5?'Формируется':conf>=0.3?'Требует подтверждения':'Стабильно';}
+      function basisOf(node){return [['Relationship Layer',true],['Pressure',pr>=60||((node&&node.pressure)||0)>=60],['Geo Spread',geoN>=2],['Causal Model',!!s.causal_model],['Connected Processes',conn>=2]].filter(function(x){return x[1];});}
+      var H='<div class="gd-sec" style="background:rgba(201,143,176,0.05);border:0.5px solid rgba(201,143,176,0.25);border-radius:10px;padding:13px;margin-top:6px">';
+      H+='<div style="font-size:13px;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif">Карта системного влияния</div>';
+      H+='<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.7);margin-top:6px">При подтверждении процесса давление может распространиться на следующие элементы системы. Направление, не событие.</p>';
+      H+='<div style="margin-top:11px"><div style="display:flex;align-items:center;gap:8px">'+_hsDot(C)+'<span style="font-size:13px;font-weight:700;color:#dfe4ea">'+esc(srcTitle)+'</span><span style="font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(148,163,184,0.55)">источник</span></div>';
+      chain.forEach(function(n,i){
+        var it=impType(i,n.conf),st=statOf(n.conf),scol=(st==='Усиливается'?'#e0a458':st==='Формируется'?'#7fb069':st==='Требует подтверждения'?'#D4AF5A':'rgba(148,163,184,0.7)');
+        H+='<div style="display:flex;flex-direction:column;align-items:center;width:20px;margin:2px 0">'+_hsArrowDown(C)+'</div>';
+        H+='<div style="padding:10px 11px;background:rgba(148,163,184,0.04);border:0.5px solid rgba(148,163,184,0.15);border-radius:9px">';
+        H+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+_hsDot(C)+'<span style="font-size:13px;font-weight:700;color:#dfe4ea">'+esc(n.title)+'</span></div>';
+        H+='<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:10.5px;color:'+C+';background:rgba(201,143,176,0.1);border:0.5px solid rgba(201,143,176,0.3);border-radius:4px;padding:2px 8px">'+it+'</span><span style="font-size:10px;font-weight:700;color:'+scol+';border:0.5px solid '+scol+'55;border-radius:4px;padding:2px 8px">'+st+'</span></div>';
+        if(n.phrase){H+='<div style="margin-top:7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Почему сюда</div><div style="font-size:11.5px;color:#c8d0da;margin-top:2px">'+esc(n.phrase)+'. Причинная модель процесса сохраняется на этом узле.</div>';}
+        H+='<div style="margin-top:7px">'+basisOf(n.node).map(function(b){return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#c8d0da;margin-right:12px;margin-top:3px">'+_hsCheck('#7fb069')+b[0]+'</span>';}).join('')+'</div>';
+        H+='</div>';
+      });
+      H+='</div></div>';return H;
+    }
+    function _expIntel(s){
+      if(!window._SCEN_EXP)return '';
+      var a=_scenIntel(s),b=_transIntel(s),c=_impactIntel(s);
+      if(!a&&!b&&!c)return '';
+      var H='<div class="gd-sec" style="background:rgba(155,127,196,0.035);border:0.5px solid rgba(155,127,196,0.2);border-radius:11px;padding:13px;margin-top:8px">';
+      H+='<div><span style="font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#06050A;background:linear-gradient(90deg,#9b7fc4,#7f9bc7);border-radius:4px;padding:3px 10px;font-family:Montserrat,sans-serif">Experimental Intelligence</span></div>';
+      H+='<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.72);margin-top:8px;line-height:1.55">Этот слой не прогнозирует события и не рассчитывает риск. Он визуализирует возможные направления распространения системного воздействия, детерминированно выведенные из текущей структуры процессов и их связей.</p>';
+      H+=a+b+c+'</div>';return H;
     }
     if(s._preview && s._preview.process_type==='observation'){
       var _o=s._preview;
@@ -12313,8 +12351,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +[['Почему создан',ex.why_exists],['Почему такой Приоритет',ex.why_priority],['Почему такая Фаза',ex.why_phase],['Почему такое Доверие',ex.why_confidence]].filter(function(x){return x[1];}).map(function(x){return '<div class="gd-exp"><div class="q">'+x[0]+'</div><div class="a">'+esc(x[1])+'</div></div>';}).join('')
       
       +'</div>';
-    H+=_scenIntel(s);
-    H+=_transIntel(s);
+    H+=_expIntel(s);
     return H;
   }
 })();
