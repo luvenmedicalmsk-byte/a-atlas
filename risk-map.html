@@ -11536,8 +11536,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
           var _pvPri=(p.priority!=null?p.priority:_pvSev);
           var _isProd=(p.production===true);
           var sig={ signal_id:p.process_id, is_preview:!_isProd, is_production:_isProd, preview_type:p.process_type, process_type:p.title,
-            title:p.title, domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'economy':'geopolitics')),
-            primary_domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'economy':'geopolitics')),
+            title:p.title, domain:((p.process_type==='observation'||p.process_type==='detection')?(p.parent_domain||'economy'):(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'economy':'geopolitics'))),
+            primary_domain:((p.process_type==='observation'||p.process_type==='detection')?(p.parent_domain||'economy'):(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'economy':'geopolitics'))),
             process_place:(function(){var pl=p.places||[]; if(!pl.length)return '—';
               // страновой элемент (без «край/область/республика/округ») — показываем его на титульной
               var _c=pl.filter(function(x){return !/(край|област|республик|округ|\bАО\b|город)/i.test(x);});
@@ -11609,7 +11609,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'</div>';
     // ── РЕНДЕР: секции по тиру → карточки типа (главный процесс + раскрытие проявлений) ──
     var html=dash;
-    for(var ti=0;ti<7;ti++){
+    // ADR-024 Phase2: слой наблюдений/обнаружения — НАВЕРХ, перед кризисными
+    var _tierOrder=[5,6,0,1,2,3,4];
+    for(var _oi=0;_oi<_tierOrder.length;_oi++){ var ti=_tierOrder[_oi];
       var bl=blocks.filter(function(b){return b.tier===ti;});
       if(!bl.length) continue;
       html+='<div style="padding:15px 14px 5px;font-size:9px;font-weight:600;font-family:Montserrat,sans-serif;letter-spacing:0.14em;text-transform:uppercase;color:'+_PROC_TC[ti]+'">'+_PROC_TN[ti]+' · '+bl.length+'</div>';
@@ -11725,7 +11727,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'<div class="gpc-edge" style="background:'+pcol+'"></div>'
       +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
       +'<div class="gpc-type"><span>'+esc(dom)+'</span></div>'
-      +'<div class="gpc-title">'+((s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'))?_obsDetBadge(s._preview.process_type):(s.is_preview?_PVBADGE:(s.is_production&&s._preview&&s._preview.maturity?_matBadge(s._preview.maturity):'')))+esc((s.is_preview||s.is_production)?_pvCleanTitle(s.title):_procDisp(b.type))+'</div>'
+      +'<div class="gpc-title">'+((s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'))?_obsDetBadge(s._preview.process_type):(s.is_preview?_PVBADGE:(s.is_production&&s._preview&&s._preview.maturity?_matBadge(s._preview.maturity):'')))+'<span style="display:block">'+esc((s.is_preview||s.is_production)?_pvCleanTitle(s.title):_procDisp(b.type))+'</span></div>'
       +'<div class="gpc-place">'+esc(s.process_place||'—')+'</div>'
       +(isPro()?'<div class="gpc-m">'+mi('Приоритет',s.priority||0)+mi('Тяжесть',sv)+mi('Давление',pe)+'</div>':'')
       +'<div class="gpc-chips"><span class="gpc-ch" style="color:'+pcol+';border-color:'+pcol+'44">'+ps+'</span>'
