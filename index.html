@@ -11535,7 +11535,11 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
             primary_domain:(p.process_type==='financial_stability'?'economy':'geopolitics'),
             process_place:(p.places&&p.places.join(', '))||'—', severity:_pvSev,
             pressure:_pvPres, priority:_pvSev, phase:'active', lifecycle_stage:'active', health:(_isProd?'Active':'Preview'),
-            evidence_count:(p.member_count||0), countries:p.places||[], _preview:p };
+            evidence_count:(p.member_count||0), countries:p.places||[],
+            // detail-карточка ждёт эти поля на верхнем уровне (иначе Возраст/Обновление/Свидетельства пусты)
+            first_seen:(p.created_at||p.first_seen||null), last_seen:(p.updated_at||p.last_seen||null),
+            evidence:(Array.isArray(p.evidence)?p.evidence.map(function(e){return (typeof e==='object'&&e)?e:{title:String(e),source:'',date:(p.last_seen||''),severity:''};}):[]),
+            _preview:p };
           _data.signals=_data.signals||[]; _data.signals.unshift(sig); _byId[sig.signal_id]=sig;
         });
         renderProc();
@@ -12044,7 +12048,14 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(rec&&rec.label) mem+='<p class="gd-note" style="margin-top:7px">Циклический: '+esc(rec.label)+' ('+rec.occurrences+' повт.)</p>';
     if(sim.length) mem+='<div style="margin-top:10px"><div class="gd-cl">Похожие процессы</div>'+sim.map(function(x){return '<span class="gd-pill">'+esc((x.signature||'').split('|')[1]||x.signature)+(x.typical_outcome?' → '+esc(x.typical_outcome):'')+'</span>';}).join('')+'</div>';
     if(mem){ H+='<div class="gd-sec"><div class="gd-sh">Наиболее вероятное развитие</div>'+mem+'</div>'; }
-    else if((s.evidence_count||0)>=2 || (s.timeline&&s.timeline.length>=2)){ H+='<div class="gd-sec"><div class="gd-sh">Наиболее вероятное развитие</div><p class="gd-note" style="color:rgba(148,163,184,0.75)">Прогноз пока недоступен. Для построения модели требуется накопление последовательных наблюдений.</p></div>'; }
+    else if((s.evidence_count||0)>=2 || (s.timeline&&s.timeline.length>=2)){
+      // ЭТАП 7 (infra-preview): показываем прогресс накопления, а не глухой прочерк
+      var _fcReady=(s._preview&&s._preview.forecast_ready===true)||((s.evidence_count||0)>=4);
+      var _fcTxt=_fcReady
+        ? 'Накоплено достаточно наблюдений ('+(s.evidence_count||0)+'). Модель развития строится по мере поступления новых свидетельств.'
+        : 'Прогноз строится при накоплении наблюдений — сейчас '+(s.evidence_count||0)+' из 4 необходимых.';
+      H+='<div class="gd-sec"><div class="gd-sh">Наиболее вероятное развитие</div><p class="gd-note" style="color:rgba(148,163,184,0.75)">'+_fcTxt+'</p></div>';
+    }
     // Объяснение
     H+='<div class="gd-sec"><div class="gd-sh">Объяснение</div>'
       +'<p class="gd-note" style="margin-bottom:11px">'+esc(_explLead(s))+'</p>'
