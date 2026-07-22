@@ -11531,8 +11531,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
           var _pvPres=(p.pressure!=null?p.pressure:_pvSev);
           var _isProd=(p.production===true);
           var sig={ signal_id:p.process_id, is_preview:!_isProd, is_production:_isProd, preview_type:p.process_type, process_type:p.title,
-            title:p.title, domain:(p.process_type==='financial_stability'?'economy':'geopolitics'),
-            primary_domain:(p.process_type==='financial_stability'?'economy':'geopolitics'),
+            title:p.title, domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'infrastructure':'geopolitics')),
+            primary_domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'infrastructure':'geopolitics')),
             process_place:(p.places&&p.places.join(', '))||'—', severity:_pvSev,
             pressure:_pvPres, priority:_pvSev, phase:'active', lifecycle_stage:'active', health:(_isProd?'Active':'Preview'),
             evidence_count:(p.member_count||0), countries:p.places||[],
@@ -12029,7 +12029,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +_procObs(s).map(function(o){ return '<div class="gd-ti gd-obs"><div class="e">◇ '+esc(o)+'</div><div class="t">наблюдение</div></div>'; }).join('')
       +s.timeline.slice().reverse().map(function(t){ return '<div class="gd-ti"><div class="e">'+esc(t.event)+'</div>'+(t.detail?'<div class="dt">'+esc(t.detail)+'</div>':'')+'<div class="t">'+esc((t.t||'').replace('T',' ').slice(0,16))+'</div></div>'; }).join('')+'</div></div>'; }
     // Свидетельства
-    H+='<div class="gd-sec"><div class="gd-sh">Свидетельства · '+(s.evidence_count||0)+'</div>'
+    H+='<div class="gd-sec"><div class="gd-sh">Свидетельства · '+((s.is_preview||s.is_production)?(s.evidence||[]).length:(s.evidence_count||0))+'</div>'
       +(s.evidence||[]).map(function(e){ var _p=[]; var _s=cleanSrc(e.source); if(_s)_p.push(esc(_s)); if(e.role&&e.role!=='telegram')_p.push(esc(ROLE_RU[e.role]||e.role)); if(e.date)_p.push(esc(e.date)); return '<div class="gd-ev"><div><div class="t">'+esc(e.title)+'</div><div class="m">'+_p.join(' · ')+'</div></div><div class="s" style="color:'+scol(e.severity)+'">'+(e.severity||'')+'</div></div>'; }).join('')+'</div>';
     // Связи
     var conns=connG('Причина для',s.causes)+connG('Следствие',s.caused_by)+connG('Усиливает',s.amplifies)+connG('Подавляет',s.suppresses)+connG('Связанные',s.related);
