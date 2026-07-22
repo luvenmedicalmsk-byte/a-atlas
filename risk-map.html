@@ -11600,11 +11600,11 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var pf=document.getElementById('grdf-proc-feed'); if(!pf) return;
     if(_loaded){ renderProc(); return; }
     pf.innerHTML='<div style="padding:26px 14px;font-size:11px;color:rgba(148,163,184,0.5);text-align:center">Загрузка процессов…</div>';
-    var PREVIEW_URL='https://raw.githubusercontent.com/luvenmedicalmsk-byte/secrett-archive/main/docs/_preview_processes.json';
+    var PREVIEW_URL='https://api.a-atlas.com/api/processes';  // гейтнуто Worker (free -> платные поля вырезаны)
     fetch(SIG_URL+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
       _data=d; _loaded=true; (d.signals||[]).forEach(function(s){_byId[s.signal_id]=s;});
       // ── PREVIEW-СЛОЙ (Этап 3): подмешиваем preview-процессы, signals.json НЕ трогается ──
-      fetch(PREVIEW_URL+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(pv){
+      fetch(PREVIEW_URL+'?v='+Date.now(),{cache:'no-store',headers:(function(){try{var _t=localStorage.getItem('cc_token');return _t?{'X-Snapshot-Token':_t}:{};}catch(_){return {};}})()}).then(function(r){return r.json();}).then(function(pv){
         (pv.processes||[]).forEach(function(p){
           var _pvSev=(p.severity!=null?p.severity:(p.confidence?Math.round(p.confidence*100):50));
           var _pvPres=(p.pressure!=null?p.pressure:_pvSev);
