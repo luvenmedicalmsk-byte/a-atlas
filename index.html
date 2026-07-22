@@ -7905,11 +7905,16 @@ function _evM(val, lbl, col) {
     <button class="grdf-nav-btn" id="grdf-nav-countries" onclick="grdfNavTo('countries')">
       <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><span>Страны</span>
     </button>
+    <button class="grdf-nav-btn" id="grdf-nav-system" onclick="grdfNavTo('system')">
+      <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><line x1="10.7" y1="6.6" x2="6.3" y2="16"/><line x1="13.3" y1="6.6" x2="17.7" y2="16"/><line x1="7" y1="18" x2="17" y2="18"/></svg></span><span>Система</span>
+    </button>
     
   </div>
 </div>
 
 <style>
+#grdf-system-screen{display:block;position:fixed;top:0;left:0;right:0;bottom:56px;z-index:120;background:rgba(6,5,10,0.97);backdrop-filter:blur(20px);overflow-y:auto;overscroll-behavior-y:contain;padding-top:42px;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
+#grdf-system-screen.visible{transform:translateX(0);pointer-events:auto}
 #conn-tabs{display:flex;gap:6px;justify-content:center;padding:8px 16px 10px;flex:0 0 auto}
 .conn-tab{padding:7px 16px;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;border:1px solid rgba(184,151,58,0.2);border-radius:2px;cursor:pointer;color:rgba(232,224,208,0.6);background:transparent;transition:all .2s;font-family:'Montserrat',sans-serif}
 .conn-tab.active{border-color:#B8973A;color:#D4AF5A;background:rgba(184,151,58,0.08)}
@@ -7920,6 +7925,13 @@ function _evM(val, lbl, col) {
   <div id="conn-tabs"><button class="conn-tab active" data-cmode="matrix" onclick="connSetMode('matrix')">◆ Матрица</button><button class="conn-tab" data-cmode="graph" onclick="connSetMode('graph')">◆ Граф связей</button><button class="conn-tab" data-cmode="analysis" onclick="connSetMode('analysis')">◆ Системный анализ</button></div>
   <iframe id="conn-frame" src="risk-matrix.html?v=73" title="Карта взаимосвязей рисков" loading="lazy" style="flex:1;width:100%;border:0;display:block"></iframe>
   <div id="conn-analysis-wrap" style="flex:1;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none"></div>
+</div>
+
+<!-- ADR-031: System Overview (агрегация всей сети процессов, НЕ Experimental) -->
+<div id="grdf-system-screen">
+  <span class="grdf-screen-x" onclick="grdfNavTo('map')">✕</span>
+  <div class="grdf-screen-head"><div class="grdf-screen-title">Обзор системы</div></div>
+  <div id="grdf-system-body" style="padding:6px 14px 26px"></div>
 </div>
 
 <!-- Foresight signal radar (same source as map: ALL_EVENTS) -->
@@ -9678,6 +9690,60 @@ window.grdfRenderAtlas = function(){
     .catch(function(){ bEl.innerHTML='<div class="sp-block" style="margin:0"><div class="sp-p" style="opacity:.5">Не удалось загрузить сводку.</div></div>'; });
 };
 
+window.grdfRenderSystem = function(){
+  var el=document.getElementById('grdf-system-body'); if(!el) return;
+  var all=[]; try{ all=(typeof _byId!=='undefined')?Object.keys(_byId).map(function(k){return _byId[k];}):[]; }catch(e){}
+  var seen={},procs=[];
+  all.forEach(function(p){ if(!p||!p.domain||!p.title) return; if(p.process_type==='observation'||p.process_type==='detection') return; var id=p.signal_id||p.process_id||p.id||p.title; if(seen[id])return; seen[id]=1; procs.push(p); });
+  function _id(p){return p.signal_id||p.process_id||p.id||'';}
+  function conn(p){ return (p.importance&&p.importance.connects_processes)||(p.relationships&&p.relationships.length)||0; }
+  function cascade(p){ return (p.importance&&p.importance.cascade_reach)||((p.causes||[]).length+(p.amplifies||[]).length)||0; }
+  function domsC(p){ return (p.importance&&p.importance.domains_connected)||0; }
+  var DOMRU={geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум',climate:'Климат'};
+  var C='#7f9bc7';
+  if(!procs.length){ el.innerHTML='<p style="color:rgba(148,163,184,0.7);font-size:13px;padding:20px 4px">Сеть процессов ещё загружается…</p>'; return; }
+  function sec(t){ return '<div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif;margin:20px 0 4px">'+t+'</div>'; }
+  function sub(t){ return '<div style="font-size:11px;color:rgba(148,163,184,0.6);margin:0 0 9px">'+t+'</div>'; }
+  var H='<p style="font-size:11.5px;color:rgba(148,163,184,0.72);line-height:1.55;margin:4px 0 10px">Агрегация всей сети процессов Atlas ('+procs.length+'). Не прогноз и не расчёт риска — состояние и структура сети на текущий момент.</p>';
+  // I Drivers
+  var byDom={}; procs.forEach(function(p){ (byDom[p.domain]=byDom[p.domain]||[]).push(p); });
+  H+=sec('Phase I · Драйверы системы')+sub('Процессы с наибольшим числом системных связей (не риск)');
+  Object.keys(byDom).forEach(function(d){ var top=byDom[d].slice().sort(function(a,b){return conn(b)-conn(a);})[0]; if(!top||conn(top)<1) return;
+    H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="openDetail(\''+esc(_id(top))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+(DOMRU[d]||d)+'</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_pvCleanTitle(top.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">'+conn(top)+' связей</div></div>'; });
+  // II Network Pressure (концентрация)
+  var byReg={}; procs.forEach(function(p){ var pl=(p.places||[]).filter(function(x){return x&&x!=='Россия'&&x!=='Глобально';}); (pl.length?pl:[(p.process_place||'—')]).forEach(function(r){ byReg[r]=(byReg[r]||0)+1; }); });
+  var regs=Object.keys(byReg).map(function(r){return [r,byReg[r]];}).filter(function(x){return x[0]&&x[0]!=='—';}).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
+  var maxR=regs.length?regs[0][1]:1;
+  H+=sec('Phase II · Концентрация сети')+sub('Где сосредоточены процессы (не карта риска)');
+  regs.forEach(function(r){ var w=Math.round(r[1]/maxR*100); H+='<div style="display:flex;align-items:center;gap:9px;margin-bottom:6px"><span style="width:34%;font-size:12px;color:#c8d0da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r[0])+'</span><div style="flex:1;height:9px;border-radius:4px;background:rgba(148,163,184,0.12);overflow:hidden"><div style="height:100%;width:'+w+'%;background:linear-gradient(90deg,#5a7bb0,#7f9bc7)"></div></div><span style="font-size:11px;color:#8a93a6;width:20px;text-align:right">'+r[1]+'</span></div>'; });
+  // III Cross-Domain
+  var xd=procs.filter(function(p){return domsC(p)>1;}).sort(function(a,b){return domsC(b)-domsC(a);}).slice(0,5);
+  H+=sec('Phase III · Межотраслевые процессы')+sub('Соединяют несколько доменов — чаще запускают каскады');
+  if(xd.length){ xd.forEach(function(p){ H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="openDetail(\''+esc(_id(p))+'\')"><div style="font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_pvCleanTitle(p.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">Связывает '+domsC(p)+' домена · '+conn(p)+' связей</div></div>'; }); }
+  else { H+='<div style="font-size:12px;color:rgba(148,163,184,0.6)">Пока нет процессов, соединяющих несколько доменов.</div>'; }
+  // IV Cascade Sources
+  var casc=procs.filter(function(p){return cascade(p)>0;}).sort(function(a,b){return cascade(b)-cascade(a);}).slice(0,5);
+  H+=sec('Phase IV · Источники каскадов')+sub('Процессы, чаще всего порождающие новые процессы');
+  if(casc.length){ casc.forEach(function(p){ H+='<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="openDetail(\''+esc(_id(p))+'\')"><div style="flex:1;font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_pvCleanTitle(p.title))+'</div><div style="font-size:12px;color:'+C+';font-weight:700;white-space:nowrap">'+cascade(p)+' процесс.</div></div>'; }); }
+  else { H+='<div style="font-size:12px;color:rgba(148,163,184,0.6)">Каскадных источников пока не выявлено.</div>'; }
+  // V Reserved
+  H+=sec('Phase V · Структурные изменения');
+  H+='<div style="padding:11px;background:rgba(148,163,184,0.04);border:0.5px dashed rgba(148,163,184,0.28);border-radius:9px;font-size:11.5px;color:rgba(148,163,184,0.7);line-height:1.55;margin-top:4px">Зарезервировано — требует исторических снапшотов графа. Изменение центральности, графа связей, новых кластеров, ролей и структуры сети вычисляется только сравнением двух снимков системы. Без snapshot-истории не реализуется (без эвристик).</div>';
+  // VI System State
+  var mainDriver=procs.slice().sort(function(a,b){return conn(b)-conn(a);})[0];
+  var bigCasc=procs.slice().sort(function(a,b){return cascade(b)-cascade(a);})[0];
+  var domCount={}; procs.forEach(function(p){ domCount[p.domain]=(domCount[p.domain]||0)+1; });
+  var activeDom=Object.keys(domCount).sort(function(a,b){return domCount[b]-domCount[a];})[0];
+  H+=sec('Phase VI · Состояние системы');
+  function row(lbl,p){ if(!p)return ''; return '<div style="padding:9px 11px;border-bottom:0.5px solid rgba(184,151,58,0.1);cursor:pointer" onclick="openDetail(\''+esc(_id(p))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+lbl+'</div><div style="font-size:13.5px;color:#D4AF5A;font-weight:600;margin-top:2px">'+esc(_pvCleanTitle(p.title))+'</div></div>'; }
+  H+='<div style="background:rgba(184,151,58,0.04);border:0.5px solid rgba(184,151,58,0.2);border-radius:9px;overflow:hidden;margin-top:4px">';
+  H+=row('Главный драйвер',mainDriver);
+  H+='<div style="padding:9px 11px;border-bottom:0.5px solid rgba(184,151,58,0.1)"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Наиболее активный домен</div><div style="font-size:13.5px;color:#D4AF5A;font-weight:600;margin-top:2px">'+(DOMRU[activeDom]||activeDom||'—')+' · '+(domCount[activeDom]||0)+' процессов</div></div>';
+  H+=row('Наиболее связанный процесс',mainDriver);
+  H+=row('Крупнейший источник каскадов',bigCasc);
+  H+='</div>';
+  el.innerHTML=H;
+};
 window.grdfNavTo = function(tab) {
   // No _isMobile guard: CSS handles visibility, JS handles behavior
   _grdfNav = tab;
@@ -9695,10 +9761,11 @@ window.grdfNavTo = function(tab) {
   var alertScreen= document.getElementById('grdf-alerts-screen');
   var matrixScreen= document.getElementById('grdf-matrix-screen');
   var radarScreen = document.getElementById('grdf-radar-screen');
+  var sysScreen = document.getElementById('grdf-system-screen');
   var drawer     = document.getElementById('grdf-intel-drawer');
   var sheet      = document.getElementById('grdf-country-sheet');
 
-  [warnScreen, ctryScreen, analScreen, sigScreen, alertScreen, matrixScreen, radarScreen].forEach(function(s){ if(s) s.classList.remove('visible'); });
+  [warnScreen, ctryScreen, analScreen, sigScreen, alertScreen, matrixScreen, radarScreen, sysScreen].forEach(function(s){ if(s) s.classList.remove('visible'); });
   if(drawer) drawer.style.display = 'flex';
   var clPanel0 = document.getElementById('climate-panel');
   if(clPanel0 && tab!=='climate') clPanel0.classList.remove('open');
@@ -9729,6 +9796,11 @@ window.grdfNavTo = function(tab) {
     if(ctryScreen) ctryScreen.classList.add('visible');
     if(drawer) drawer.style.display='none';
     if(sheet) { sheet.className=''; _grdfSheetSnap=0; }
+  } else if(tab==='system'){
+    if(sysScreen) sysScreen.classList.add('visible');
+    if(drawer) drawer.style.display='none';
+    if(sheet) { sheet.className=''; _grdfSheetSnap=0; }
+    try{ grdfRenderSystem(); }catch(_e){}
   } else if(tab==='analytics'){
     if(analScreen) analScreen.classList.add('visible');
     if(drawer) drawer.style.display='none';
