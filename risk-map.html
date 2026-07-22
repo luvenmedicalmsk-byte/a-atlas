@@ -11542,12 +11542,11 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
               // страновой элемент (без «край/область/республика/округ») — показываем его на титульной
               var _c=pl.filter(function(x){return !/(край|област|республик|округ|\bАО\b|город)/i.test(x);});
               return _c.length?_c[0]:(pl.length>1?'Россия':pl[0]); })(), severity:_pvSev,
-            pressure:_pvPres, priority:_pvPri, phase:'active', lifecycle_stage:'active', health:(_isProd?'Active':'Preview'),
+            pressure:_pvPres, priority:_pvPri, phase:'active',
+            lifecycle_stage:(p.lifecycle_stage||'active'), health:(_isProd?'Active':'Preview'),
             evidence_count:(p.member_count||0), countries:p.places||[],
-            // detail-карточка ждёт эти поля на верхнем уровне (иначе Возраст/Обновление/Свидетельства пусты)
             first_seen:(p.created_at||p.first_seen||null), last_seen:(p.updated_at||p.last_seen||null),
             evidence:(Array.isArray(p.evidence)?p.evidence.map(function(e){return (typeof e==='object'&&e)?e:{title:String(e),source:'',date:(p.last_seen||''),severity:''};}):[]),
-            // обогащённые поля процесса (те же секции detail, что у обычных процессов)
             explain:(p.explain||null), importance:(p.importance||null), timeline:(p.timeline||[]),
             _preview:p };
           _data.signals=_data.signals||[]; _data.signals.unshift(sig); _byId[sig.signal_id]=sig;
@@ -11643,6 +11642,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   var _matBadge=function(m){ var C={Candidate:'#8a93a6',Emerging:'#D4AF5A',Confirmed:'#4ade80'}; var R={Candidate:'Кандидат',Emerging:'Формируется',Confirmed:'Подтверждён'}; var c=C[m]||'#8a93a6'; return '<span style="display:block;width:fit-content;font-size:8px;font-weight:700;letter-spacing:.06em;color:'+c+';border:1px solid '+c+'66;border-radius:3px;padding:1px 6px;margin:0 0 5px 0">'+(R[m]||m).toUpperCase()+'</span>'; };
   var _PVBADGE='<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;letter-spacing:.08em;color:#0a0a0a;background:#B8973A;border-radius:3px;padding:2px 6px 2px 4px;margin-right:7px;vertical-align:2px"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5 18a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-8.5V3"/><path d="M8 14h8"/></svg>PREVIEW</span>';
   function _pvCleanTitle(t){ return String(t||'').replace(/^[🧪\s]+/,'').replace(/^Инфраструктурный процесс — /,'Инфраструктура: ').replace(/^Финансовая устойчивость.*/,'Финансовая устойчивость'); }
+  function _obsDetBadge(pt){ if(pt==='observation')return '<span style="display:block;width:fit-content;font-size:8px;font-weight:700;letter-spacing:.06em;color:#e0a458;border:1px solid #e0a45866;border-radius:3px;padding:1px 6px;margin:0 0 5px 0">НАБЛЮДЕНИЕ</span>'; if(pt==='detection')return '<span style="display:block;width:fit-content;font-size:8px;font-weight:700;letter-spacing:.06em;color:#7f9bc7;border:1px solid #7f9bc766;border-radius:3px;padding:1px 6px;margin:0 0 5px 0">ОБНАРУЖЕНИЕ</span>'; return ''; }
   function _infraAge(iso){
     try{ var d=new Date(iso), now=new Date(), ms=now-d; if(ms<0)ms=0;
       var days=Math.floor(ms/86400000), hrs=Math.floor((ms%86400000)/3600000), mins=Math.floor((ms%3600000)/60000);
@@ -11691,6 +11691,16 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       }
       if(p.reasons&&p.reasons.length){ H+='<div style="margin-top:4px;font-size:9px;color:#6f7d8a">'+esc(p.reasons.join('; '))+'</div>'; }
       else if(p.note){ H+='<div style="margin-top:4px;font-size:9px;color:#6f7d8a">'+esc(p.note)+'</div>'; }
+    } else if(p.process_type==='observation'){
+      // ADR-024 Наблюдение (гипотеза расширения)
+      if(p.pattern){ H+='<div style="margin-bottom:4px">'+esc(p.pattern)+'</div>'; }
+      if(p.watch_window&&p.watch_window.label){ H+='<div><span style="color:#8a93a6">Окно наблюдения:</span> <b style="color:#D4AF5A">'+esc(p.watch_window.label)+'</b></div>'; }
+      if(p.watch_priority){ H+='<div><span style="color:#8a93a6">Приоритет наблюдения:</span> <b style="color:#e0a458">'+esc(p.watch_priority)+'</b></div>'; }
+      if(p.indicators&&p.indicators.length){ H+='<div style="margin-top:4px;color:#8a93a6">Следующие сигналы для проверки:</div>'+p.indicators.map(function(x){return '<div style="color:#94a3b8;padding-left:8px">• '+esc(x)+'</div>';}).join(''); }
+    } else if(p.process_type==='detection'){
+      // ADR-024 Обнаружение (признаки перехода, без прогнозов)
+      if(p.question){ H+='<div style="margin-bottom:4px;font-style:italic;color:#a8b2c0">'+esc(p.question)+'</div>'; }
+      if(p.transition_signs&&p.transition_signs.length){ H+='<div style="margin-top:2px;color:#8a93a6">Признаки перехода:</div>'+p.transition_signs.map(function(x){return '<div style="color:#94a3b8;padding-left:8px">• '+esc(x)+'</div>';}).join(''); }
     }
     return H+'</div>';
   }
@@ -11711,7 +11721,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'<div class="gpc-edge" style="background:'+pcol+'"></div>'
       +(s.watchlist?'<div class="gpc-watch">◆ НАБЛЮДЕНИЕ</div>':'')
       +'<div class="gpc-type"><span>'+esc(dom)+'</span></div>'
-      +'<div class="gpc-title">'+(s.is_preview?_PVBADGE:(s.is_production&&s._preview&&s._preview.maturity?_matBadge(s._preview.maturity):''))+esc((s.is_preview||s.is_production)?_pvCleanTitle(s.title):_procDisp(b.type))+'</div>'
+      +'<div class="gpc-title">'+((s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'))?_obsDetBadge(s._preview.process_type):(s.is_preview?_PVBADGE:(s.is_production&&s._preview&&s._preview.maturity?_matBadge(s._preview.maturity):'')))+esc((s.is_preview||s.is_production)?_pvCleanTitle(s.title):_procDisp(b.type))+'</div>'
       +'<div class="gpc-place">'+esc(s.process_place||'—')+'</div>'
       +(isPro()?'<div class="gpc-m">'+mi('Приоритет',s.priority||0)+mi('Тяжесть',sv)+mi('Давление',pe)+'</div>':'')
       +'<div class="gpc-chips"><span class="gpc-ch" style="color:'+pcol+';border-color:'+pcol+'44">'+ps+'</span>'
@@ -11862,13 +11872,50 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var H='<div class="gd-head"><div class="gd-x" onclick="grdfProcCloseDetail()">✕</div>'
       +'<div class="gd-type">'+esc(DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—')+(s.watchlist?' · ◆ наблюдение':'')+'</div>'
       +'<h2>'+esc(_titleType(s))+'</h2>'+(_isSys(s)?'<div class="gd-sysbadge">Системный процесс</div>':'')+'<div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
-    // Сводка
+    // Сводка — для гипотез (observation/detection) без «возраста процесса»
+    var _isHyp=(s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'));
+    if(_isHyp){
+      var _stLbl=(s._preview.status_label||(s._preview.process_type==='observation'?'Наблюдение':'Обнаружение'));
+      var _stCol=(s._preview.process_type==='observation'?'#e0a458':'#7f9bc7');
+      H+='<div class="gd-sec"><div class="gd-sh">Статус</div><div class="gd-kv">'
+        +'<div class="k">Тип</div><div class="v" style="color:'+_stCol+'">'+esc(_stLbl)+'</div>'
+        +'<div class="k">Связан с процессом</div><div class="v" style="font-size:12.5px">'+esc(_pvCleanTitle(((_byId[s._preview.parent_id]||{}).title)||'подтверждённый процесс'))+'</div></div></div>';
+    } else {
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
       +'<p class="gd-note" style="margin-bottom:11px">'+esc(ex.why_exists||'')+'</p>'
       +'<div class="gd-kv"><div class="k">Тип процесса</div><div class="v">'+esc(_procDisp(s.process_type))+'</div>'
       +'<div class="k">Текущая стадия</div><div class="v" style="color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div>'
       +'<div class="k">Возраст процесса</div><div class="v">'+ageDur(s.first_seen)+'</div>'
       +'<div class="k">Последнее обновление</div><div class="v">'+ago(s.last_seen||s.last_update)+'</div></div></div>';
+    }
+    // ── ADR-024: Observation & Detection секции ──
+    if(s._preview && s._preview.process_type==='observation'){
+      var _o=s._preview;
+      if(_o.pattern){ H+='<div class="gd-sec"><div class="gd-sh">Наблюдаемый паттерн</div><p class="gd-note">'+esc(_o.pattern)+'</p></div>'; }
+      if(_o.hypothesis){ H+='<div class="gd-sec"><div class="gd-sh">Почему появилась гипотеза</div><p class="gd-note">'+esc(_o.hypothesis)+'</p></div>'; }
+      // Приоритет наблюдения (язык аналитики вместо процентов)
+      if(_o.watch_priority){ H+='<div class="gd-sec"><div class="gd-sh">Приоритет наблюдения</div><div class="gd-kv"><div class="k">Уровень</div><div class="v" style="color:#e0a458">'+esc(_o.watch_priority)+'</div>'+(_o.watch_reason?'<div class="k">Причина</div><div class="v" style="font-size:12.5px;line-height:1.5">'+esc(_o.watch_reason)+'</div>':'')+'</div></div>'; }
+      // Окно повышенного внимания (гипотеза модели, не дата события)
+      if(_o.watch_window&&_o.watch_window.label){ H+='<div class="gd-sec"><div class="gd-sh">Окно повышенного внимания</div><p class="gd-note" style="color:#D4AF5A;font-weight:600;margin-bottom:6px">'+esc(_o.watch_window.label)+'</p><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8)">В этот период Atlas проверяет, проявляются ли признаки расширения процесса. Отсутствие подтверждений приведёт к закрытию наблюдения.</p></div>'; }
+      // Следующие сигналы для проверки (что система отслеживает, не что произойдёт)
+      if(_o.indicators&&_o.indicators.length){ H+='<div class="gd-sec"><div class="gd-sh">Следующие сигналы для проверки</div><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8);margin-bottom:7px">Atlas проверяет:</p>'+_o.indicators.map(function(x){return '<div style="color:#c8d0da;padding:3px 0 3px 8px;font-size:12.5px">• '+esc(x)+'</div>';}).join('')+'</div>'; }
+      // Критерии подтверждения
+      if(_o.confirmation_criteria&&_o.confirmation_criteria.length){ H+='<div class="gd-sec"><div class="gd-sh">Критерии подтверждения</div><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8);margin-bottom:7px">Для перевода в подтверждённый процесс требуется:</p>'+_o.confirmation_criteria.map(function(x){return '<div style="color:#c8d0da;padding:3px 0 3px 8px;font-size:12.5px">— '+esc(x)+'</div>';}).join('')+'</div>'; }
+      H+='<div class="gd-sec"><div class="gd-sh">Объяснение</div><p class="gd-note">Это аналитическая гипотеза, а не прогноз. Наблюдение проверяет, расширяется ли подтверждённый процесс, и переводит гипотезу в активный процесс только при накоплении подтверждений.</p></div>';
+      var d2=document.getElementById('gproc-d'); return H;
+    }
+    if(s._preview && s._preview.process_type==='detection'){
+      var _d=s._preview;
+      if(_d.question){ H+='<div class="gd-sec"><div class="gd-sh">Вопрос обнаружения</div><p class="gd-note" style="font-style:italic;color:#c8d0da">'+esc(_d.question)+'</p></div>'; }
+      // Признаки перехода (не список целей, а изменения режима)
+      if(_d.transition_signs&&_d.transition_signs.length){ H+='<div class="gd-sec"><div class="gd-sh">Признаки перехода</div><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8);margin-bottom:7px">Система признаёт переход в новую фазу при появлении:</p>'+_d.transition_signs.map(function(x){return '<div style="color:#c8d0da;padding:3px 0 3px 8px;font-size:12.5px">• '+esc(x)+'</div>';}).join('')+'</div>'; }
+      // Условия перевода в Active
+      if(_d.promote_conditions&&_d.promote_conditions.length){ H+='<div class="gd-sec"><div class="gd-sh">Условия перевода в активный процесс</div>'+_d.promote_conditions.map(function(x){return '<div style="color:#c8d0da;padding:3px 0 3px 8px;font-size:12.5px">— '+esc(x)+'</div>';}).join('')+'</div>'; }
+      // Условия закрытия
+      if(_d.close_conditions&&_d.close_conditions.length){ H+='<div class="gd-sec"><div class="gd-sh">Условия закрытия наблюдения</div>'+_d.close_conditions.map(function(x){return '<div style="color:rgba(148,163,184,0.85);padding:3px 0 3px 8px;font-size:12.5px">— '+esc(x)+'</div>';}).join('')+'</div>'; }
+      H+='<div class="gd-sec"><div class="gd-sh">Объяснение</div><p class="gd-note">В обнаружении нет прогнозов — только признаки. Оно фиксирует, что должно произойти, чтобы система признала переход процесса в новую фазу.</p></div>';
+      return H;
+    }
     // Financial-секция: FSS + реальные индикаторы (ЦБ РФ) для financial_stability
     if(s._preview && s._preview.process_type==='financial_stability'){
       var _fp=s._preview;
