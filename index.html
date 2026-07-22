@@ -12095,7 +12095,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       H+='</div></div>';return H;
     }
     function _expIntel(s){
-      if(!window._SCEN_EXP)return '';
+      if(!isPro())return '';
       var a=_scenIntel(s),b=_transIntel(s),c=_impactIntel(s);
       if(!a&&!b&&!c)return '';
       var H='<div class="gd-sec" style="background:rgba(155,127,196,0.035);border:0.5px solid rgba(155,127,196,0.2);border-radius:11px;padding:13px;margin-top:8px">';
@@ -12103,7 +12103,9 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       H+='<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.72);margin-top:8px;line-height:1.55">Этот слой не прогнозирует события и не рассчитывает риск. Он визуализирует возможные направления распространения системного воздействия, детерминированно выведенные из текущей структуры процессов и их связей.</p>';
       H+=a+b+c+'</div>';return H;
     }
+    function _hypLocked(){ return '<div class="gd-sec" style="text-align:center;padding:20px 14px"><div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#D4AF5A;font-family:Montserrat,sans-serif">Signal Pro</div><div style="font-size:14px;color:#dfe4ea;font-weight:600;margin-top:8px">Аналитика гипотез доступна в Signal Pro</div><p class="gd-note" style="margin-top:6px">Наблюдения, обнаружения переходов и аналитические слои открыты для подписчиков Signal Pro.</p></div>'; }
     if(s._preview && s._preview.process_type==='observation'){
+      if(!isPro()){ H+=_hypLocked(); return H; }
       var _o=s._preview;
       // ── ADR-026 Этап1/4: компактная шапка гипотезы ──
       (function(){
@@ -12174,6 +12176,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     }
     // ── ADR-024 Phase3: DETECTION = «что должно произойти дальше» ──
     if(s._preview && s._preview.process_type==='detection'){
+      if(!isPro()){ H+=_hypLocked(); return H; }
       var _d=s._preview;
       // ── ADR-026 Этап1/4: компактная шапка гипотезы (Обнаружение) ──
       (function(){
