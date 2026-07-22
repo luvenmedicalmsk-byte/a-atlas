@@ -11886,12 +11886,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
       +'<h2>'+esc(_titleType(s))+'</h2>'+(_isSys(s)?'<div class="gd-sysbadge">Системный процесс</div>':'')+'<div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
     // Сводка — для гипотез (observation/detection) без «возраста процесса»
     var _isHyp=(s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'));
-    if(_isHyp){
-      var _stLbl=(s._preview.status_label||(s._preview.process_type==='observation'?'Наблюдение':'Обнаружение'));
-      var _stCol=(s._preview.process_type==='observation'?'#e0a458':'#7f9bc7');
-      H+='<div class="gd-sec"><div class="gd-sh">Статус</div><div class="gd-kv">'
-        +'<div class="k">Тип</div><div class="v" style="color:'+_stCol+'">'+esc(_stLbl)+'</div>'
-        +'<div class="k">Связан с процессом</div><div class="v" style="font-size:12.5px">'+esc(_pvCleanTitle(((_byId[s._preview.parent_id]||{}).title)||'подтверждённый процесс'))+'</div></div></div>';
+    if(_isHyp){ /* ADR-026: статус свёрнут в компактную шапку гипотезы */
     } else {
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
       +'<p class="gd-note" style="margin-bottom:11px">'+esc(ex.why_exists||'')+'</p>'
@@ -11904,48 +11899,41 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     // ── ADR-024 Phase3: OBSERVATION = «что система наблюдает» ──
     if(s._preview && s._preview.process_type==='observation'){
       var _o=s._preview;
-      // ── ADR-025: единый ID гипотезы + прогресс жизненного цикла + переход к паре ──
+      // ── ADR-026 Этап1/4: компактная шапка гипотезы ──
       (function(){
         var _sfx=((_o.parent_id||_o.process_id||'')+'').split('-').pop()||'0000';
         var _hn=0; for(var _hi=0;_hi<_sfx.length;_hi++){ _hn=(_hn*31+_sfx.charCodeAt(_hi))>>>0; } _hn=_hn%10000;
         var _hid='H-2026-'+('0000'+_hn).slice(-4);
         var _ch=_o.evolution_chain||[]; var _cix=_ch.indexOf(_o.evolution_current||'Наблюдение');
         var _pp=(_ch.length>1&&_cix>=0)?Math.round(_cix/(_ch.length-1)*100):0;
-        H+='<div class="gd-sec" style="background:rgba(184,151,58,0.05);border:0.5px solid rgba(184,151,58,0.2);border-radius:10px;padding:11px 12px">'
-          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">'
-          +'<div><div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Гипотеза</div><div style="font-size:14px;font-weight:700;color:#D4AF5A;font-family:Montserrat,sans-serif;letter-spacing:.03em">'+_hid+'</div></div>'
-          +'<div style="text-align:right"><div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Прогресс</div><div style="font-size:14px;font-weight:700;color:#e0a458">'+_pp+'% пути</div></div></div>'
-          +'<div style="margin-top:9px;height:5px;border-radius:3px;background:rgba(148,163,184,0.18);overflow:hidden"><div style="height:100%;width:'+_pp+'%;background:linear-gradient(90deg,#B8973A,#e0a458)"></div></div>';
+        var _pt=_pvCleanTitle((_o.parent_meta&&_o.parent_meta.title)||_o.parent_title||'подтверждённый процесс');
+        H+='<div class="gd-sec" style="background:rgba(184,151,58,0.05);border:0.5px solid rgba(184,151,58,0.2);border-radius:10px;padding:12px">'
+          +'<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Гипотеза</span><span style="font-size:15px;font-weight:700;color:#D4AF5A;font-family:Montserrat,sans-serif;letter-spacing:.03em">'+_hid+'</span></div>'
+          +'<div style="margin-top:6px;font-size:15px;font-weight:600;color:#e0a458">Наблюдение</div>'
+          +'<div style="margin-top:7px;display:flex;align-items:center;gap:9px"><div style="flex:1;height:6px;border-radius:3px;background:rgba(148,163,184,0.18);overflow:hidden"><div style="height:100%;width:'+_pp+'%;background:linear-gradient(90deg,#B8973A,#e0a458)"></div></div><span style="font-size:13px;font-weight:700;color:#e0a458">'+_pp+'%</span></div>';
+        if(_o.parent_id){ H+='<div class="gd-conn" data-id="'+esc(_o.parent_id)+'" style="cursor:pointer;margin-top:10px;font-size:12px;color:#c8d0da"><span style="color:#8a93a6">Родитель: </span>'+esc(_pt)+' <span style="color:#D4AF5A">&#8594;</span></div>'; }
         var _sib='det-'+_sfx;
-        if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:10px;padding:9px 11px;background:rgba(127,155,199,0.08);border:0.5px solid rgba(127,155,199,0.3);border-radius:8px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12.5px;color:#c8d0da">Следующий этап · Обнаружение перехода</span><span style="color:#7f9bc7;font-size:16px">↓</span></div>'; }
+        if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:11px;padding:9px 11px;background:rgba(127,155,199,0.08);border:0.5px solid rgba(127,155,199,0.3);border-radius:8px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12.5px;color:#c8d0da">Перейти к следующей стадии &middot; Обнаружение перехода</span><span style="color:#7f9bc7;font-size:16px">&#8594;</span></div>'; }
         H+='</div>';
       })();
-      // Этап 3: карточка родителя с метриками
-      if(_o.parent_id){ var _pm=_o.parent_meta||{}; H+='<div class="gd-sec"><div class="gd-sh">Родительский процесс</div>'
-        +'<div class="gd-conn" data-id="'+esc(_o.parent_id)+'" style="cursor:pointer;padding:11px 12px;background:rgba(184,151,58,0.06);border:0.5px solid rgba(184,151,58,0.25);border-radius:9px">'
-        +'<div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-bottom:5px">'+esc(_pvCleanTitle(_pm.title||_o.parent_title||"подтверждённый процесс"))+'</div>'
-        +'<div style="display:flex;gap:12px;align-items:center;font-size:11px;color:#8a93a6"><span style="color:#4ade80;font-weight:700;letter-spacing:.05em">'+esc(_pm.status||"ACTIVE")+'</span>'
-        +(_pm.evidence_count!=null?'<span>'+_pm.evidence_count+' подтв.</span>':'')+(_pm.geo_spread!=null?'<span>'+_pm.geo_spread+' рег.</span>':'')+'</div>'
-        +'<div style="margin-top:7px;font-size:12px;color:#D4AF5A">→ открыть процесс</div></div>'
-        +'<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.65);margin-top:6px">Наблюдение — производное от этого процесса, а не самостоятельный процесс.</p></div>'; }
+      // ── ADR-026 Этап8: гипотеза завершена — показываем только итог ──
+      if(_o.lifecycle_state==='Подтверждён'||_o.lifecycle_state==='Закрыт'){ var _okk=(_o.lifecycle_state==='Подтверждён'); var _pt2=_pvCleanTitle((_o.parent_meta&&_o.parent_meta.title)||_o.parent_title||'подтверждённый процесс');
+        H+='<div class="gd-sec" style="background:rgba('+(_okk?'127,176,105':'226,74,59')+',0.08);border:0.5px solid rgba('+(_okk?'127,176,105':'226,74,59')+',0.35);border-radius:10px;padding:14px"><div style="font-size:15px;font-weight:700;color:'+(_okk?'#7fb069':'#E24A3B')+'">'+(_okk?'&#10004; Гипотеза подтверждена':'&#10008; Гипотеза закрыта')+'</div>'+(_okk?'<div style="font-size:12px;color:#8a93a6;margin-top:8px">Создан новый процесс</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_pt2)+'</div>':'<p class="gd-note" style="margin-top:6px">'+esc(_o.close_explanation||_o.auto_close_when||'Недостаточно подтверждений.')+'</p>')+'</div>';
+        return H; }
+
       // Этап 6: причина автосоздания (что Atlas начал наблюдать)
-      if(_o.creation_reason){ H+='<div class="gd-sec"><div class="gd-sh">Что Atlas начал наблюдать</div><p class="gd-note" style="font-size:11.5px;color:#8a93a6;margin-bottom:5px">Наблюдение создано автоматически.</p><p class="gd-note">'+esc(_o.creation_reason)+'</p></div>'; }
+      if(_o.creation_reason){ var _cr=String(_o.creation_reason); var _crs=(_cr.length>150?_cr.slice(0,150).replace(/\s+\S*$/,'')+'\u2026':_cr); H+='<div class="gd-sec"><div class="gd-sh">Что Atlas начал наблюдать</div><p class="gd-note">'+esc(_crs)+'</p>'+(_cr.length>150?'<details style="margin-top:5px"><summary style="cursor:pointer;color:#D4AF5A;font-size:12px">Подробнее</summary><p class="gd-note" style="margin-top:5px">'+esc(_cr)+'</p></details>':'')+'</div>'; }
       // Этап 2: ЧТО ИЗМЕНИЛОСЬ (сравнение с родителем)
       if(_o.what_changed&&_o.what_changed.length){ H+='<div class="gd-sec"><div class="gd-sh">Что изменилось</div><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8);margin-bottom:7px">Atlas зафиксировал:</p>'+_o.what_changed.map(function(x){return '<div style="color:#c8d0da;padding:3px 0 3px 8px;font-size:12.5px">• '+esc(x)+'</div>';}).join('')+'</div>'; }
       // Наблюдаемый паттерн
       if(_o.pattern){ H+='<div class="gd-sec"><div class="gd-sh">Наблюдаемый паттерн</div><p class="gd-note">'+esc(_o.pattern)+'</p></div>'; }
       // Этап 5 (Confidence): уверенность гипотезы (не проценты вероятности)
-      if(_o.confidence_basis&&_o.confidence_basis.length){ H+='<div class="gd-sec"><div class="gd-sh">Уверенность гипотезы</div><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8);margin-bottom:6px">Основано на:</p>'+_o.confidence_basis.map(function(x){return '<div style="color:#c8d0da;padding:2px 0 2px 8px;font-size:12.5px">• '+esc(x)+'</div>';}).join('')+'<div style="margin-top:8px;display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:#8a93a6">Уверенность модели:</span><b style="color:#7fb069;font-size:14px">'+esc(_o.confidence_level||"Средняя")+'</b></div></div>'; }
+      if(_o.confidence_basis&&_o.confidence_basis.length){ H+='<div class="gd-sec"><div class="gd-sh">Уверенность</div><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8);margin-bottom:6px">Основано на:</p>'+_o.confidence_basis.map(function(x){return '<div style="color:#c8d0da;padding:2px 0 2px 8px;font-size:12.5px">• '+esc(x)+'</div>';}).join('')+'<div style="margin-top:8px;display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:#8a93a6">Уверенность модели:</span><b style="color:#7fb069;font-size:14px">'+esc(_o.confidence_level||"Средняя")+'</b></div></div>'; }
       // Этап 3 (lifecycle): жизненный цикл
       if(_o.lifecycle_states&&_o.lifecycle_states.length){ var _cur=_o.lifecycle_state||"Наблюдается";
         H+='<div class="gd-sec"><div class="gd-sh">Жизненный цикл</div><div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">'
         +_o.lifecycle_states.map(function(st,i){ var _act=(st===_cur); var _col=_act?"#e0a458":"rgba(148,163,184,0.45)";
           return '<span style="font-size:12px;color:'+_col+';font-weight:'+(_act?"700":"400")+'">'+esc(st)+'</span>'+(i<_o.lifecycle_states.length-1?'<span style="color:rgba(148,163,184,0.3);margin:0 2px">→</span>':''); }).join('')+'</div></div>'; }
-      // Этап 6: цепочка происхождения
-      if(_o.evolution_chain&&_o.evolution_chain.length){ var _ec=_o.evolution_current||"Наблюдение";
-        H+='<div class="gd-sec"><div class="gd-sh">Цепочка развития</div><div style="display:flex;flex-direction:column;gap:0">'
-        +_o.evolution_chain.map(function(st,i){ var _cur2=(st===_ec); var _col=_cur2?"#e0a458":"rgba(148,163,184,0.4)";
-          return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0"><span style="width:7px;height:7px;border-radius:50%;background:'+_col+';flex-shrink:0"></span><span style="font-size:12.5px;color:'+_col+';font-weight:'+(_cur2?"700":"400")+'">'+esc(st)+'</span>'+(_cur2?'<span style="font-size:10px;color:#8a93a6;margin-left:4px">← сейчас</span>':'')+'</div>'+(i<_o.evolution_chain.length-1?'<div style="width:1px;height:8px;background:rgba(148,163,184,0.25);margin-left:3px"></div>':''); }).join('')+'</div></div>'; }
       // Этап 7: понятное закрытие
       // ── ADR-025 Этап5: история развития гипотезы (из реальных полей, без выдуманных дат) ──
       (function(){
@@ -11955,7 +11943,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         if(_ww.label) _rows.push(['◷','Окно наблюдения',esc(_ww.label),'#B8973A']);
         if(_byId['det-'+_sfx]) _rows.push(['→','Появилось обнаружение','переход к проверке условий','#7f9bc7']);
         _rows.push(['●','Сейчас · '+esc(_o.evolution_current||'Наблюдение'),'','#e0a458']);
-        H+='<div class="gd-sec"><div class="gd-sh">История гипотезы</div><div style="display:flex;flex-direction:column;gap:0">'
+        H+='<div class="gd-sec"><div class="gd-sh">История</div><div style="display:flex;flex-direction:column;gap:0">'
           +_rows.map(function(r,i){ return '<div style="display:flex;gap:9px;padding:4px 0"><span style="color:'+r[3]+';width:14px;text-align:center;flex-shrink:0">'+r[0]+'</span><div><div style="font-size:12.5px;color:#c8d0da">'+r[1]+'</div>'+(r[2]?'<div style="font-size:11px;color:rgba(148,163,184,0.65);margin-top:1px">'+r[2]+'</div>':'')+'</div></div>'+(i<_rows.length-1?'<div style="width:1px;height:6px;background:rgba(148,163,184,0.2);margin-left:6px"></div>':''); }).join('')
           +'</div></div>';
       })();
@@ -11965,7 +11953,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         if(_ls==='Подтверждён'||_ls==='Закрыт'){ var _ok=(_ls==='Подтверждён');
           H+='<div class="gd-sec" style="background:rgba('+(_ok?'127,176,105':'226,74,59')+',0.07);border:0.5px solid rgba('+(_ok?'127,176,105':'226,74,59')+',0.3);border-radius:10px;padding:12px"><div style="font-size:14px;font-weight:700;color:'+(_ok?'#7fb069':'#E24A3B')+'">'+(_ok?'✔ Гипотеза подтверждена':'✖ Гипотеза закрыта')+'</div><p class="gd-note" style="margin-top:5px">'+esc(_ok?(_o.auto_promote_when||'Критерии подтверждения выполнены.'):(_o.close_explanation||_o.auto_close_when||'Окно наблюдения завершилось без подтверждений.'))+'</p></div>';
         } else {
-          H+='<div class="gd-sec"><div class="gd-sh">Чем завершится гипотеза</div><div style="display:flex;flex-direction:column;gap:7px">'
+          H+='<div class="gd-sec"><div class="gd-sh">Возможные исходы</div><div style="display:flex;flex-direction:column;gap:7px">'
             +(_o.auto_promote_when?'<div style="padding:8px 10px;background:rgba(127,176,105,0.06);border-left:2px solid #7fb069;border-radius:0 6px 6px 0"><div style="font-size:12px;color:#7fb069;font-weight:600">✔ Подтвердится, если</div><div style="font-size:12px;color:#c8d0da;margin-top:2px">'+esc(_o.auto_promote_when)+'</div></div>':'')
             +(_o.auto_close_when?'<div style="padding:8px 10px;background:rgba(148,163,184,0.05);border-left:2px solid rgba(148,163,184,0.5);border-radius:0 6px 6px 0"><div style="font-size:12px;color:rgba(148,163,184,0.9);font-weight:600">✖ Закроется, если</div><div style="font-size:12px;color:rgba(148,163,184,0.8);margin-top:2px">'+esc(_o.auto_close_when)+'</div></div>':'')
             +'</div></div>';
@@ -11977,28 +11965,28 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     // ── ADR-024 Phase3: DETECTION = «что должно произойти дальше» ──
     if(s._preview && s._preview.process_type==='detection'){
       var _d=s._preview;
-      // ── ADR-025: тот же ID гипотезы + прогресс жизненного цикла + переход к паре ──
+      // ── ADR-026 Этап1/4: компактная шапка гипотезы (Обнаружение) ──
       (function(){
         var _sfx=((_d.parent_id||_d.process_id||'')+'').split('-').pop()||'0000';
         var _hn=0; for(var _hi=0;_hi<_sfx.length;_hi++){ _hn=(_hn*31+_sfx.charCodeAt(_hi))>>>0; } _hn=_hn%10000;
         var _hid='H-2026-'+('0000'+_hn).slice(-4);
         var _ch=_d.evolution_chain||[]; var _cix=_ch.indexOf(_d.evolution_current||'Обнаружение');
         var _pp=(_ch.length>1&&_cix>=0)?Math.round(_cix/(_ch.length-1)*100):0;
-        H+='<div class="gd-sec" style="background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.2);border-radius:10px;padding:11px 12px">'
-          +'<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">'
-          +'<div><div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Гипотеза</div><div style="font-size:14px;font-weight:700;color:#D4AF5A;font-family:Montserrat,sans-serif;letter-spacing:.03em">'+_hid+'</div></div>'
-          +'<div style="text-align:right"><div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Прогресс</div><div style="font-size:14px;font-weight:700;color:#7f9bc7">'+_pp+'% пути</div></div></div>'
-          +'<div style="margin-top:9px;height:5px;border-radius:3px;background:rgba(148,163,184,0.18);overflow:hidden"><div style="height:100%;width:'+_pp+'%;background:linear-gradient(90deg,#5a7bb0,#7f9bc7)"></div></div>';
+        var _pt=_pvCleanTitle((_d.parent_meta&&_d.parent_meta.title)||_d.parent_title||'подтверждённый процесс');
+        H+='<div class="gd-sec" style="background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.2);border-radius:10px;padding:12px">'
+          +'<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Гипотеза</span><span style="font-size:15px;font-weight:700;color:#D4AF5A;font-family:Montserrat,sans-serif;letter-spacing:.03em">'+_hid+'</span></div>'
+          +'<div style="margin-top:6px;font-size:15px;font-weight:600;color:#7f9bc7">Обнаружение перехода</div>'
+          +'<div style="margin-top:7px;display:flex;align-items:center;gap:9px"><div style="flex:1;height:6px;border-radius:3px;background:rgba(148,163,184,0.18);overflow:hidden"><div style="height:100%;width:'+_pp+'%;background:linear-gradient(90deg,#5a7bb0,#7f9bc7)"></div></div><span style="font-size:13px;font-weight:700;color:#7f9bc7">'+_pp+'%</span></div>';
+        if(_d.parent_id){ H+='<div class="gd-conn" data-id="'+esc(_d.parent_id)+'" style="cursor:pointer;margin-top:10px;font-size:12px;color:#c8d0da"><span style="color:#8a93a6">Родитель: </span>'+esc(_pt)+' <span style="color:#7f9bc7">&#8594;</span></div>'; }
         var _sib='obs-'+_sfx;
-        if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:10px;padding:9px 11px;background:rgba(224,164,88,0.08);border:0.5px solid rgba(224,164,88,0.3);border-radius:8px;display:flex;justify-content:space-between;align-items:center"><span style="color:#e0a458;font-size:16px">↑</span><span style="font-size:12.5px;color:#c8d0da">Предыдущий этап · Наблюдение</span></div>'; }
+        if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:11px;padding:9px 11px;background:rgba(224,164,88,0.08);border:0.5px solid rgba(224,164,88,0.3);border-radius:8px;display:flex;justify-content:space-between;align-items:center"><span style="color:#e0a458;font-size:16px">&#8592;</span><span style="font-size:12.5px;color:#c8d0da">Перейти к предыдущей стадии &middot; Наблюдение</span></div>'; }
         H+='</div>';
       })();
-      // Этап 3: карточка родителя
-      if(_d.parent_id){ var _dpm=_d.parent_meta||{}; H+='<div class="gd-sec"><div class="gd-sh">Родительский процесс</div>'
-        +'<div class="gd-conn" data-id="'+esc(_d.parent_id)+'" style="cursor:pointer;padding:11px 12px;background:rgba(127,155,199,0.06);border:0.5px solid rgba(127,155,199,0.25);border-radius:9px">'
-        +'<div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-bottom:5px">'+esc(_pvCleanTitle(_dpm.title||_d.parent_title||"подтверждённый процесс"))+'</div>'
-        +'<div style="display:flex;gap:12px;font-size:11px;color:#8a93a6"><span style="color:#4ade80;font-weight:700">'+esc(_dpm.status||"ACTIVE")+'</span>'+(_dpm.evidence_count!=null?'<span>'+_dpm.evidence_count+' подтв.</span>':'')+(_dpm.geo_spread!=null?'<span>'+_dpm.geo_spread+' рег.</span>':'')+'</div>'
-        +'<div style="margin-top:7px;font-size:12px;color:#7f9bc7">→ открыть процесс</div></div></div>'; }
+      // ── ADR-026 Этап8: гипотеза завершена — только итог ──
+      if(_d.lifecycle_state==='Подтверждён'||_d.lifecycle_state==='Закрыт'){ var _okk=(_d.lifecycle_state==='Подтверждён'); var _pt2=_pvCleanTitle((_d.parent_meta&&_d.parent_meta.title)||_d.parent_title||'подтверждённый процесс');
+        H+='<div class="gd-sec" style="background:rgba('+(_okk?'127,176,105':'226,74,59')+',0.08);border:0.5px solid rgba('+(_okk?'127,176,105':'226,74,59')+',0.35);border-radius:10px;padding:14px"><div style="font-size:15px;font-weight:700;color:'+(_okk?'#7fb069':'#E24A3B')+'">'+(_okk?'&#10004; Гипотеза подтверждена':'&#10008; Гипотеза закрыта')+'</div>'+(_okk?'<div style="font-size:12px;color:#8a93a6;margin-top:8px">Создан новый процесс</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_pt2)+'</div>':'<p class="gd-note" style="margin-top:6px">Недостаточно подтверждений.</p>')+'</div>';
+        return H; }
+
       // Вопрос обнаружения
       if(_d.question){ H+='<div class="gd-sec"><div class="gd-sh">Что должно произойти</div><p class="gd-note" style="font-style:italic;color:#c8d0da">'+esc(_d.question)+'</p></div>'; }
       // Этап 4: ПРОГРЕСС ПОДТВЕРЖДЕНИЯ (визуальный, не вероятность)
