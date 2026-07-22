@@ -11934,7 +11934,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
         return H; }
 
       // Этап 6: причина автосоздания (что Atlas начал наблюдать)
-      if(_o.creation_reason){ var _cr=String(_o.creation_reason).replace(/^\s*Atlas\s+обнаружил\w*/i,'Обнаружен').replace(/^\s*Atlas\s+зафиксировал\w*/i,'Зафиксирован').replace(/^\s*Atlas\s+выявил\w*/i,'Выявлен'); var _crs=(_cr.length>150?_cr.slice(0,150).replace(/\s+\S*$/,'')+'\u2026':_cr); H+='<div class="gd-sec"><div class="gd-sh">Что система наблюдает</div><p class="gd-note">'+esc(_crs)+'</p>'+(_cr.length>150?'<details style="margin-top:5px"><summary style="cursor:pointer;color:#D4AF5A;font-size:12px">Подробнее</summary><p class="gd-note" style="margin-top:5px">'+esc(_cr)+'</p></details>':'')+'</div>'; }
+      if(_o.creation_reason){ var _cr=String(_o.creation_reason).replace(/^\s*Atlas\s+обнаружил\w*/i,'Обнаружен').replace(/^\s*Atlas\s+зафиксировал\w*/i,'Зафиксирован').replace(/^\s*Atlas\s+выявил\w*/i,'Выявлен'); H+='<div class="gd-sec"><div class="gd-sh">Что система наблюдает</div><p class="gd-note" style="font-size:12px;line-height:1.55">'+esc(_cr)+'</p></div>'; }
       // Этап 2: ЧТО ИЗМЕНИЛОСЬ (сравнение с родителем)
       if(_o.what_changed&&_o.what_changed.length){ H+='<div class="gd-sec"><div class="gd-sh">Что изменилось</div><p class="gd-note" style="font-size:12px;color:rgba(148,163,184,0.8);margin-bottom:7px">Atlas зафиксировал:</p>'+_o.what_changed.map(function(x){return '<div style="color:#c8d0da;padding:3px 0 3px 8px;font-size:12.5px">• '+esc(x)+'</div>';}).join('')+'</div>'; }
       // Наблюдаемый паттерн
