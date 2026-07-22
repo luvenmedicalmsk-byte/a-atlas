@@ -11531,9 +11531,12 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
           var _pvPres=(p.pressure!=null?p.pressure:_pvSev);
           var _isProd=(p.production===true);
           var sig={ signal_id:p.process_id, is_preview:!_isProd, is_production:_isProd, preview_type:p.process_type, process_type:p.title,
-            title:p.title, domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'infrastructure':'geopolitics')),
-            primary_domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'infrastructure':'geopolitics')),
-            process_place:(p.places&&p.places.join(', '))||'—', severity:_pvSev,
+            title:p.title, domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'economy':'geopolitics')),
+            primary_domain:(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'economy':'geopolitics')),
+            process_place:(function(){var pl=p.places||[]; if(!pl.length)return '—';
+              // страновой элемент (без «край/область/республика/округ») — показываем его на титульной
+              var _c=pl.filter(function(x){return !/(край|област|республик|округ|\bАО\b|город)/i.test(x);});
+              return _c.length?_c[0]:(pl.length>1?'Россия':pl[0]); })(), severity:_pvSev,
             pressure:_pvPres, priority:_pvSev, phase:'active', lifecycle_stage:'active', health:(_isProd?'Active':'Preview'),
             evidence_count:(p.member_count||0), countries:p.places||[],
             // detail-карточка ждёт эти поля на верхнем уровне (иначе Возраст/Обновление/Свидетельства пусты)
@@ -11630,7 +11633,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(/актив|усилен|рост|escalat/.test(stage)||/actie|escalat|active/.test(ph)) o.push('Продолжаются измерения состояния; система отслеживает динамику процесса.');
     else if(/затух|стабил|ослаб|dormant|de-escal/.test(stage)) o.push('Ведётся оценка состояния: выраженной новой активности не зарегистрировано.');
     return o.slice(0,2); }
-  var _matBadge=function(m){ var C={Candidate:'#8a93a6',Emerging:'#D4AF5A',Confirmed:'#4ade80'}; var R={Candidate:'Кандидат',Emerging:'Формируется',Confirmed:'Подтверждён'}; var c=C[m]||'#8a93a6'; return '<span style="display:inline-block;font-size:8px;font-weight:700;letter-spacing:.06em;color:'+c+';border:1px solid '+c+'66;border-radius:3px;padding:1px 6px;margin-right:7px;vertical-align:2px">'+(R[m]||m).toUpperCase()+'</span>'; };
+  var _matBadge=function(m){ var C={Candidate:'#8a93a6',Emerging:'#D4AF5A',Confirmed:'#4ade80'}; var R={Candidate:'Кандидат',Emerging:'Формируется',Confirmed:'Подтверждён'}; var c=C[m]||'#8a93a6'; return '<span style="display:block;width:fit-content;font-size:8px;font-weight:700;letter-spacing:.06em;color:'+c+';border:1px solid '+c+'66;border-radius:3px;padding:1px 6px;margin:0 0 5px 0">'+(R[m]||m).toUpperCase()+'</span>'; };
   var _PVBADGE='<span style="display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;letter-spacing:.08em;color:#0a0a0a;background:#B8973A;border-radius:3px;padding:2px 6px 2px 4px;margin-right:7px;vertical-align:2px"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5 18a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-8.5V3"/><path d="M8 14h8"/></svg>PREVIEW</span>';
   function _pvCleanTitle(t){ return String(t||'').replace(/^[🧪\s]+/,'').replace(/^Инфраструктурный процесс — /,'Инфраструктура: ').replace(/^Финансовая устойчивость.*/,'Финансовая устойчивость'); }
   function _infraAge(iso){
