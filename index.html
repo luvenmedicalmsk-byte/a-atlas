@@ -1313,7 +1313,7 @@ html,body{overscroll-behavior-y:contain}
 }
 @media(max-width:100000px){#access-btn{display:flex;align-items:center;gap:4px;}}
 
-#access-modal{
+#access-modal{z-index:10001 !important;
   display:none;position:fixed;inset:0;z-index:200;
   background:rgba(6,5,10,0.92);
   overflow-y:auto;-webkit-overflow-scrolling:touch;
@@ -11012,6 +11012,7 @@ window.addEventListener('resize', function(){
 
 <script>
 function openAccess(){
+  try{ var _pd=document.getElementById('gproc-d'); if(_pd)_pd.classList.remove('on'); var _po=document.getElementById('gproc-ov'); if(_po)_po.classList.remove('on'); }catch(_){}
   document.getElementById('access-modal').classList.add('open');
   document.body.style.overflow='hidden';
   var bn=document.getElementById('grdf-bottom-nav');
