@@ -9912,7 +9912,63 @@ window.grdfRenderSystem = function(){
   else meta+='Анализ каскадов и межотраслевых переходов уже доступен на текущих данных. ';
   meta+='Историческая динамика станет доступна после накопления снимков графа.';
   H+='<div style="margin-top:12px;padding:12px;background:rgba(184,151,58,0.05);border:0.5px solid rgba(184,151,58,0.22);border-radius:10px;font-size:12px;color:#c8d0da;line-height:1.6">'+meta+'</div>';
-  H+='<p style="font-size:10px;color:rgba(148,163,184,0.5);margin-top:10px">Все выводы, оценки полноты и чувствительности выведены из текущего состояния модели. Без прогнозов, вероятностей и оценки будущих событий.</p>';
+  // ══ ADR-034 System Capability Intelligence ══
+  var withEv=0; P.forEach(function(p){ if((p.evidence_count||((p.evidence||[]).length))>0) withEv++; });
+  var CAPS=[
+    ['выделение устойчивых процессов', P.length>0],
+    ['объединение событий в процессы', withEv>0],
+    ['определение стадии жизненного цикла', withLife>0],
+    ['пространственная концентрация', regList.length>0],
+    ['определение системных драйверов', totalConn>0],
+    ['анализ связности сети', totalRel>0],
+    ['межотраслевой анализ', xdom.length>0],
+    ['анализ каскадов', fwdTotal>0],
+    ['анализ покрытия данных', true],
+    ['объяснение ограничений модели', true]
+  ];
+  var have=CAPS.filter(function(c){return c[1];}), lack=CAPS.filter(function(c){return !c[1];});
+  H+=sec('Аналитические возможности','Какие выводы модель уже способна делать');
+  H+='<div style="padding:11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.2);border-radius:9px">'
+    +have.map(function(c){ return '<div style="display:flex;align-items:flex-start;gap:9px;font-size:12px;color:#c8d0da;margin-bottom:7px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7fb069" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px"><polyline points="4 12 10 18 20 6"/></svg><span>'+c[0]+'</span></div>'; }).join('')
+    +'</div>';
+
+  // ── Phase II — что уже анализируется ──
+  var ANA=[['структура процессов',P.length>0],['география распространения',withGeo>0],['концентрация сети',regList.length>0],['жизненный цикл',withLife>0],['домены',domList.length>0],['системные роли',totalConn>0],['плотность сети',totalRel>0]].filter(function(a){return a[1];});
+  if(ANA.length){
+    H+='<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(148,163,184,0.6);font-family:Montserrat,sans-serif;margin:12px 0 6px">Что уже анализируется</div>';
+    H+='<div style="display:flex;flex-wrap:wrap;gap:6px">'+ANA.map(function(a){ return '<span style="font-size:11px;color:#c8d0da;background:rgba(148,163,184,0.07);border:0.5px solid rgba(148,163,184,0.16);border-radius:5px;padding:4px 9px">'+a[0]+'</span>'; }).join('')+'</div>';
+  }
+
+  // ── Phase III — станет доступно ──
+  var SOON=[];
+  if(!fwdTotal) SOON.push('анализ каскадов');
+  if(!xdom.length) SOON.push('междоменные цепочки');
+  SOON.push('историческая динамика'); SOON.push('изменение центральности'); SOON.push('временные диффы структуры');
+  H+='<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(148,163,184,0.6);font-family:Montserrat,sans-serif;margin:14px 0 5px">Станет доступно с новыми данными</div>';
+  H+='<div style="display:flex;flex-wrap:wrap;gap:6px">'+SOON.map(function(s){ return '<span style="font-size:11px;color:rgba(148,163,184,0.6);background:rgba(148,163,184,0.04);border:0.5px dashed rgba(148,163,184,0.22);border-radius:5px;padding:4px 9px">'+s+'</span>'; }).join('')+'</div>';
+
+  // ── Phase IV — профиль модели ──
+  function stars(k){ var s=''; for(var q=1;q<=5;q++) s+= (q<=k?'\u2605':'\u2606'); return s; }
+  var PROF=[
+    ['Процессный анализ', P.length>=20?5:(P.length>=10?4:(P.length>=4?3:2))],
+    ['Географический анализ', regList.length>=10?5:(regList.length>=5?4:(regList.length>=2?3:(regList.length?2:0)))],
+    ['Межотраслевой анализ', xdom.length>=5?4:(xdom.length>=2?3:(xdom.length?2:1))],
+    ['Каскадный анализ', fwdTotal>=20?4:(fwdTotal>=5?3:(fwdTotal?2:0))],
+    ['Исторический анализ', 1]
+  ];
+  H+=sec('Профиль модели','Покрытие аналитических направлений, не качество системы');
+  H+='<div style="padding:11px;background:rgba(148,163,184,0.04);border:0.5px solid rgba(148,163,184,0.15);border-radius:9px">'
+    +PROF.map(function(p2){ return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px"><span style="font-size:12px;color:#c8d0da">'+p2[0]+'</span><span style="font-size:13px;letter-spacing:2px;color:'+(p2[1]>=4?G:(p2[1]>=2?C:'rgba(148,163,184,0.45)'))+';flex-shrink:0">'+stars(p2[1])+'</span></div>'; }).join('')
+    +'</div>';
+
+  // ── Phase V — Atlas Intelligence Summary ──
+  var sum1='Atlas уже способен выделять устойчивые процессы, определять их структуру'+(withLife?', стадию развития':'')+(regList.length?' и пространственную концентрацию':'')+'. ';
+  if(totalConn) sum1+='Определяются системные роли и драйверы сети. ';
+  var pend=[]; if(!fwdTotal) pend.push('анализ каскадов'); if(!xdom.length) pend.push('междоменные цепочки');
+  sum1+=(pend.length? (pend.join(' и ').charAt(0).toUpperCase()+pend.join(' и ').slice(1)+' станут доступны после накопления причинных связей между процессами. ') : 'Каскадный и межотраслевой анализ доступны на текущих данных. ');
+  sum1+='Долговременная эволюция сети откроется после накопления исторических снимков графа.';
+  H+='<div style="margin-top:12px;padding:12px;background:rgba(184,151,58,0.05);border:0.5px solid rgba(184,151,58,0.22);border-radius:10px;font-size:12px;color:#c8d0da;line-height:1.6"><div style="font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:'+G+';font-family:Montserrat,sans-serif;margin-bottom:6px">Atlas Intelligence</div>'+sum1+'</div>';
+  H+='<p style="font-size:10px;color:rgba(148,163,184,0.5);margin-top:10px">Все выводы, оценки полноты, чувствительности и возможностей выведены из текущего состояния модели. Без прогнозов, вероятностей и рекомендаций.</p>';
   el.innerHTML=H;
   }catch(err){ el.innerHTML='<p style="color:#e0a458;font-size:12px;padding:16px 4px">Ошибка рендера: '+String(err&&err.message||err)+'</p>'; }
 
