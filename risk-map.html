@@ -1025,9 +1025,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
   pointer-events:auto!important;touch-action:manipulation;
 }
 #grdf-bottom-nav .grdf-nav-btn.active{color:#D4AF5A}
-.grdf-nav-inner.nav7 .grdf-nav-btn{font-size:7.5px;letter-spacing:0.01em;gap:1px}
-.grdf-nav-inner.nav7 .grdf-nav-ico{font-size:15px}
-.grdf-nav-inner.nav7 .grdf-nav-ico svg{width:19px;height:19px}
 #grdf-bottom-nav .grdf-nav-btn .grdf-nav-ico{font-size:18px;line-height:1}
 #grdf-bottom-nav .grdf-nav-btn .grdf-nav-ico svg{width:20px;height:20px;display:block}
 #grdf-bottom-nav .grdf-nav-badge{
@@ -7908,17 +7905,12 @@ function _evM(val, lbl, col) {
     <button class="grdf-nav-btn" id="grdf-nav-countries" onclick="grdfNavTo('countries')">
       <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><span>Страны</span>
     </button>
-    <button class="grdf-nav-btn" id="grdf-nav-system" onclick="grdfNavTo('system')">
-      <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><line x1="10.7" y1="6.6" x2="6.3" y2="16"/><line x1="13.3" y1="6.6" x2="17.7" y2="16"/><line x1="7" y1="18" x2="17" y2="18"/></svg></span><span>Система</span>
-    </button>
     
   </div>
 </div>
 
 <style>
 body:not(.atlas-admin) #grdf-nav-system{display:none !important}
-#grdf-system-screen{display:block;position:fixed;top:0;left:0;right:0;bottom:56px;z-index:120;background:rgba(6,5,10,0.97);backdrop-filter:blur(20px);overflow-y:auto;overscroll-behavior-y:contain;padding-top:42px;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
-#grdf-system-screen.visible{transform:translateX(0);pointer-events:auto}
 #conn-tabs{display:flex;gap:6px;justify-content:center;padding:8px 16px 10px;flex:0 0 auto}
 .conn-tab{padding:7px 16px;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;border:1px solid rgba(184,151,58,0.2);border-radius:2px;cursor:pointer;color:rgba(232,224,208,0.6);background:transparent;transition:all .2s;font-family:'Montserrat',sans-serif}
 .conn-tab.active{border-color:#B8973A;color:#D4AF5A;background:rgba(184,151,58,0.08)}
@@ -7929,13 +7921,6 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
   <div id="conn-tabs"><button class="conn-tab active" data-cmode="matrix" onclick="connSetMode('matrix')">◆ Матрица</button><button class="conn-tab" data-cmode="graph" onclick="connSetMode('graph')">◆ Граф связей</button><button class="conn-tab" data-cmode="analysis" onclick="connSetMode('analysis')">◆ Системный анализ</button></div>
   <iframe id="conn-frame" src="risk-matrix.html?v=73" title="Карта взаимосвязей рисков" loading="lazy" style="flex:1;width:100%;border:0;display:block"></iframe>
   <div id="conn-analysis-wrap" style="flex:1;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none"></div>
-</div>
-
-<!-- ADR-031: System Overview (агрегация всей сети процессов, НЕ Experimental) -->
-<div id="grdf-system-screen">
-  <span class="grdf-screen-x" onclick="grdfNavTo('map')">✕</span>
-  <div class="grdf-screen-head"><div class="grdf-screen-title">Обзор системы</div></div>
-  <div id="grdf-system-body" style="padding:6px 14px 26px"></div>
 </div>
 
 <!-- Foresight signal radar (same source as map: ALL_EVENTS) -->
@@ -9752,7 +9737,6 @@ window.grdfRenderSystem = function(){
   el.innerHTML=H;
 };
 window.grdfNavTo = function(tab) {
-  if(tab==='system' && !_isAdminAtlas()){ tab='map'; }
   _syncSystemTab();
   // No _isMobile guard: CSS handles visibility, JS handles behavior
   _grdfNav = tab;
@@ -9770,11 +9754,10 @@ window.grdfNavTo = function(tab) {
   var alertScreen= document.getElementById('grdf-alerts-screen');
   var matrixScreen= document.getElementById('grdf-matrix-screen');
   var radarScreen = document.getElementById('grdf-radar-screen');
-  var sysScreen = document.getElementById('grdf-system-screen');
   var drawer     = document.getElementById('grdf-intel-drawer');
   var sheet      = document.getElementById('grdf-country-sheet');
 
-  [warnScreen, ctryScreen, analScreen, sigScreen, alertScreen, matrixScreen, radarScreen, sysScreen].forEach(function(s){ if(s) s.classList.remove('visible'); });
+  [warnScreen, ctryScreen, analScreen, sigScreen, alertScreen, matrixScreen, radarScreen].forEach(function(s){ if(s) s.classList.remove('visible'); });
   if(drawer) drawer.style.display = 'flex';
   var clPanel0 = document.getElementById('climate-panel');
   if(clPanel0 && tab!=='climate') clPanel0.classList.remove('open');
@@ -9805,11 +9788,6 @@ window.grdfNavTo = function(tab) {
     if(ctryScreen) ctryScreen.classList.add('visible');
     if(drawer) drawer.style.display='none';
     if(sheet) { sheet.className=''; _grdfSheetSnap=0; }
-  } else if(tab==='system'){
-    if(sysScreen) sysScreen.classList.add('visible');
-    if(drawer) drawer.style.display='none';
-    if(sheet) { sheet.className=''; _grdfSheetSnap=0; }
-    try{ grdfRenderSystem(); }catch(_e){}
   } else if(tab==='analytics'){
     if(analScreen) analScreen.classList.add('visible');
     if(drawer) drawer.style.display='none';
@@ -11498,6 +11476,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   var css='#grdf-mode-toggle{display:flex;gap:6px;padding:2px 16px 10px}'
    +'.gproc-mb{flex:1;background:transparent;border:0.5px solid rgba(184,151,58,0.3);color:rgba(148,163,184,0.75);font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;letter-spacing:0.06em;padding:8px 6px;border-radius:6px;cursor:pointer;transition:.15s}'
    +'.gproc-mb.active{background:rgba(184,151,58,0.14);border-color:#D4AF5A;color:#D4AF5A}'
+      +'body:not(.atlas-admin) .gproc-mb-sys{display:none}'
    +'#grdf-proc-feed .gpc{position:relative;padding:13px 14px 12px;margin:0 14px 9px;background:linear-gradient(180deg,rgba(184,151,58,0.115),rgba(184,151,58,0.055));border:0.5px solid rgba(184,151,58,0.30);border-radius:12px;cursor:pointer;transition:background .15s ease,border-color .15s ease}'
    +'#grdf-proc-feed .gpc:active{background:rgba(184,151,58,0.18);border-color:rgba(184,151,58,0.45)}'
    +'.gpc .gpc-edge{display:none}'
@@ -11558,7 +11537,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     if(head && !document.getElementById('grdf-mode-toggle')){
       var tg=document.createElement('div'); tg.id='grdf-mode-toggle';
       tg.innerHTML='<button class="gproc-mb active" data-mode="events" onclick="grdfSetMode(\'events\')">Хронология</button>'
-                  +'<button class="gproc-mb" data-mode="processes" onclick="grdfSetMode(\'processes\')">Процессы</button>';
+                  +'<button class="gproc-mb" data-mode="processes" onclick="grdfSetMode(\'processes\')">Процессы</button>'
+        +'<button class="gproc-mb gproc-mb-sys" data-mode="system" onclick="grdfSetMode(\'system\')">Система</button>';
       head.insertAdjacentElement('afterend', tg);
     }
     if(!document.getElementById('grdf-proc-desc')){
@@ -11590,18 +11570,23 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     }
     _mode=mode;
     document.querySelectorAll('#grdf-mode-toggle .gproc-mb').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-mode')===mode); });
+    var sys=(mode==='system');
     var ev=(mode==='events');
     var f=document.getElementById('grdf-sig-feed'), pf=document.getElementById('grdf-proc-feed'), fil=document.getElementById('grdf-sig-filters');
-    if(f) f.style.display=ev?'':'none';
-    if(fil) fil.style.display=ev?'':'none';
+    var sysEl=document.getElementById('grdf-system-body');
+    if(sys && !sysEl && pf && pf.parentNode){ sysEl=document.createElement('div'); sysEl.id='grdf-system-body'; sysEl.style.padding='4px 2px 26px'; pf.parentNode.insertBefore(sysEl, pf.nextSibling); }
+    if(sysEl) sysEl.style.display=sys?'':'none';
+    if(sys){ try{ if(!_loaded) loadProc(); }catch(_e){} try{ window.grdfRenderSystem(); }catch(_e){} }
+    if(f) f.style.display=(ev&&!sys)?'':'none';
+    if(fil) fil.style.display=(ev&&!sys)?'':'none';
     var _sicSwEl=document.getElementById('grdf-sic-switch'); if(_sicSwEl) _sicSwEl.style.display=ev?'':'none';  // switch = зеркало домен-фильтров (виден в events, скрыт в processes)
     // Оперативная/Контекст — СТРОГО только в Хронологии (events), никогда в Процессах.
     // Детерминированно: показываем сразу если events И Pro-тир (не ждём async grdfRenderSignals — устраняет мигание/гонку тира)
     if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch();
-    if(pf) pf.style.display=ev?'none':'';
+    if(pf) pf.style.display=(ev||sys)?'none':'';
     if(_explEl) _explEl.style.display=ev?'':'none';
-    var _pd=document.getElementById('grdf-proc-desc'); if(_pd) _pd.style.display=ev?'none':'';
-    if(!ev) loadProc(); else { if(typeof grdfRenderSignals==='function'){ try{ grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(_){} } var c=document.getElementById('grdf-sig-count'); if(c&&window.renderList){ try{renderList();}catch(_){} } }
+    var _pd=document.getElementById('grdf-proc-desc'); if(_pd) _pd.style.display=(ev||sys)?'none':'';
+    if(!ev && !sys) loadProc(); else if(!sys) { if(typeof grdfRenderSignals==='function'){ try{ grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(_){} } var c=document.getElementById('grdf-sig-count'); if(c&&window.renderList){ try{renderList();}catch(_){} } }
   };
   window._atlasLoadProc=function(){ try{ loadProc(); }catch(_e){} };
   function loadProc(){
