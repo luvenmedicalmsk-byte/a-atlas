@@ -9683,58 +9683,130 @@ function _syncSystemTab(){ try{ if(_isAdminAtlas()) document.body.classList.add(
 function _isAdminAtlas(){ try{ var t=String((window.CC&&CC.tier&&CC.tier())||'free').toLowerCase(); if(t==='admin'){ window._atlasAdminOk=true; return true; } }catch(e){} return !!window._atlasAdminOk; }
 window.grdfRenderSystem = function(){
   var el=document.getElementById('grdf-system-body'); if(!el) return;
-  function _sysT(t){ t=String(t||''); return t.replace(/^\s*(?:Процесс|Сигнал)\s*[:\u2014-]\s*/i,'').trim(); }
-  var all=[]; try{ var _src=window._atlasProcById||null; all=_src?Object.keys(_src).map(function(k){return _src[k];}):[]; }catch(e){}
-  var seen={},procs=[];
-  all.forEach(function(p){ if(!p||!p.domain||!p.title) return; if(p.process_type==='observation'||p.process_type==='detection') return; var id=p.signal_id||p.process_id||p.id||p.title; if(seen[id])return; seen[id]=1; procs.push(p); });
-  function _id(p){return p.signal_id||p.process_id||p.id||'';}
-  function conn(p){ return (p.importance&&p.importance.connects_processes)||(p.relationships&&p.relationships.length)||0; }
-  function cascade(p){ return (p.importance&&p.importance.cascade_reach)||((p.causes||[]).length+(p.amplifies||[]).length)||0; }
-  function domsC(p){ return (p.importance&&p.importance.domains_connected)||0; }
+  try{
+  function T(t){ t=String(t||''); return t.replace(/^\s*(?:Процесс|Сигнал)\s*[:\u2014-]\s*/i,'').trim(); }
+  var all=[]; try{ var _s=window._atlasProcById||null; all=_s?Object.keys(_s).map(function(k){return _s[k];}):[]; }catch(e){}
+  var seen={},P=[];
+  all.forEach(function(p){ if(!p||!p.domain||!p.title) return; if(p.process_type==='observation'||p.process_type==='detection') return; var k=p.signal_id||p.process_id||p.id||p.title; if(seen[k])return; seen[k]=1; P.push(p); });
+  if(!P.length){ el.innerHTML='<p style="color:rgba(148,163,184,0.7);font-size:12.5px;padding:18px 4px">Сеть процессов ещё загружается…</p>'; setTimeout(function(){ try{ if(window._atlasProcById&&Object.keys(window._atlasProcById).length) window.grdfRenderSystem(); }catch(_){} },1500); return; }
+  var C='#7f9bc7', G='#D4AF5A';
   var DOMRU={geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум',climate:'Климат'};
-  var C='#7f9bc7';
-  if(!procs.length){ el.innerHTML='<p style="color:rgba(148,163,184,0.7);font-size:13px;padding:20px 4px">Загружаю сеть процессов…</p>'; try{ if(window._atlasLoadProc) window._atlasLoadProc(); }catch(_){} if(!window._atlasSysWait){ window._atlasSysWait=0; } var _tick=setInterval(function(){ window._atlasSysWait++; if(window._atlasProcById&&Object.keys(window._atlasProcById).length){ clearInterval(_tick); window._atlasSysWait=0; try{ window.grdfRenderSystem(); }catch(_){} } else if(window._atlasSysWait>40){ clearInterval(_tick); try{ el.innerHTML='<p style="color:rgba(148,163,184,0.7);font-size:13px;padding:20px 4px">Не удалось загрузить сеть процессов. Откройте «События» → «Процессы» и вернитесь.</p>'; }catch(_){} } },500); return; }
-  function sec(t){ return '<div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif;margin:20px 0 4px">'+t+'</div>'; }
-  function sub(t){ return '<div style="font-size:11px;color:rgba(148,163,184,0.6);margin:0 0 9px">'+t+'</div>'; }
-  var H='<p style="font-size:11.5px;color:rgba(148,163,184,0.72);line-height:1.55;margin:4px 0 10px">Агрегация всей сети процессов Atlas ('+procs.length+'). Не прогноз и не расчёт риска — состояние и структура сети на текущий момент.</p>';
-  // I Drivers
-  var byDom={}; procs.forEach(function(p){ (byDom[p.domain]=byDom[p.domain]||[]).push(p); });
-  H+=sec('Phase I · Драйверы системы')+sub('Процессы с наибольшим числом системных связей (не риск)');
-  Object.keys(byDom).forEach(function(d){ var top=byDom[d].slice().sort(function(a,b){return conn(b)-conn(a);})[0]; if(!top||conn(top)<1) return;
-    H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(top))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+(DOMRU[d]||d)+'</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_sysT(top.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">'+conn(top)+' связей</div></div>'; });
-  // II Network Pressure (концентрация)
-  var byReg={}; procs.forEach(function(p){ var pl=(p.places||[]).filter(function(x){return x&&x!=='Россия'&&x!=='Глобально';}); (pl.length?pl:[(p.process_place||'—')]).forEach(function(r){ byReg[r]=(byReg[r]||0)+1; }); });
-  var regs=Object.keys(byReg).map(function(r){return [r,byReg[r]];}).filter(function(x){return x[0]&&x[0]!=='—';}).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
-  var maxR=regs.length?regs[0][1]:1;
-  H+=sec('Phase II · Концентрация сети')+sub('Где сосредоточены процессы (не карта риска)');
-  regs.forEach(function(r){ var w=Math.round(r[1]/maxR*100); H+='<div style="display:flex;align-items:center;gap:9px;margin-bottom:6px"><span style="width:34%;font-size:12px;color:#c8d0da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r[0])+'</span><div style="flex:1;height:9px;border-radius:4px;background:rgba(148,163,184,0.12);overflow:hidden"><div style="height:100%;width:'+w+'%;background:linear-gradient(90deg,#5a7bb0,#7f9bc7)"></div></div><span style="font-size:11px;color:#8a93a6;width:20px;text-align:right">'+r[1]+'</span></div>'; });
-  // III Cross-Domain
-  var xd=procs.filter(function(p){return domsC(p)>1;}).sort(function(a,b){return domsC(b)-domsC(a);}).slice(0,5);
-  H+=sec('Phase III · Межотраслевые процессы')+sub('Соединяют несколько доменов — чаще запускают каскады');
-  if(xd.length){ xd.forEach(function(p){ H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(p))+'\')"><div style="font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_sysT(p.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">Связывает '+domsC(p)+' домена · '+conn(p)+' связей</div></div>'; }); }
-  else { H+='<div style="font-size:12px;color:rgba(148,163,184,0.6)">Пока нет процессов, соединяющих несколько доменов.</div>'; }
-  // IV Cascade Sources
-  var casc=procs.filter(function(p){return cascade(p)>0;}).sort(function(a,b){return cascade(b)-cascade(a);}).slice(0,5);
-  H+=sec('Phase IV · Источники каскадов')+sub('Процессы, чаще всего порождающие новые процессы');
-  if(casc.length){ casc.forEach(function(p){ H+='<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(p))+'\')"><div style="flex:1;font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_sysT(p.title))+'</div><div style="font-size:12px;color:'+C+';font-weight:700;white-space:nowrap">'+cascade(p)+' процесс.</div></div>'; }); }
-  else { H+='<div style="font-size:12px;color:rgba(148,163,184,0.6)">Каскадных источников пока не выявлено.</div>'; }
-  // V Reserved
-  H+=sec('Phase V · Структурные изменения');
-  H+='<div style="padding:11px;background:rgba(148,163,184,0.04);border:0.5px dashed rgba(148,163,184,0.28);border-radius:9px;font-size:11.5px;color:rgba(148,163,184,0.7);line-height:1.55;margin-top:4px">Зарезервировано — требует исторических снапшотов графа. Изменение центральности, графа связей, новых кластеров, ролей и структуры сети вычисляется только сравнением двух снимков системы. Без snapshot-истории не реализуется (без эвристик).</div>';
-  // VI System State
-  var mainDriver=procs.slice().sort(function(a,b){return conn(b)-conn(a);})[0];
-  var bigCasc=procs.slice().sort(function(a,b){return cascade(b)-cascade(a);})[0];
-  var domCount={}; procs.forEach(function(p){ domCount[p.domain]=(domCount[p.domain]||0)+1; });
-  var activeDom=Object.keys(domCount).sort(function(a,b){return domCount[b]-domCount[a];})[0];
-  H+=sec('Phase VI · Состояние системы');
-  function row(lbl,p){ if(!p)return ''; return '<div style="padding:9px 11px;border-bottom:0.5px solid rgba(184,151,58,0.1);cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(p))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+lbl+'</div><div style="font-size:13.5px;color:#D4AF5A;font-weight:600;margin-top:2px">'+esc(_sysT(p.title))+'</div></div>'; }
-  H+='<div style="background:rgba(184,151,58,0.04);border:0.5px solid rgba(184,151,58,0.2);border-radius:9px;overflow:hidden;margin-top:4px">';
-  H+=row('Главный драйвер',mainDriver);
-  H+='<div style="padding:9px 11px;border-bottom:0.5px solid rgba(184,151,58,0.1)"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Наиболее активный домен</div><div style="font-size:13.5px;color:#D4AF5A;font-weight:600;margin-top:2px">'+(DOMRU[activeDom]||activeDom||'—')+' · '+(domCount[activeDom]||0)+' процессов</div></div>';
-  H+=row('Наиболее связанный процесс',mainDriver);
-  H+=row('Крупнейший источник каскадов',bigCasc);
-  H+='</div>';
+  function pid(p){return p.signal_id||p.process_id||p.id||'';}
+  function conn(p){ return (p.importance&&p.importance.connects_processes)||(p.relationships&&p.relationships.length)||0; }
+  function casc(p){ return (p.importance&&p.importance.cascade_reach)||((p.causes||[]).length+(p.amplifies||[]).length)||0; }
+  function doms(p){ return (p.importance&&p.importance.domains_connected)||0; }
+  function regs(p){ var a=((p.places)||[]).filter(function(x){return x&&x!=='Глобально';}); if(!a.length&&p.process_place) a=[p.process_place]; return a; }
+  function fwd(p){ var r=(((p&&p.relationships)||[])).filter(function(x){return x&&(x.sem_class==='B'||x.sem_class==='A');}); r.sort(function(a,b){ return ((b.sem_class==='B'?2:1)+(b.confidence||0))-((a.sem_class==='A'?1:2)+(a.confidence||0)); }); return r; }
+  var byDom={},byReg={},regDom={};
+  P.forEach(function(p){ (byDom[p.domain]=byDom[p.domain]||[]).push(p); regs(p).forEach(function(r){ byReg[r]=(byReg[r]||0)+1; (regDom[r]=regDom[r]||{})[p.domain]=1; }); });
+  var domList=Object.keys(byDom).sort(function(a,b){return byDom[b].length-byDom[a].length;});
+  var regList=Object.keys(byReg).map(function(r){return [r,byReg[r]];}).sort(function(a,b){return b[1]-a[1];});
+  var byConn=P.slice().sort(function(a,b){return conn(b)-conn(a);});
+  var byCasc=P.slice().sort(function(a,b){return casc(b)-casc(a);});
+  var xdom=P.filter(function(p){return doms(p)>1;}).sort(function(a,b){return doms(b)-doms(a);});
+  var driver=byConn[0], topC=byCasc[0];
+  var totalConn=0; P.forEach(function(p){ totalConn+=conn(p); });
+  function sec(t,s){ return '<div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif;margin:20px 0 3px">'+t+'</div>'+(s?'<div style="font-size:11px;color:rgba(148,163,184,0.6);margin-bottom:9px">'+s+'</div>':'<div style="margin-bottom:9px"></div>'); }
+  function box(inner,id){ return '<div style="padding:11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:9px;margin-bottom:8px'+(id?';cursor:pointer':'')+'"'+(id?' onclick="(window.openDetail||function(){})(\''+esc(id)+'\')"':'')+'>'+inner+'</div>'; }
+  function dot(c){ return '<svg width="9" height="9" viewBox="0 0 10 10" style="flex-shrink:0"><circle cx="5" cy="5" r="4" fill="'+c+'"/></svg>'; }
+  function arrow(){ return '<div style="padding-left:4px;line-height:1"><svg width="13" height="17" viewBox="0 0 13 17" fill="none" stroke="'+C+'" stroke-width="1.6"><line x1="4.5" y1="0" x2="4.5" y2="11"/><polyline points="1 8 4.5 12 8 8"/></svg></div>'; }
+  var H='<p style="font-size:11.5px;color:rgba(148,163,184,0.72);line-height:1.55;margin:4px 0 2px">Сеть: <b style="color:#c8d0da">'+P.length+'</b> процессов · '+regList.length+' регионов · '+domList.length+' доменов. Интерпретация текущей структуры — не прогноз и не расчёт риска.</p>';
+
+  // ── Phase I — Drivers (аналитический вывод) ──
+  H+=sec('Phase I · Драйверы системы','Узлы, создающие наибольшее число системных связей');
+  var dC=conn(driver), dK=casc(driver), dD=doms(driver), dR=regs(driver);
+  var why=[]; 
+  why.push('объединяет <b style="color:#c8d0da">'+dC+'</b> связей'+(totalConn?' ('+Math.round(dC/totalConn*100)+'% всех связей сети)':''));
+  if(dD>1) why.push('соединяет <b style="color:#c8d0da">'+dD+'</b> домена');
+  if(dK>0) why.push('порождает <b style="color:#c8d0da">'+dK+'</b> процессов');
+  if(dR.length) why.push('охватывает '+dR.slice(0,3).join(', '));
+  H+=box('<div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:'+G+';font-family:Montserrat,sans-serif">Главный драйвер системы</div>'
+    +'<div style="font-size:14px;font-weight:700;color:#e8e4dc;margin-top:3px">'+esc(T(driver.title))+'</div>'
+    +'<div style="font-size:11px;color:#8a93a6;margin-top:2px">'+(DOMRU[driver.domain]||driver.domain)+(dR.length?' · '+esc(dR[0]):'')+'</div>'
+    +'<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif;margin-top:9px">Почему драйвер</div>'
+    +'<div style="font-size:11.5px;color:#c8d0da;margin-top:2px;line-height:1.5">Процесс '+why.join('; ')+'. Центральность определяется структурой связей, а не уровнем риска.</div>', pid(driver));
+  var others=domList.map(function(d){ var t=byDom[d].slice().sort(function(a,b){return conn(b)-conn(a);})[0]; return (t&&pid(t)!==pid(driver)&&conn(t)>0)?[d,t]:null; }).filter(Boolean);
+  if(others.length){
+    H+='<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(148,163,184,0.6);font-family:Montserrat,sans-serif;margin:10px 0 5px">Драйверы по доменам</div>';
+    others.forEach(function(o){ H+='<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:0.5px solid rgba(148,163,184,0.08);cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(pid(o[1]))+'\')"><span style="font-size:9.5px;color:#8a93a6;width:74px;flex-shrink:0;text-transform:uppercase;letter-spacing:.06em">'+(DOMRU[o[0]]||o[0])+'</span><span style="flex:1;font-size:12px;color:#dfe4ea;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(T(o[1].title))+'</span><span style="font-size:11px;color:'+C+';flex-shrink:0">'+conn(o[1])+'</span></div>'; });
+  }
+
+  // ── Phase II — Network Concentration (бар + интерпретация) ──
+  H+=sec('Phase II · Концентрация сети','Распределение процессов по регионам');
+  var maxR=regList.length?regList[0][1]:1;
+  regList.slice(0,7).forEach(function(r){ var w=Math.round(r[1]/maxR*100);
+    H+='<div style="display:flex;align-items:center;gap:9px;margin-bottom:6px"><span style="width:34%;font-size:11.5px;color:#c8d0da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(r[0])+'</span><div style="flex:1;height:8px;border-radius:4px;background:rgba(148,163,184,0.12);overflow:hidden"><div style="height:100%;width:'+w+'%;background:linear-gradient(90deg,#5a7bb0,#7f9bc7)"></div></div><span style="font-size:11px;color:#8a93a6;width:20px;text-align:right">'+r[1]+'</span></div>'; });
+  if(regList.length){
+    var tr=regList[0], share=Math.round(tr[1]/P.length*100);
+    var trDoms=Object.keys(regDom[tr[0]]||{}).map(function(d){return DOMRU[d]||d;});
+    var emerging=regList.filter(function(r){return r[1]===1;}).slice(0,3).map(function(r){return r[0];});
+    var txt='Основная часть сети сосредоточена в узле <b style="color:#c8d0da">'+esc(tr[0])+'</b> — '+tr[1]+' из '+P.length+' процессов ('+share+'%). Концентрацию формируют домены: '+trDoms.slice(0,3).join(', ')+'.';
+    if(regList.length>1) txt+=' Второй по плотности — '+esc(regList[1][0])+' ('+regList[1][1]+').';
+    if(emerging.length) txt+=' Формирующиеся узлы (по одному процессу): '+emerging.map(esc).join(', ')+'.';
+    H+='<div style="font-size:11.5px;color:#c8d0da;line-height:1.55;margin-top:9px;padding:10px;background:rgba(148,163,184,0.04);border-radius:8px">'+txt+'</div>';
+  }
+
+  // ── Phase III — Cross Domain (скрывается, если пусто) ──
+  if(xdom.length){
+    H+=sec('Phase III · Межотраслевые процессы','Соединяют несколько доменов — узлы каскадов');
+    xdom.slice(0,5).forEach(function(p){ H+=box('<div style="font-size:12.5px;font-weight:600;color:#e8e4dc">'+esc(T(p.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">'+doms(p)+' домена · '+conn(p)+' связей</div>', pid(p)); });
+  }
+
+  // ── Phase IV — Cascade Sources (цепочка) ──
+  var cascSrc=byCasc.filter(function(p){return casc(p)>0;}).slice(0,3);
+  if(cascSrc.length){
+    H+=sec('Phase IV · Источники каскадов','Как распространяется влияние по Relationship Layer');
+    cascSrc.forEach(function(p){
+      H+='<div style="padding:11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:9px;margin-bottom:8px">';
+      H+='<div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(pid(p))+'\')">'+dot(G)+'<span style="font-size:12.5px;font-weight:700;color:#e8e4dc">'+esc(T(p.title))+'</span><span style="font-size:10.5px;color:'+C+';margin-left:auto">'+casc(p)+'</span></div>';
+      var cur=p, guard={}; guard[pid(p)]=1;
+      for(var d=0;d<3;d++){
+        var e=fwd(cur)[0]; if(!e) break;
+        var tid=e.target_process; if(!tid||guard[tid]) break; guard[tid]=1;
+        var tnode=(window._atlasProcById&&window._atlasProcById[tid])||null;
+        H+=arrow();
+        H+='<div style="display:flex;align-items:flex-start;gap:8px'+(tnode?';cursor:pointer':'')+'"'+(tnode?' onclick="(window.openDetail||function(){})(\''+esc(tid)+'\')"':'')+'>'+dot(C)+'<div><div style="font-size:12px;color:#dfe4ea">'+esc(T(e.target_title||'процесс'))+'</div>'+(e.class_phrase?'<div style="font-size:10.5px;color:rgba(148,163,184,0.7);margin-top:1px">'+esc(e.class_phrase)+'</div>':'')+'</div></div>';
+        if(!tnode) break; cur=tnode;
+      }
+      H+='</div>';
+    });
+  }
+
+  // ── Phase V — Reserved ──
+  H+=sec('Phase V · Структурные изменения','');
+  H+='<div style="padding:11px;background:rgba(148,163,184,0.04);border:0.5px dashed rgba(148,163,184,0.28);border-radius:9px;font-size:11.5px;color:rgba(148,163,184,0.7);line-height:1.55">Требуется исторический snapshot графа. Изменение центральности, связей, кластеров и ролей вычисляется только сравнением двух снимков системы.</div>';
+
+  // ── Phase VI — System State (дедупликация ролей) ──
+  H+=sec('Phase VI · Состояние системы','');
+  var roles={};
+  function addRole(p,r){ if(!p)return; var k=pid(p); (roles[k]=roles[k]||{p:p,r:[]}).r.push(r); }
+  addRole(driver,'главный драйвер'); addRole(byConn[0],'наиболее связанный'); if(casc(topC)>0) addRole(topC,'крупнейший источник каскадов');
+  var rk=Object.keys(roles);
+  rk.forEach(function(k){
+    var it=roles[k], uniq=[]; it.r.forEach(function(x){ if(uniq.indexOf(x)<0) uniq.push(x); });
+    var multi=uniq.length>1;
+    H+=box('<div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:'+G+';font-family:Montserrat,sans-serif">'+(multi?'Главный системный узел':uniq[0].charAt(0).toUpperCase()+uniq[0].slice(1))+'</div>'
+      +'<div style="font-size:13.5px;font-weight:700;color:#e8e4dc;margin-top:3px">'+esc(T(it.p.title))+'</div>'
+      +(multi?'<div style="font-size:11px;color:#c8d0da;margin-top:4px">Роли: '+uniq.join(' · ')+'</div>':'')
+      +'<div style="font-size:10.5px;color:#8a93a6;margin-top:4px">'+(DOMRU[it.p.domain]||it.p.domain)+' · связей '+conn(it.p)+(casc(it.p)?' · каскад '+casc(it.p):'')+'</div>', k);
+  });
+  H+='<div style="padding:9px 11px;background:rgba(184,151,58,0.04);border:0.5px solid rgba(184,151,58,0.2);border-radius:9px"><div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Наиболее активный домен</div><div style="font-size:13px;font-weight:600;color:'+G+';margin-top:2px">'+(DOMRU[domList[0]]||domList[0])+' · '+byDom[domList[0]].length+' процессов</div></div>';
+
+  // ── System Narrative ──
+  H+=sec('Итог · Состояние сети','Интерпретация текущей структуры');
+  var domShare=Math.round(byDom[domList[0]].length/P.length*100);
+  var centrShare=totalConn?Math.round(conn(driver)/totalConn*100):0;
+  var centralized=centrShare>=25;
+  var nar='В сети преобладает <b style="color:#c8d0da">'+(DOMRU[domList[0]]||domList[0])+'</b> — '+domShare+'% процессов'+(domList[1]?', далее '+(DOMRU[domList[1]]||domList[1])+' ('+Math.round(byDom[domList[1]].length/P.length*100)+'%)':'')+'. ';
+  if(regList.length) nar+='Системное давление сосредоточено в узле '+esc(regList[0][0])+'. ';
+  nar+=centralized?('Структура <b style="color:#c8d0da">централизована</b>: на узел «'+esc(T(driver.title))+'» приходится '+centrShare+'% связей сети. '):('Структура <b style="color:#c8d0da">распределена</b>: выраженного центра нет, крупнейший узел держит '+centrShare+'% связей. ');
+  nar+=xdom.length?('Межотраслевые связи формируются — '+xdom.length+' процессов соединяют несколько доменов. '):('Межотраслевые связи пока не сформированы — домены развиваются изолированно. ');
+  nar+=(regList.length<=3)?('Сеть находится в стадии локальной концентрации: охват '+regList.length+' регионов.'):('Сеть в стадии расширения: охват '+regList.length+' регионов.');
+  H+='<div style="padding:12px;background:rgba(184,151,58,0.05);border:0.5px solid rgba(184,151,58,0.22);border-radius:10px;font-size:12px;color:#c8d0da;line-height:1.6">'+nar+'</div>';
+  H+='<p style="font-size:10px;color:rgba(148,163,184,0.5);margin-top:10px">Все выводы выведены из существующих процессов и связей. Без прогнозов, вероятностей и рекомендаций.</p>';
   el.innerHTML=H;
+  }catch(err){ el.innerHTML='<p style="color:#e0a458;font-size:12px;padding:16px 4px">Ошибка рендера: '+String(err&&err.message||err)+'</p>'; }
+
 };
 window.grdfNavTo = function(tab) {
   _syncSystemTab();
