@@ -7905,7 +7905,7 @@ function _evM(val, lbl, col) {
     <button class="grdf-nav-btn" id="grdf-nav-countries" onclick="grdfNavTo('countries')">
       <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><span>Страны</span>
     </button>
-    <button class="grdf-nav-btn" id="grdf-nav-system" style="display:none" onclick="grdfNavTo('system')">
+    <button class="grdf-nav-btn" id="grdf-nav-system" onclick="grdfNavTo('system')">
       <span class="grdf-nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><line x1="10.7" y1="6.6" x2="6.3" y2="16"/><line x1="13.3" y1="6.6" x2="17.7" y2="16"/><line x1="7" y1="18" x2="17" y2="18"/></svg></span><span>Система</span>
     </button>
     
@@ -7913,6 +7913,7 @@ function _evM(val, lbl, col) {
 </div>
 
 <style>
+body:not(.atlas-admin) #grdf-nav-system{display:none !important}
 #grdf-system-screen{display:block;position:fixed;top:0;left:0;right:0;bottom:56px;z-index:120;background:rgba(6,5,10,0.97);backdrop-filter:blur(20px);overflow-y:auto;overscroll-behavior-y:contain;padding-top:42px;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
 #grdf-system-screen.visible{transform:translateX(0);pointer-events:auto}
 #conn-tabs{display:flex;gap:6px;justify-content:center;padding:8px 16px 10px;flex:0 0 auto}
@@ -9702,7 +9703,7 @@ window.grdfRenderSystem = function(){
   function domsC(p){ return (p.importance&&p.importance.domains_connected)||0; }
   var DOMRU={geopolitics:'Геополитика',economy:'Экономика',technology:'Технологии',social:'Социум',climate:'Климат'};
   var C='#7f9bc7';
-  if(!procs.length){ el.innerHTML='<p style="color:rgba(148,163,184,0.7);font-size:13px;padding:20px 4px">Сеть процессов ещё загружается. Откройте вкладку «События» → «Процессы», затем вернитесь сюда.</p>'; setTimeout(function(){ try{ if(window._atlasProcById&&Object.keys(window._atlasProcById).length) window.grdfRenderSystem(); }catch(_){} },1500); return; }
+  if(!procs.length){ el.innerHTML='<p style="color:rgba(148,163,184,0.7);font-size:13px;padding:20px 4px">Загружаю сеть процессов…</p>'; try{ if(window._atlasLoadProc) window._atlasLoadProc(); }catch(_){} if(!window._atlasSysWait){ window._atlasSysWait=0; } var _tick=setInterval(function(){ window._atlasSysWait++; if(window._atlasProcById&&Object.keys(window._atlasProcById).length){ clearInterval(_tick); window._atlasSysWait=0; try{ window.grdfRenderSystem(); }catch(_){} } else if(window._atlasSysWait>40){ clearInterval(_tick); try{ el.innerHTML='<p style="color:rgba(148,163,184,0.7);font-size:13px;padding:20px 4px">Не удалось загрузить сеть процессов. Откройте «События» → «Процессы» и вернитесь.</p>'; }catch(_){} } },500); return; }
   function sec(t){ return '<div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:'+C+';font-family:Montserrat,sans-serif;margin:20px 0 4px">'+t+'</div>'; }
   function sub(t){ return '<div style="font-size:11px;color:rgba(148,163,184,0.6);margin:0 0 9px">'+t+'</div>'; }
   var H='<p style="font-size:11.5px;color:rgba(148,163,184,0.72);line-height:1.55;margin:4px 0 10px">Агрегация всей сети процессов Atlas ('+procs.length+'). Не прогноз и не расчёт риска — состояние и структура сети на текущий момент.</p>';
@@ -9747,7 +9748,7 @@ window.grdfRenderSystem = function(){
 };
 window.grdfNavTo = function(tab) {
   if(tab==='system' && !_isAdminAtlas()){ tab='map'; }
-  try{ var _sb=document.getElementById('grdf-nav-system'); if(_sb) _sb.style.display=_isAdminAtlas()?'':'none'; }catch(_e){}
+  try{ if(_isAdminAtlas()) document.body.classList.add('atlas-admin'); }catch(_e){}
   // No _isMobile guard: CSS handles visibility, JS handles behavior
   _grdfNav = tab;
   if(window._radarTimer && tab!=='radar'){ clearInterval(window._radarTimer); window._radarTimer=null; }
@@ -11597,6 +11598,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var _pd=document.getElementById('grdf-proc-desc'); if(_pd) _pd.style.display=ev?'none':'';
     if(!ev) loadProc(); else { if(typeof grdfRenderSignals==='function'){ try{ grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(_){} } var c=document.getElementById('grdf-sig-count'); if(c&&window.renderList){ try{renderList();}catch(_){} } }
   };
+  window._atlasLoadProc=function(){ try{ loadProc(); }catch(_e){} };
   function loadProc(){
     var pf=document.getElementById('grdf-proc-feed'); if(!pf) return;
     if(_loaded){ renderProc(); return; }
@@ -11851,7 +11853,7 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
     var _CM={'Причина для':['#E24A3B','→'],'Следствие':['#1faacc','←'],'Усиливает':['#FFD700','▲'],'Подавляет':['#5fae7a','▼'],'Связанные':['rgba(148,163,184,0.75)','•']};
     var cm=_CM[label]||['rgba(148,163,184,0.75)','•'];
     return '<div style="margin-bottom:11px"><div class="gd-cl" style="color:'+cm[0]+';font-weight:600"><span style="display:inline-block;width:14px">'+cm[1]+'</span>'+label+'</div>'+ids.map(function(i){return '<span class="gd-conn" data-id="'+esc(i)+'" style="border-color:'+cm[0]+'66">'+esc(_byId[i].title)+'</span>';}).join('')+'</div>'; }
-  window.__grdfProcTierRefresh=function(){ try{ var _sbn=document.getElementById('grdf-nav-system'); if(_sbn) _sbn.style.display=(typeof _isAdminAtlas==='function'&&_isAdminAtlas())?'':'none'; }catch(_e){} try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} 
+  window.__grdfProcTierRefresh=function(){ try{ if(typeof _isAdminAtlas==='function'&&_isAdminAtlas()) document.body.classList.add('atlas-admin'); }catch(_e){} try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} 
  };
   function openDetail(id){
     var s=_byId[id]; if(!s) return; window.__grdfLastProcId=id;
