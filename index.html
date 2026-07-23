@@ -9679,7 +9679,7 @@ window.grdfRenderAtlas = function(){
     .catch(function(){ bEl.innerHTML='<div class="sp-block" style="margin:0"><div class="sp-p" style="opacity:.5">Не удалось загрузить сводку.</div></div>'; });
 };
 
-function _syncSystemTab(){ try{ var b=document.getElementById('grdf-nav-system'); if(!b) return; var on=_isAdminAtlas(); if(on){ document.body.classList.add('atlas-admin'); b.style.display=''; } var inner=b.parentNode; if(inner&&inner.classList) inner.classList.toggle('nav7',on); }catch(_e){} }
+function _syncSystemTab(){ try{ if(_isAdminAtlas()) document.body.classList.add('atlas-admin'); }catch(_e){} }
 function _isAdminAtlas(){ try{ var t=String((window.CC&&CC.tier&&CC.tier())||'free').toLowerCase(); if(t==='admin'){ window._atlasAdminOk=true; return true; } }catch(e){} return !!window._atlasAdminOk; }
 window.grdfRenderSystem = function(){
   var el=document.getElementById('grdf-system-body'); if(!el) return;
@@ -11561,7 +11561,8 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   }
   if(document.readyState!=='loading') inject(); else document.addEventListener('DOMContentLoaded', inject);
 
-  window.grdfSetMode=function(mode){
+  try{ setTimeout(function(){ try{ _syncSystemTab(); }catch(_){} },1200); setTimeout(function(){ try{ _syncSystemTab(); }catch(_){} },4000); }catch(_e){}
+window.grdfSetMode=function(mode){
     inject();
     // FREE проходит в режим «Процессы»: лента — демонстрация выполненного анализа,
     // монетизация — в карточке процесса (freeDetailHTML), старый апселл убран
