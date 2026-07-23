@@ -1025,6 +1025,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
   pointer-events:auto!important;touch-action:manipulation;
 }
 #grdf-bottom-nav .grdf-nav-btn.active{color:#D4AF5A}
+.grdf-nav-inner.nav7 .grdf-nav-btn{font-size:7.5px;letter-spacing:0.01em;gap:1px}
+.grdf-nav-inner.nav7 .grdf-nav-ico{font-size:15px}
+.grdf-nav-inner.nav7 .grdf-nav-ico svg{width:19px;height:19px}
 #grdf-bottom-nav .grdf-nav-btn .grdf-nav-ico{font-size:18px;line-height:1}
 #grdf-bottom-nav .grdf-nav-btn .grdf-nav-ico svg{width:20px;height:20px;display:block}
 #grdf-bottom-nav .grdf-nav-badge{
@@ -9691,9 +9694,11 @@ window.grdfRenderAtlas = function(){
     .catch(function(){ bEl.innerHTML='<div class="sp-block" style="margin:0"><div class="sp-p" style="opacity:.5">Не удалось загрузить сводку.</div></div>'; });
 };
 
+function _syncSystemTab(){ try{ var b=document.getElementById('grdf-nav-system'); if(!b) return; var on=_isAdminAtlas(); if(on){ document.body.classList.add('atlas-admin'); b.style.display=''; } var inner=b.parentNode; if(inner&&inner.classList) inner.classList.toggle('nav7',on); }catch(_e){} }
 function _isAdminAtlas(){ try{ var t=String((window.CC&&CC.tier&&CC.tier())||'free').toLowerCase(); if(t==='admin'){ window._atlasAdminOk=true; return true; } }catch(e){} return !!window._atlasAdminOk; }
 window.grdfRenderSystem = function(){
   var el=document.getElementById('grdf-system-body'); if(!el) return;
+  function _sysT(t){ t=String(t||''); return t.replace(/^\s*(?:Процесс|Сигнал)\s*[:\u2014-]\s*/i,'').trim(); }
   var all=[]; try{ var _src=window._atlasProcById||null; all=_src?Object.keys(_src).map(function(k){return _src[k];}):[]; }catch(e){}
   var seen={},procs=[];
   all.forEach(function(p){ if(!p||!p.domain||!p.title) return; if(p.process_type==='observation'||p.process_type==='detection') return; var id=p.signal_id||p.process_id||p.id||p.title; if(seen[id])return; seen[id]=1; procs.push(p); });
@@ -9711,7 +9716,7 @@ window.grdfRenderSystem = function(){
   var byDom={}; procs.forEach(function(p){ (byDom[p.domain]=byDom[p.domain]||[]).push(p); });
   H+=sec('Phase I · Драйверы системы')+sub('Процессы с наибольшим числом системных связей (не риск)');
   Object.keys(byDom).forEach(function(d){ var top=byDom[d].slice().sort(function(a,b){return conn(b)-conn(a);})[0]; if(!top||conn(top)<1) return;
-    H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="openDetail(\''+esc(_id(top))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+(DOMRU[d]||d)+'</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_pvCleanTitle(top.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">'+conn(top)+' связей</div></div>'; });
+    H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(top))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+(DOMRU[d]||d)+'</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_sysT(top.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">'+conn(top)+' связей</div></div>'; });
   // II Network Pressure (концентрация)
   var byReg={}; procs.forEach(function(p){ var pl=(p.places||[]).filter(function(x){return x&&x!=='Россия'&&x!=='Глобально';}); (pl.length?pl:[(p.process_place||'—')]).forEach(function(r){ byReg[r]=(byReg[r]||0)+1; }); });
   var regs=Object.keys(byReg).map(function(r){return [r,byReg[r]];}).filter(function(x){return x[0]&&x[0]!=='—';}).sort(function(a,b){return b[1]-a[1];}).slice(0,7);
@@ -9721,12 +9726,12 @@ window.grdfRenderSystem = function(){
   // III Cross-Domain
   var xd=procs.filter(function(p){return domsC(p)>1;}).sort(function(a,b){return domsC(b)-domsC(a);}).slice(0,5);
   H+=sec('Phase III · Межотраслевые процессы')+sub('Соединяют несколько доменов — чаще запускают каскады');
-  if(xd.length){ xd.forEach(function(p){ H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="openDetail(\''+esc(_id(p))+'\')"><div style="font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_pvCleanTitle(p.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">Связывает '+domsC(p)+' домена · '+conn(p)+' связей</div></div>'; }); }
+  if(xd.length){ xd.forEach(function(p){ H+='<div style="padding:9px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(p))+'\')"><div style="font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_sysT(p.title))+'</div><div style="font-size:11px;color:'+C+';margin-top:2px">Связывает '+domsC(p)+' домена · '+conn(p)+' связей</div></div>'; }); }
   else { H+='<div style="font-size:12px;color:rgba(148,163,184,0.6)">Пока нет процессов, соединяющих несколько доменов.</div>'; }
   // IV Cascade Sources
   var casc=procs.filter(function(p){return cascade(p)>0;}).sort(function(a,b){return cascade(b)-cascade(a);}).slice(0,5);
   H+=sec('Phase IV · Источники каскадов')+sub('Процессы, чаще всего порождающие новые процессы');
-  if(casc.length){ casc.forEach(function(p){ H+='<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="openDetail(\''+esc(_id(p))+'\')"><div style="flex:1;font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_pvCleanTitle(p.title))+'</div><div style="font-size:12px;color:'+C+';font-weight:700;white-space:nowrap">'+cascade(p)+' процесс.</div></div>'; }); }
+  if(casc.length){ casc.forEach(function(p){ H+='<div style="display:flex;align-items:center;gap:9px;padding:8px 11px;background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.18);border-radius:8px;margin-bottom:7px;cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(p))+'\')"><div style="flex:1;font-size:13px;color:#e8e4dc;font-weight:600">'+esc(_sysT(p.title))+'</div><div style="font-size:12px;color:'+C+';font-weight:700;white-space:nowrap">'+cascade(p)+' процесс.</div></div>'; }); }
   else { H+='<div style="font-size:12px;color:rgba(148,163,184,0.6)">Каскадных источников пока не выявлено.</div>'; }
   // V Reserved
   H+=sec('Phase V · Структурные изменения');
@@ -9737,7 +9742,7 @@ window.grdfRenderSystem = function(){
   var domCount={}; procs.forEach(function(p){ domCount[p.domain]=(domCount[p.domain]||0)+1; });
   var activeDom=Object.keys(domCount).sort(function(a,b){return domCount[b]-domCount[a];})[0];
   H+=sec('Phase VI · Состояние системы');
-  function row(lbl,p){ if(!p)return ''; return '<div style="padding:9px 11px;border-bottom:0.5px solid rgba(184,151,58,0.1);cursor:pointer" onclick="openDetail(\''+esc(_id(p))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+lbl+'</div><div style="font-size:13.5px;color:#D4AF5A;font-weight:600;margin-top:2px">'+esc(_pvCleanTitle(p.title))+'</div></div>'; }
+  function row(lbl,p){ if(!p)return ''; return '<div style="padding:9px 11px;border-bottom:0.5px solid rgba(184,151,58,0.1);cursor:pointer" onclick="(window.openDetail||function(){})(\''+esc(_id(p))+'\')"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+lbl+'</div><div style="font-size:13.5px;color:#D4AF5A;font-weight:600;margin-top:2px">'+esc(_sysT(p.title))+'</div></div>'; }
   H+='<div style="background:rgba(184,151,58,0.04);border:0.5px solid rgba(184,151,58,0.2);border-radius:9px;overflow:hidden;margin-top:4px">';
   H+=row('Главный драйвер',mainDriver);
   H+='<div style="padding:9px 11px;border-bottom:0.5px solid rgba(184,151,58,0.1)"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Наиболее активный домен</div><div style="font-size:13.5px;color:#D4AF5A;font-weight:600;margin-top:2px">'+(DOMRU[activeDom]||activeDom||'—')+' · '+(domCount[activeDom]||0)+' процессов</div></div>';
@@ -9748,7 +9753,7 @@ window.grdfRenderSystem = function(){
 };
 window.grdfNavTo = function(tab) {
   if(tab==='system' && !_isAdminAtlas()){ tab='map'; }
-  try{ if(_isAdminAtlas()) document.body.classList.add('atlas-admin'); }catch(_e){}
+  _syncSystemTab();
   // No _isMobile guard: CSS handles visibility, JS handles behavior
   _grdfNav = tab;
   if(window._radarTimer && tab!=='radar'){ clearInterval(window._radarTimer); window._radarTimer=null; }
@@ -11847,13 +11852,13 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
   }
   // ── детальное досье ──
   function closeDetail(){ document.getElementById('gproc-d').classList.remove('on'); document.getElementById('gproc-ov').classList.remove('on'); }
-  window.grdfProcCloseDetail=closeDetail;
+  window.grdfProcCloseDetail=closeDetail; try{ window.openDetail=openDetail; }catch(_e){}
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeDetail(); });
   function connG(label,ids){ ids=(ids||[]).filter(function(i){return _byId[i];}); if(!ids.length) return '';
     var _CM={'Причина для':['#E24A3B','→'],'Следствие':['#1faacc','←'],'Усиливает':['#FFD700','▲'],'Подавляет':['#5fae7a','▼'],'Связанные':['rgba(148,163,184,0.75)','•']};
     var cm=_CM[label]||['rgba(148,163,184,0.75)','•'];
     return '<div style="margin-bottom:11px"><div class="gd-cl" style="color:'+cm[0]+';font-weight:600"><span style="display:inline-block;width:14px">'+cm[1]+'</span>'+label+'</div>'+ids.map(function(i){return '<span class="gd-conn" data-id="'+esc(i)+'" style="border-color:'+cm[0]+'66">'+esc(_byId[i].title)+'</span>';}).join('')+'</div>'; }
-  window.__grdfProcTierRefresh=function(){ try{ if(typeof _isAdminAtlas==='function'&&_isAdminAtlas()) document.body.classList.add('atlas-admin'); }catch(_e){} try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} 
+  window.__grdfProcTierRefresh=function(){ try{ if(typeof _syncSystemTab==='function') _syncSystemTab(); }catch(_e){} try{ if(_loaded) renderProc(); var d=document.getElementById('gproc-d'); if(d&&d.classList.contains('on')&&window.__grdfLastProcId) openDetail(window.__grdfLastProcId); }catch(e){} try{ if(typeof grdfRenderSignals==='function' && typeof _grdfNav!=='undefined' && _grdfNav==='signals') grdfRenderSignals((typeof _grdfSigFilter!=='undefined'&&_grdfSigFilter)||'all'); }catch(e){} 
  };
   function openDetail(id){
     var s=_byId[id]; if(!s) return; window.__grdfLastProcId=id;
