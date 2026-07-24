@@ -11846,11 +11846,11 @@ window.grdfSetMode=function(mode){
             primary_domain:((p.process_type==='observation'||p.process_type==='detection')?(p.parent_domain||'economy'):(p.process_type==='financial_stability'?'economy':(p.process_type==='infrastructure'?'economy':'geopolitics'))),
             process_place:(function(){var pl=p.places||[]; if(!pl.length)return '—';
               // страновой элемент (без «край/область/республика/округ») — показываем его на титульной
-              var _c=pl.filter(function(x){return !/(край|област|республик|округ|\bАО\b|город)/i.test(x);});
+              var _c=pl.filter(function(x){return !/(край|област|республик|округ|\bАО\b|город)/i.test(x)&&!/^(санкт-петербург|москва|севастополь)$/i.test(x);});
               return _c.length?_c[0]:(pl.length>1?'Россия':pl[0]); })(), severity:_pvSev,
             pressure:_pvPres, priority:_pvPri, phase:'active',
             lifecycle_stage:(p.lifecycle_stage||'active'), health:(_isProd?'Active':'Preview'),
-            evidence_count:(p.member_count||0), countries:p.places||[],
+            evidence_count:(p.member_count||((p.features&&p.features.evidence&&p.features.evidence.confirmed_events)||(p.parent_meta&&p.parent_meta.evidence_count)||0)), countries:p.places||[],
             first_seen:(p.created_at||p.first_seen||null), last_seen:(p.updated_at||p.last_seen||null),
             evidence:(Array.isArray(p.evidence)?p.evidence.map(function(e){return (typeof e==='object'&&e)?e:{title:String(e),source:'',date:(p.last_seen||''),severity:''};}):[]),
             explain:(p.explain||null), importance:(p.importance||null), timeline:(p.timeline||[]),
@@ -12022,6 +12022,19 @@ window.grdfSetMode=function(mode){
     }
     return H+'</div>';
   }
+  /* Гипотеза не имеет собственных приоритета/давления — это производная сущность.
+     Показываем её реальные признаки из features, а не троекратно повторённую severity родителя. */
+  function _hypMetrics(s,sv,pe){
+    var pv=s._preview||{}, pt=pv.process_type||'';
+    if(pt!=='observation'&&pt!=='detection') return mi('Приоритет',s.priority||0)+mi('Тяжесть',sv)+mi('Давление',pe);
+    var f=pv.features||{}, st=f.state||{}, evd=f.evidence||{};
+    var _ev=evd.confirmed_events||(pv.parent_meta&&pv.parent_meta.evidence_count)||0;
+    var _rc=(typeof st.regions_count==='number')?st.regions_count:((pv.places||[]).length);
+    var _third=(pt==='detection')
+      ? mi('Переход',(pv.checklist_done!=null?pv.checklist_done:0)+'/'+(pv.checklist_total!=null?pv.checklist_total:0))
+      : mi('Типы объектов',st.entity_count||0);
+    return mi('Подтверждений',_ev)+mi(_rc?'Регионов':'География',_rc||'—')+_third;
+  }
   function typeCard(b){
     var s=b.rep, pe=s.pressure||0, sv=s.severity||0;
     var ps=lcStage(s), pcol=lcColor(ps);
@@ -12041,7 +12054,7 @@ window.grdfSetMode=function(mode){
       +'<div class="gpc-type"><span>'+esc(dom)+'</span></div>'
       +'<div class="gpc-title">'+((s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'))?_obsDetBadge(s._preview.process_type):(s.is_preview?_PVBADGE:(s.is_production&&s._preview&&s._preview.maturity?_matBadge(s._preview.maturity):'')))+'<span style="display:block">'+esc((s.is_preview||s.is_production)?_pvCleanTitle(s.title):_procDisp(b.type))+'</span></div>'
       +'<div class="gpc-place">'+esc(s.process_place||'—')+'</div>'
-      +(isPro()?'<div class="gpc-m">'+mi('Приоритет',s.priority||0)+mi('Тяжесть',sv)+mi('Давление',pe)+'</div>':'')
+      +(isPro()?'<div class="gpc-m">'+_hypMetrics(s,sv,pe)+'</div>':'')
       +'<div class="gpc-chips"><span class="gpc-ch" style="color:'+pcol+';border-color:'+pcol+'44">'+ps+'</span>'
         +'<span class="gpc-ch">'+esc(scale.join(' · '))+'</span></div>'
       +((b.kids.length||s.is_preview)?'<div class="gpc-exp" onclick="grdfToggleKids(event,\''+esc(s.signal_id)+'\')" style="margin-top:7px;font-size:11px;color:#B8973A;cursor:pointer;user-select:none;-webkit-user-select:none">&#9656; '+(b.kids.length?(b.kids.length+' региональных проявлений'):'подробности процесса')+'</div>':'')
