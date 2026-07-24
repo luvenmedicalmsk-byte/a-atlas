@@ -11980,7 +11980,9 @@ window.grdfSetMode=function(mode){
       H+='<div><span style="color:#8a93a6">Зрелость:</span> <b style="color:#D4AF5A">'+esc(MRU[p.maturity]||p.maturity)+'</b></div>';
       H+='<div><span style="color:#8a93a6">Инфраструктура:</span> '+esc(p.entity_class_group||'')+' · <span style="color:#8a93a6">тип воздействия:</span> '+esc(CRU[p.causal_model]||p.causal_label||p.causal_model||'')+'</div>';
       // ЭТАП 3: география (все регионы процесса)
-      if(p.places&&p.places.length){ H+='<div><span style="color:#8a93a6">География:</span> '+p.places.map(esc).join(', ')+'</div>'; }
+      if(p.places&&p.places.length){ var _gs=_geoSplit(p.places);
+        if(_gs.countries.length) H+='<div><span style="color:#8a93a6">Страна:</span> '+_gs.countries.map(esc).join(', ')+'</div>';
+        if(_gs.regions.length) H+='<div><span style="color:#8a93a6">Регионы ('+_gs.regions.length+'):</span> '+_gs.regions.map(esc).join(', ')+'</div>'; }
       else if(_fGeoPending(p)){ H+='<div><span style="color:#8a93a6">География:</span> <span style="color:rgba(148,163,184,0.7)">уточняется</span></div>'; }
       H+='<div><span style="color:#8a93a6">События:</span> '+(p.member_count||p.evidence_count||0)+' · <span style="color:#8a93a6">гео-охват:</span> '+(p.geo_spread||0)+' · <span style="color:#8a93a6">уверенность:</span> '+Math.round((p.confidence||0)*100)+'%</div>';
       // ЭТАП 5/6: возраст + последнее обновление
@@ -12259,6 +12261,13 @@ window.grdfSetMode=function(mode){
     /* ADR-035: UI читает готовые признаки, не вычисляет их. Fallback — на случай,
    когда features ещё не пришли из пайплайна (FEATURES_LAYER=false). */
 /* Склонение по числу. \w в JS не покрывает кириллицу — regex-замены слов запрещены. */
+/* Страна и регион — разные уровни географии и не должны стоять в одном перечислении. */
+function _cnSet(){ if(window.__atlasCnSet) return window.__atlasCnSet; var m={};
+  try{ var d=window._CNRU||{}; for(var k in d){ m[String(d[k]).trim().toLowerCase()]=1; } }catch(_e){}
+  ['россия','российская федерация'].forEach(function(x){ m[x]=1; });
+  window.__atlasCnSet=m; return m; }
+function _isCountryName(x){ return !!_cnSet()[String(x||'').trim().toLowerCase()]; }
+function _geoSplit(arr){ var c=[],r=[]; (arr||[]).forEach(function(x){ if(!x) return; (_isCountryName(x)?c:r).push(x); }); return {countries:c,regions:r}; }
 /* локальная копия: _plu объявлена в другом IIFE и отсюда недоступна */
 function _pluRu(n,a,b,c){ var m=n%100; if(m>=11&&m<=14) return c; var d=n%10; return d===1?a:((d>=2&&d<=4)?b:c); }
 function _unitRu(u,n){ n=n||0;
@@ -12514,7 +12523,7 @@ function _scenIntel(s){
       // Этап 4: ПРОГРЕСС ПОДТВЕРЖДЕНИЯ (визуальный, не вероятность)
       if(_d.transition_checklist&&_d.transition_checklist.length){ var _dn=_d.checklist_done||0, _tt=_d.checklist_total||_d.transition_checklist.length, _pct=(_d.checklist_pct!=null?_d.checklist_pct:Math.round(_dn/_tt*100));
         var _bar=''; for(var _bi=0;_bi<_tt;_bi++){ _bar+='<span style="display:inline-block;width:22px;height:10px;border-radius:2px;margin-right:4px;background:'+(_bi<_dn?"#7fb069":"rgba(148,163,184,0.22)")+'"></span>'; }
-        H+='<div class="gd-sec"><div class="gd-sh">Прогресс подтверждения</div><div style="margin-bottom:6px">'+_bar+'</div><div style="font-size:13px;color:#e0a458;font-weight:600">'+_dn+' / '+_tt+' критерия · '+_pct+'%'+((_d.checklist_unknown>0)?'<span style="font-size:11px;color:rgba(148,163,184,0.6);font-weight:400"> · ещё '+_d.checklist_unknown+' не вычисляется</span>':'')+'</div><p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.6);margin-top:5px">Это степень выполнения условий модели, а не вероятность события.</p></div>';
+        H+='<div class="gd-sec"><div class="gd-sh">Прогресс подтверждения</div><div style="margin-bottom:6px">'+_bar+'</div><div style="font-size:13px;color:#e0a458;font-weight:600">'+((_dn===_tt&&_tt>0)?('Выполнены все '+_tt+' '+_pluRu(_tt,'вычисляемый критерий','вычисляемых критерия','вычисляемых критериев')):('Выполнено '+_dn+' из '+_tt+' '+_pluRu(_tt,'вычисляемого критерия','вычисляемых критериев','вычисляемых критериев')))+'</div>'+((_d.checklist_unknown>0)?'<div style="font-size:11px;color:rgba(148,163,184,0.6);margin-top:4px">Ещё '+_d.checklist_unknown+' '+_pluRu(_d.checklist_unknown,'признак требует','признака требуют','признаков требуют')+' межпроцессного анализа</div>':'')+'<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.6);margin-top:5px">Это степень выполнения условий модели, а не вероятность события.</p></div>';
         // Выполненные критерии (☑)
         var _doneList=_d.transition_checklist.filter(function(c){return c.done===true;});
         var _unkList=_d.transition_checklist.filter(function(c){return c.done===null||c.status==='unknown';});
@@ -12558,7 +12567,10 @@ function _scenIntel(s){
     if(s.merged_count>1){
       H+='<div class="gd-sec"><div class="gd-sh">Состав процесса</div>'
         +'<p class="gd-note" style="margin-bottom:10px">Объединяет '+s.merged_count+' '+plProc(s.merged_count)+' и '+(s.evidence_count||0)+' '+plSvid(s.evidence_count||0)+'.</p>'
-        +((s.included_places&&s.included_places.length)?'<div class="gd-cl">Затронутые территории</div>'+s.included_places.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join(''):'')
+        +((s.included_places&&s.included_places.length)?(function(){ var _g=_geoSplit(s.included_places); var _o='';
+          if(_g.countries.length) _o+='<div class="gd-cl">Страны</div>'+_g.countries.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join('');
+          if(_g.regions.length) _o+='<div class="gd-cl"'+(_g.countries.length?' style="margin-top:9px"':'')+'>Регионы · '+_g.regions.length+'</div>'+_g.regions.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join('');
+          return _o; })():'')
         +((s.included_processes&&s.included_processes.length>1)?'<div class="gd-cl" style="margin-top:9px">Развитие процесса</div>'+s.included_processes.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join(''):'')
         +'</div>';
     }
