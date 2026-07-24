@@ -11695,17 +11695,21 @@ function _cbFallback(arr){ return (arr||[]).map(function(x){ var m=String(x).mat
   return {value:parseInt(m[1],10),unit:u}; }); }
 /* Единая цепочка жизненного цикла гипотезы: одна и та же полоса на всех этапах,
    чтобы карточки читались как развитие одной модели, а не как отдельные сущности. */
-function _lcChain(cur){
-  var steps=[['Наблюдение','наблюдение'],['Обнаружение перехода','обнаружение'],
-             ['Инфраструктурный процесс','процесс'],['Experimental Intelligence','сценарии']];
+function _lcChain(cur,s){
+  var sfx=''; try{ var pv=(s&&s._preview)||{}; sfx=String(pv.parent_id||pv.process_id||(s&&s.signal_id)||'').split('-').pop()||''; }catch(_e){}
+  var ids=['obs-'+sfx,'det-'+sfx,'infra-'+sfx,'infra-'+sfx];
+  var anch=['','','','exp'];
+  var steps=['наблюдение','обнаружение','процесс','сценарии'];
   var H='<div style="display:flex;align-items:stretch;gap:4px;margin:2px 0 10px">';
   steps.forEach(function(st,i){
     var done=(i<cur), now=(i===cur);
+    var tgt=ids[i], live=(!now&&sfx&&window._byIdProc&&window._byIdProc[tgt]);
     var col=now?'#D4AF5A':(done?'rgba(127,176,105,0.75)':'rgba(148,163,184,0.35)');
     var bg=now?'rgba(212,175,90,0.10)':(done?'rgba(127,176,105,0.06)':'rgba(148,163,184,0.03)');
-    H+='<div style="flex:1;min-width:0;padding:5px 6px;background:'+bg+';border-radius:5px;border:0.5px solid '+(now?'rgba(212,175,90,0.35)':'transparent')+'">'
+    H+='<div'+(live?' class="gd-conn" data-id="'+esc(tgt)+'"'+(anch[i]?' data-anchor="'+anch[i]+'"':'')+' style="cursor:pointer;':' style="')
+      +'flex:1;min-width:0;padding:5px 6px;background:'+bg+';border-radius:5px;border:0.5px solid '+(now?'rgba(212,175,90,0.35)':(live?'rgba(148,163,184,0.18)':'transparent'))+'">'
       +'<div style="font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:'+col+';font-family:Montserrat,sans-serif;line-height:1.25;overflow:hidden;text-overflow:ellipsis">'
-      +esc(st[1])+'</div></div>';
+      +esc(st)+(live?' ›':'')+'</div></div>';
     if(i<steps.length-1) H+='<div style="align-self:center;color:rgba(148,163,184,0.35);font-size:9px">›</div>';
   });
   return H+'</div>';
@@ -11903,7 +11907,7 @@ window.grdfSetMode=function(mode){
             evidence:(Array.isArray(p.evidence)?p.evidence.map(function(e){return (typeof e==='object'&&e)?e:{title:String(e),source:'',date:(p.last_seen||''),severity:''};}):[]),
             explain:(p.explain||null), importance:(p.importance||null), timeline:(p.timeline||[]),
             _preview:p };
-          _data.signals=_data.signals||[]; _data.signals.unshift(sig); _byId[sig.signal_id]=sig;
+          _data.signals=_data.signals||[]; _data.signals.unshift(sig); _byId[sig.signal_id]=sig; try{ window._byIdProc=_byId; }catch(_e){}
         });
         renderProc();
       }).catch(function(){ renderProc(); });
@@ -12163,7 +12167,12 @@ window.grdfSetMode=function(mode){
     }
     var d=document.getElementById('gproc-d'); d.innerHTML=detailHTML(s);
     d.classList.add('on'); document.getElementById('gproc-ov').classList.add('on'); d.scrollTop=0;
-    Array.prototype.forEach.call(d.querySelectorAll('.gd-conn'),function(el){ el.onclick=function(){ openDetail(el.getAttribute('data-id')); }; });
+    Array.prototype.forEach.call(d.querySelectorAll('.gd-conn'),function(el){ el.onclick=function(){
+      var _an=el.getAttribute('data-anchor');
+      openDetail(el.getAttribute('data-id'));
+      if(_an==='exp'){ setTimeout(function(){ try{ var _t=document.getElementById('gd-exp');
+        if(_t&&_t.scrollIntoView) _t.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){} },160); }
+    }; });
   }
   // ── FREE: демонстрация выполненного анализа (Atlas style), Pro видит полное досье ──
   function _fLock(t){ return '<div style="display:flex;align-items:center;gap:9px;padding:7px 0;color:rgba(148,163,184,0.45)"><span style="font-size:12px;flex-shrink:0">🔒</span><span style="font-size:12.5px;line-height:1.45">'+t+'</span></div>'; }
@@ -12278,7 +12287,7 @@ window.grdfSetMode=function(mode){
       +'<h2>'+esc(_titleType(s))+'</h2>'+(_isSys(s)?'<div class="gd-sysbadge">Системный процесс</div>':'')+'<div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
     // Сводка — для гипотез (observation/detection) без «возраста процесса»
     var _isHyp=(s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'));
-    if(s._preview&&s._preview.process_type==='infrastructure') H+=_lcChain(2);   // этап: зрелый процесс
+    if(s._preview&&s._preview.process_type==='infrastructure') H+=_lcChain(2,s);   // этап: зрелый процесс
     if(_isHyp){ /* ADR-026: статус свёрнут в компактную шапку гипотезы */
     } else {
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
@@ -12625,9 +12634,9 @@ function _scenIntel(s){
       if(!isPro())return '';
       var a=_scenIntel(s),b=_transIntel(s),c=_impactIntel(s);
       if(!a&&!b&&!c)return '';
-      var H='<div class="gd-sec" style="background:rgba(155,127,196,0.035);border:0.5px solid rgba(155,127,196,0.2);border-radius:11px;padding:13px;margin-top:8px">';
+      var H='<div id="gd-exp" class="gd-sec" style="background:rgba(155,127,196,0.035);border:0.5px solid rgba(155,127,196,0.2);border-radius:11px;padding:13px;margin-top:8px">';
       H+='<div><span style="font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#06050A;background:linear-gradient(90deg,#9b7fc4,#7f9bc7);border-radius:4px;padding:3px 10px;font-family:Montserrat,sans-serif">Experimental Intelligence</span></div>';
-      H+=_lcChain(3);
+      H+=_lcChain(3,s);
       H+='<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.72);margin-top:8px;line-height:1.55">Этот слой не прогнозирует события и не рассчитывает риск. Он визуализирует возможные направления распространения системного воздействия, детерминированно выведенные из текущей структуры процессов и их связей.</p>';
       H+=a+b+c+'</div>';return H;
     }
@@ -12635,7 +12644,7 @@ function _scenIntel(s){
     if(s._preview && s._preview.process_type==='observation'){
       if(!isPro()){ H+=_hypLocked(); return H; }
       var _o=s._preview;
-      H+=_lcChain(0);
+      H+=_lcChain(0,s);
       // ── ADR-026 Этап1/4: компактная шапка гипотезы ──
       (function(){
         var _sfx=((_o.parent_id||_o.process_id||'')+'').split('-').pop()||'0000';
@@ -12655,6 +12664,9 @@ function _scenIntel(s){
         if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:9px;padding:9px 11px;background:rgba(127,155,199,0.08);border:0.5px solid rgba(127,155,199,0.3);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:12.5px;color:#c8d0da">Перейти к следующей стадии &middot; Обнаружение перехода</span>'+_hsArrowR('#7f9bc7')+'</div>'; }
         H+='</div>';
       })();
+      (function(){ var _pid=_o.parent_id||''; if(_pid&&window._byIdProc&&window._byIdProc[_pid]){
+        H+='<div class="gd-conn" data-id="'+esc(_pid)+'" data-anchor="exp" style="cursor:pointer;margin-top:9px;padding:9px 11px;background:rgba(155,127,196,0.08);border:0.5px solid rgba(155,127,196,0.32);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:8px">'
+          +'<span style="font-size:12.5px;color:#c8d0da">Сценарии развития процесса</span>'+_hsArrowR('#9b7fc4')+'</div>'; } })();
       H+=_changesBlock(_o);   // Delta Layer
       // ── ADR-026 Этап8: гипотеза завершена — показываем только итог ──
       if(_o.lifecycle_state==='Подтверждён'||_o.lifecycle_state==='Закрыт'){ var _okk=(_o.lifecycle_state==='Подтверждён'); var _pt2=_pvCleanTitle((_o.parent_meta&&_o.parent_meta.title)||_o.parent_title||'подтверждённый процесс');
@@ -12708,7 +12720,7 @@ function _scenIntel(s){
     if(s._preview && s._preview.process_type==='detection'){
       if(!isPro()){ H+=_hypLocked(); return H; }
       var _d=s._preview;
-      H+=_lcChain(1);
+      H+=_lcChain(1,s);
       // ── ADR-026 Этап1/4: компактная шапка гипотезы (Обнаружение) ──
       (function(){
         var _sfx=((_d.parent_id||_d.process_id||'')+'').split('-').pop()||'0000';
@@ -12728,6 +12740,9 @@ function _scenIntel(s){
         if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:9px;padding:9px 11px;background:rgba(224,164,88,0.08);border:0.5px solid rgba(224,164,88,0.3);border-radius:8px;display:flex;align-items:center;gap:8px">'+_hsArrowL('#e0a458')+'<span style="font-size:12.5px;color:#c8d0da">Перейти к предыдущей стадии &middot; Наблюдение</span></div>'; }
         H+='</div>';
       })();
+      (function(){ var _pid=_d.parent_id||''; if(_pid&&window._byIdProc&&window._byIdProc[_pid]){
+        H+='<div class="gd-conn" data-id="'+esc(_pid)+'" data-anchor="exp" style="cursor:pointer;margin-top:9px;padding:9px 11px;background:rgba(155,127,196,0.08);border:0.5px solid rgba(155,127,196,0.32);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:8px">'
+          +'<span style="font-size:12.5px;color:#c8d0da">Сценарии развития процесса</span>'+_hsArrowR('#9b7fc4')+'</div>'; } })();
       H+=_changesBlock(_d);   // Delta Layer
       // ── ADR-026 Этап8: гипотеза завершена — только итог ──
       if(_d.lifecycle_state==='Подтверждён'||_d.lifecycle_state==='Закрыт'){ var _okk=(_d.lifecycle_state==='Подтверждён'); var _pt2=_pvCleanTitle((_d.parent_meta&&_d.parent_meta.title)||_d.parent_title||'подтверждённый процесс');
