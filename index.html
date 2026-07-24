@@ -12649,7 +12649,7 @@ window.grdfSetMode=function(mode){
     // Хроника
     if(s.timeline&&s.timeline.length){ H+='<div class="gd-sec"><div class="gd-sh">Хроника</div><div class="gd-tl">'
       +_procObs(s).map(function(o){ return '<div class="gd-ti gd-obs"><div class="e">◇ '+esc(o)+'</div><div class="t">наблюдение</div></div>'; }).join('')
-      +s.timeline.slice().reverse().map(function(t){ return '<div class="gd-ti"><div class="e">'+esc(t.event)+'</div>'+(t.detail?'<div class="dt">'+esc(t.detail)+'</div>':'')+'<div class="t">'+esc((t.t||'').replace('T',' ').slice(0,16))+'</div></div>'; }).join('')+'</div></div>'; }
+      +s.timeline.slice().reverse().map(function(t){ return '<div class="gd-ti"><div class="e">'+esc(t.event)+'</div>'+'<div class="t">'+esc((t.t||'').replace('T',' ').slice(0,16))+'</div></div>'; }).join('')+'</div></div>'; }
     // Свидетельства
     H+='<div class="gd-sec"><div class="gd-sh">Свидетельства · '+((s.is_preview||s.is_production)?(s.evidence||[]).length:(s.evidence_count||0))+'</div>'
       +(s.evidence||[]).map(function(e){ var _p=[]; if(e.date)_p.push(esc(e.date)); return '<div class="gd-ev"><div><div class="t">'+esc(e.title)+'</div><div class="m">'+_p.join(' · ')+'</div></div><div class="s" style="color:'+scol(e.severity)+'">'+(e.severity||'')+'</div></div>'; }).join('')+'</div>';
