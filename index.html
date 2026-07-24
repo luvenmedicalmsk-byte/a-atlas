@@ -12494,13 +12494,32 @@ function _scenIntel(s){
             +esc((_wz.covered||[]).map(function(z){return z.zone;}).join(', '))+' — здесь новые данные проверяют, продолжается развитие или процесс затухает.</div>';
         }
       }
-      if(_wo&&((_wo.operators||[]).length||(_wo.object_types||[]).length)){
+      if(_wo&&((_wo.class_operators||[]).length||(_wo.operators||[]).length||(_wo.object_types||[]).length)){
         H+='<div style="margin-top:12px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Какие объекты Atlas отслеживает</div>'
-          +'<div style="font-size:10.5px;color:rgba(148,163,184,0.7);margin-top:4px;line-height:1.5">Область наблюдения, а не перечень ожидаемых событий: по этим объектам модель проверяет, сохраняется ли наблюдаемый паттерн.</div><div style="margin-top:5px">';
-        (_wo.operators||[]).forEach(function(o){ var nm=Array.isArray(o)?o[0]:o, n=Array.isArray(o)?o[1]:null;
-          H+='<span class="gd-pill">'+esc(nm)+(n?' · '+n:'')+'</span>'; });
-        (_wo.object_types||[]).forEach(function(t){ H+='<span class="gd-pill">'+esc(t)+'</span>'; });
-        H+='</div>';
+          +'<div style="font-size:10.5px;color:rgba(148,163,184,0.7);margin-top:4px;line-height:1.5">Область наблюдения, а не перечень ожидаемых событий: по этим объектам модель проверяет, сохраняется ли наблюдаемый паттерн.</div>';
+        var _co=_wo.class_operators||[];
+        if(_co.length){
+          _co.forEach(function(o){
+            var _on=o.observed;
+            H+='<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:0.5px solid rgba(148,163,184,0.06)">'
+              +'<span style="width:7px;height:7px;border-radius:50%;background:'+(_on?'rgba(127,176,105,0.85)':'rgba(148,163,184,0.35)')+';margin-top:5px;flex-shrink:0"></span>'
+              +'<div style="flex:1;min-width:0"><div style="font-size:12px;color:'+(_on?'#e8e4dc':'#c8d0da')+'">'+esc(o.name)
+              +(o.rank?' <span style="font-size:10px;color:rgba(148,163,184,0.6)">· '+esc(o.rank)+'</span>':'')
+              +(_on?' <span style="font-size:10px;color:rgba(127,176,105,0.85)">· в процессе'+(o.mentions?' ('+o.mentions+')':'')+'</span>':'')+'</div>'
+              +(o.note?'<div style="font-size:10px;color:rgba(148,163,184,0.6);margin-top:1px">'+esc(o.note)+'</div>':'')
+              +'</div></div>';
+          });
+          H+='<div style="font-size:10px;color:rgba(148,163,184,0.5);margin-top:5px">Состав класса — справочник рынка. Модель вычисляет только присутствие оператора в событиях процесса.</div>';
+        } else {
+          H+='<div style="margin-top:5px">';
+          (_wo.operators||[]).forEach(function(o){ var nm=Array.isArray(o)?o[0]:o, n=Array.isArray(o)?o[1]:null;
+            H+='<span class="gd-pill">'+esc(nm)+(n?' · '+n:'')+'</span>'; });
+          H+='</div>';
+        }
+        if((_wo.object_types||[]).length){
+          H+='<div style="margin-top:8px;font-size:10.5px;color:rgba(148,163,184,0.7)">Типы объектов класса:</div><div style="margin-top:4px">'
+            +(_wo.object_types||[]).map(function(t){return '<span class="gd-pill">'+esc(t)+'</span>';}).join('')+'</div>';
+        }
       }
       (function(){ var _dl=_fDl(s), _R=_rhythm(s);
         var _rel=((s.amplifies||[]).length+(s.causes||[]).length+(s.related||[]).length+(s.relationships||[]).length);
