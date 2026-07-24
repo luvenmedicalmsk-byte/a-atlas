@@ -12485,14 +12485,22 @@ function _scenIntel(s){
       if(_wz&&(_wz.open||[]).length){
         H+='<div style="margin-top:12px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Приоритетные зоны наблюдения модели</div>'
           +'<div style="font-size:10.5px;color:rgba(148,163,184,0.7);margin-top:4px;line-height:1.5">Кластеры, где новые подтверждения максимально изменят текущую гипотезу.</div>';
-        (_wz.open||[]).slice(0,6).forEach(function(z){
-          H+='<div style="display:flex;gap:8px;align-items:center;padding:5px 0"><span style="width:7px;height:7px;border-radius:50%;background:#D4AF5A;flex-shrink:0"></span>'
-            +'<span style="font-size:12px;color:#e8e4dc">'+esc(z.zone)+'</span></div>';
-        });
-        if((_wz.covered||[]).length){
-          H+='<div style="font-size:10.5px;color:rgba(148,163,184,0.6);margin-top:5px">Уже с подтверждениями: '
-            +esc((_wz.covered||[]).map(function(z){return z.zone;}).join(', '))+' — здесь новые данные проверяют, продолжается развитие или процесс затухает.</div>';
+        function _zRow(z,open){
+          return '<div style="padding:7px 0;border-bottom:0.5px solid rgba(148,163,184,0.07)">'
+            +'<div style="display:flex;gap:8px;align-items:center"><span style="width:7px;height:7px;border-radius:50%;background:'+(open?'#D4AF5A':'rgba(127,176,105,0.85)')+';flex-shrink:0"></span>'
+            +'<span style="font-size:12px;color:'+(open?'#e8e4dc':'#c8d0da')+'">'+esc(z.zone)+'</span>'
+            +((z.hubs&&z.hubs.length)?'<span style="font-size:10px;color:rgba(148,163,184,0.6)">· '+esc(z.hubs.join(', '))+'</span>':'')+'</div>'
+            +(z.significance?'<div style="font-size:10px;color:rgba(148,163,184,0.62);margin-top:2px;padding-left:15px">'+esc(z.significance)+'</div>':'')
+            +(open?'':'<div style="font-size:10px;color:rgba(127,176,105,0.7);margin-top:1px;padding-left:15px">подтверждения в процессе есть · '+esc((z.regions||[]).join(', '))+'</div>')
+            +'</div>';
         }
+        (_wz.open||[]).forEach(function(z){ H+=_zRow(z,true); });
+        if((_wz.covered||[]).length){
+          H+='<div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(148,163,184,0.55);margin-top:9px;font-family:Montserrat,sans-serif">Кластеры с подтверждениями</div>'
+            +'<div style="font-size:10px;color:rgba(148,163,184,0.6);margin-bottom:2px">здесь новые данные проверяют, продолжается развитие или процесс затухает</div>';
+          (_wz.covered||[]).forEach(function(z){ H+=_zRow(z,false); });
+        }
+        H+='<div style="font-size:10px;color:rgba(148,163,184,0.5);margin-top:6px">Состав кластеров и узлы — справочник логистической инфраструктуры. Модель вычисляет только наличие подтверждений по классу внутри процесса.</div>';
       }
       if(_wo&&((_wo.class_operators||[]).length||(_wo.operators||[]).length||(_wo.object_types||[]).length)){
         H+='<div style="margin-top:12px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Какие объекты Atlas отслеживает</div>'
