@@ -11700,7 +11700,7 @@ function _lcChain(cur,s){
   var ids=['obs-'+sfx,'det-'+sfx,'infra-'+sfx,'infra-'+sfx];
   var anch=['','','','exp'];
   var steps=['наблюдение','обнаружение','процесс','сценарии'];
-  var H='<div style="display:flex;align-items:stretch;gap:4px;margin:2px 0 10px">';
+  var H='<div style="display:flex;align-items:stretch;gap:4px;padding:10px 22px 4px;box-sizing:border-box;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch">';
   steps.forEach(function(st,i){
     var done=(i<cur), now=(i===cur);
     var tgt=ids[i], live=(!now&&sfx&&window._byIdProc&&window._byIdProc[tgt]);
@@ -12652,12 +12652,15 @@ function _scenIntel(s){
         var _hid='H-2026-'+('0000'+_hn).slice(-4);
         var _ch=_o.evolution_chain||[]; var _cix=_ch.indexOf(_o.evolution_current||'Наблюдение');
         var _pp=(_ch.length>1&&_cix>=0)?Math.round(_cix/(_ch.length-1)*100):0;
+        var _cd=(_o&&_o.checklist_done), _ct=(_o&&_o.checklist_total);
+        var _liveP=(typeof _cd==='number'&&_ct);           // прогресс проверки перехода — живой
+        if(_liveP) _pp=Math.round(_cd/_ct*100);
         var _pt=_pvCleanTitle((_o.parent_meta&&_o.parent_meta.title)||_o.parent_title||'подтверждённый процесс');
         var _st_total=Math.max(1,_ch.length-1); var _st_num=Math.min(_st_total,Math.max(1,_cix<0?1:_cix));
         H+='<div class="gd-sec" style="background:rgba(184,151,58,0.05);border:0.5px solid rgba(184,151,58,0.2);border-radius:10px;padding:13px">'
           +'<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Гипотеза</span><span style="font-size:16px;font-weight:700;color:#D4AF5A;font-family:Montserrat,sans-serif;letter-spacing:.03em">'+_hid+'</span></div>'
           +'<div style="margin-top:7px;font-size:15px;font-weight:600;color:#e0a458">Наблюдение</div>'
-          +'<div style="margin-top:9px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Стадия '+_st_num+' из '+_st_total+'</div>'
+          +'<div style="margin-top:9px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+'Стадия '+_st_num+' из '+_st_total+(_liveP?(' <span style="color:rgba(148,163,184,0.55)">· признаки перехода '+_cd+' из '+_ct+'</span>'):'')+'</div>'
           +'<div style="margin-top:5px;display:flex;align-items:center;gap:9px"><div style="flex:1;height:7px;border-radius:4px;background:rgba(148,163,184,0.18);overflow:hidden"><div style="height:100%;width:'+_pp+'%;background:linear-gradient(90deg,#B8973A,#e0a458)"></div></div><span style="font-size:14px;font-weight:700;color:#e0a458">'+_pp+'%</span></div>';
         if(_o.parent_id){ H+='<div class="gd-conn" data-id="'+esc(_o.parent_id)+'" style="cursor:pointer;margin-top:12px;padding:9px 10px;background:rgba(148,163,184,0.06);border:0.5px solid rgba(148,163,184,0.22);border-radius:8px;display:flex;align-items:center;gap:9px">'+_hsBox('#8a93a6')+'<div style="flex:1;min-width:0"><div style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Родитель</div><div style="font-size:12.5px;color:#c8d0da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(_pt)+'</div></div>'+_hsArrowR('#8a93a6')+'</div>'; }
         var _sib='det-'+_sfx;
@@ -12728,12 +12731,15 @@ function _scenIntel(s){
         var _hid='H-2026-'+('0000'+_hn).slice(-4);
         var _ch=_d.evolution_chain||[]; var _cix=_ch.indexOf(_d.evolution_current||'Обнаружение');
         var _pp=(_ch.length>1&&_cix>=0)?Math.round(_cix/(_ch.length-1)*100):0;
+        var _cd=(_d&&_d.checklist_done), _ct=(_d&&_d.checklist_total);
+        var _liveP=(typeof _cd==='number'&&_ct);
+        if(_liveP) _pp=Math.round(_cd/_ct*100);
         var _pt=_pvCleanTitle((_d.parent_meta&&_d.parent_meta.title)||_d.parent_title||'подтверждённый процесс');
         var _st_total=Math.max(1,_ch.length-1); var _st_num=Math.min(_st_total,Math.max(1,_cix<0?1:_cix));
         H+='<div class="gd-sec" style="background:rgba(127,155,199,0.05);border:0.5px solid rgba(127,155,199,0.2);border-radius:10px;padding:13px">'
           +'<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Гипотеза</span><span style="font-size:16px;font-weight:700;color:#D4AF5A;font-family:Montserrat,sans-serif;letter-spacing:.03em">'+_hid+'</span></div>'
           +'<div style="margin-top:7px;font-size:15px;font-weight:600;color:#7f9bc7">Обнаружение перехода</div>'
-          +'<div style="margin-top:9px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Стадия '+_st_num+' из '+_st_total+'</div>'
+          +'<div style="margin-top:9px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Стадия '+_st_num+' из '+_st_total+(_liveP?(' <span style="color:rgba(148,163,184,0.55)">· признаки перехода '+_cd+' из '+_ct+'</span>'):'')+'</div>'
           +'<div style="margin-top:5px;display:flex;align-items:center;gap:9px"><div style="flex:1;height:7px;border-radius:4px;background:rgba(148,163,184,0.18);overflow:hidden"><div style="height:100%;width:'+_pp+'%;background:linear-gradient(90deg,#5a7bb0,#7f9bc7)"></div></div><span style="font-size:14px;font-weight:700;color:#7f9bc7">'+_pp+'%</span></div>';
         if(_d.parent_id){ H+='<div class="gd-conn" data-id="'+esc(_d.parent_id)+'" style="cursor:pointer;margin-top:12px;padding:9px 10px;background:rgba(148,163,184,0.06);border:0.5px solid rgba(148,163,184,0.22);border-radius:8px;display:flex;align-items:center;gap:9px">'+_hsBox('#8a93a6')+'<div style="flex:1;min-width:0"><div style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">Родитель</div><div style="font-size:12.5px;color:#c8d0da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(_pt)+'</div></div>'+_hsArrowR('#8a93a6')+'</div>'; }
         var _sib='obs-'+_sfx;
