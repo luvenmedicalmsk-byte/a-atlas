@@ -12153,7 +12153,7 @@ window.grdfSetMode=function(mode){
     }
     // ── Блок 6: Источники анализа ──
     H+='<div class="gd-sec"><div class="gd-sh">Источники анализа · '+(s.evidence_count||0)+'</div>'
-      +(s.evidence||[]).map(function(e){ var _p=[]; var _s=cleanSrc(e.source); if(_s)_p.push(esc(_s)); if(e.role&&e.role!=='telegram')_p.push(esc(ROLE_RU[e.role]||e.role)); if(e.date)_p.push(esc(e.date)); return '<div class="gd-ev"><div><div class="t">'+esc(e.title)+'</div><div class="m">'+_p.join(' · ')+'</div></div><div class="s" style="color:'+scol(e.severity)+'">'+(e.severity||'')+'</div></div>'; }).join('')+'</div>';
+      +(s.evidence||[]).map(function(e){ var _p=[]; if(e.date)_p.push(esc(e.date)); return '<div class="gd-ev"><div><div class="t">'+esc(e.title)+'</div><div class="m">'+_p.join(' · ')+'</div></div><div class="s" style="color:'+scol(e.severity)+'">'+(e.severity||'')+'</div></div>'; }).join('')+'</div>';
     // ── Блок 7: финальный блок Atlas Intelligence + CTA ──
     H+='<div class="gd-sec"><div style="border:0.5px solid rgba(184,151,58,.28);border-radius:10px;padding:18px 17px 16px;background:linear-gradient(180deg,rgba(184,151,58,.07),rgba(184,151,58,.02))">'
       +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px">Atlas Intelligence</div>'
@@ -12652,7 +12652,7 @@ window.grdfSetMode=function(mode){
       +s.timeline.slice().reverse().map(function(t){ return '<div class="gd-ti"><div class="e">'+esc(t.event)+'</div>'+(t.detail?'<div class="dt">'+esc(t.detail)+'</div>':'')+'<div class="t">'+esc((t.t||'').replace('T',' ').slice(0,16))+'</div></div>'; }).join('')+'</div></div>'; }
     // Свидетельства
     H+='<div class="gd-sec"><div class="gd-sh">Свидетельства · '+((s.is_preview||s.is_production)?(s.evidence||[]).length:(s.evidence_count||0))+'</div>'
-      +(s.evidence||[]).map(function(e){ var _p=[]; var _s=cleanSrc(e.source); if(_s)_p.push(esc(_s)); if(e.role&&e.role!=='telegram')_p.push(esc(ROLE_RU[e.role]||e.role)); if(e.date)_p.push(esc(e.date)); return '<div class="gd-ev"><div><div class="t">'+esc(e.title)+'</div><div class="m">'+_p.join(' · ')+'</div></div><div class="s" style="color:'+scol(e.severity)+'">'+(e.severity||'')+'</div></div>'; }).join('')+'</div>';
+      +(s.evidence||[]).map(function(e){ var _p=[]; if(e.date)_p.push(esc(e.date)); return '<div class="gd-ev"><div><div class="t">'+esc(e.title)+'</div><div class="m">'+_p.join(' · ')+'</div></div><div class="s" style="color:'+scol(e.severity)+'">'+(e.severity||'')+'</div></div>'; }).join('')+'</div>';
     // Связи
     var conns=connG('Причина для',s.causes)+connG('Следствие',s.caused_by)+connG('Усиливает',s.amplifies)+connG('Подавляет',s.suppresses)+connG('Связанные',s.related);
     if(conns) H+='<div class="gd-sec"><div class="gd-sh">Связи</div>'+conns+'</div>';
