@@ -11672,6 +11672,34 @@ window.cabAccess=function(){ var b=document.getElementById('cab-access-blk'); if
 <script>
 (function(){
   if(window.__grdfProcInit) return; window.__grdfProcInit=true;
+/* ADR-035: UI читает готовые признаки, не вычисляет их. Fallback — на случай,
+   когда features ещё не пришли из пайплайна (FEATURES_LAYER=false). */
+/* Склонение по числу. \w в JS не покрывает кириллицу — regex-замены слов запрещены. */
+/* Страна и регион — разные уровни географии и не должны стоять в одном перечислении. */
+function _cnSet(){ if(window.__atlasCnSet) return window.__atlasCnSet; var m={};
+  try{ var d=window._CNRU||{}; for(var k in d){ m[String(d[k]).trim().toLowerCase()]=1; } }catch(_e){}
+  ['россия','российская федерация'].forEach(function(x){ m[x]=1; });
+  window.__atlasCnSet=m; return m; }
+function _isCountryName(x){ return !!_cnSet()[String(x||'').trim().toLowerCase()]; }
+function _geoSplit(arr){ var c=[],r=[]; (arr||[]).forEach(function(x){ if(!x) return; (_isCountryName(x)?c:r).push(x); }); return {countries:c,regions:r}; }
+/* локальная копия: _plu объявлена в другом IIFE и отсюда недоступна */
+function _pluRu(n,a,b,c){ var m=n%100; if(m>=11&&m<=14) return c; var d=n%10; return d===1?a:((d>=2&&d<=4)?b:c); }
+function _unitRu(u,n){ n=n||0;
+  if(u==='evidence') return _pluRu(n,'подтверждение','подтверждения','подтверждений');
+  if(u==='region')   return _pluRu(n,'регион','региона','регионов');
+  if(u==='entity')   return _pluRu(n,'тип объекта','типа объекта','типов объектов');
+  return String(u||''); }
+/* Совместимость: старые данные приходят строкой «13 подтверждениях» */
+function _cbFallback(arr){ return (arr||[]).map(function(x){ var m=String(x).match(/^\s*(\d+)\s*(.*)$/); if(!m) return {value:null,unit:String(x)};
+  var t=m[2]||''; var u=/подтвержд/i.test(t)?'evidence':/регион/i.test(t)?'region':/тип/i.test(t)?'entity':t;
+  return {value:parseInt(m[1],10),unit:u}; }); }
+function _fSt(s){ return (s&&s.features&&s.features.state)||{}; }
+function _fDl(s){ return (s&&s.features&&s.features.delta)||{}; }
+function _fRegN(s){ var f=_fSt(s); if(typeof f.regions_count==='number') return f.regions_count;
+  return (s.places||[]).filter(function(p){return p&&p!=='Россия';}).length||0; }
+function _fGeoPending(s){ var f=_fSt(s); return f.geo_resolution==='pending'||_fRegN(s)===0; }
+
+
   var SIG_URL='https://raw.githubusercontent.com/luvenmedicalmsk-byte/secrett-archive/main/docs/signals.json';
   var _data=null,_loaded=false,_mode='events',_byId={},_explEl=null;
   var PHASE_RU={emerging:'Зарождение',growing:'Рост',active:'Активный',escalating:'Усиление',stabilizing:'Стабилизация','de-escalating':'Деэскалация',dormant:'Спящий',archived:'Архив'};
@@ -12258,33 +12286,7 @@ window.grdfSetMode=function(mode){
     function _scenWindow(s){var tl=(s.timeline||[]).filter(function(x){return x&&x.t;});if(tl.length<3)return '';var ds=tl.map(function(x){return x.t;}).sort();var last=ds[ds.length-1];var gaps=[];for(var i=1;i<ds.length;i++){var g=Math.round((new Date(ds[i])-new Date(ds[i-1]))/86400000);if(g>0)gaps.push(g);}if(!gaps.length)return '';var avg=Math.round(gaps.reduce(function(a,b){return a+b;},0)/gaps.length);if(avg<1||avg>21)return '';var ld=new Date(last);var w0=new Date(ld.getTime()+Math.max(1,avg-1)*86400000);var w1=new Date(ld.getTime()+(avg+2)*86400000);var mo=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];function f(d){return d.getDate()+' '+mo[d.getMonth()];}return f(w0)+' \u2013 '+f(w1);}
     function _scenTracks(e){var base=['официальные сообщения','связанные процессы Atlas'];var M={ecommerce_logistics:['логистические объекты','корпоративные статусы','спутниковые данные'],refinery:['телеметрия инфраструктуры','спутниковые данные'],energy:['телеметрия инфраструктуры'],military:['спутниковые данные'],financial:['корпоративные статусы','рыночные индикаторы'],transport:['логистические объекты']};return (M[e]||['профильные объекты класса']).concat(base);}
     function _scenSig(dom,e){var out=[];if(/logistic|ecommerce|transport|infra/.test(e)||dom==='economy'){out=[['Бизнес','потенциальное влияние на цепочки поставок и доступность объектов'],['Логистика','маршруты и складская инфраструктура в затронутых зонах'],['Госструктуры','защищённость инфраструктурных узлов'],['Инвесторы','профиль риска сектора'],['Население','доступность товаров и услуг в регионах']];}else if(dom==='geopolitics'){out=[['Госструктуры','устойчивость затронутых институтов'],['Бизнес','операционные риски в регионе'],['Население','ситуация в затронутых зонах']];}else if(dom==='climate'){out=[['Госструктуры','готовность к явлению в регионе'],['Население','условия в затронутых зонах'],['Бизнес','влияние на профильные отрасли']];}return out;}
-    /* ADR-035: UI читает готовые признаки, не вычисляет их. Fallback — на случай,
-   когда features ещё не пришли из пайплайна (FEATURES_LAYER=false). */
-/* Склонение по числу. \w в JS не покрывает кириллицу — regex-замены слов запрещены. */
-/* Страна и регион — разные уровни географии и не должны стоять в одном перечислении. */
-function _cnSet(){ if(window.__atlasCnSet) return window.__atlasCnSet; var m={};
-  try{ var d=window._CNRU||{}; for(var k in d){ m[String(d[k]).trim().toLowerCase()]=1; } }catch(_e){}
-  ['россия','российская федерация'].forEach(function(x){ m[x]=1; });
-  window.__atlasCnSet=m; return m; }
-function _isCountryName(x){ return !!_cnSet()[String(x||'').trim().toLowerCase()]; }
-function _geoSplit(arr){ var c=[],r=[]; (arr||[]).forEach(function(x){ if(!x) return; (_isCountryName(x)?c:r).push(x); }); return {countries:c,regions:r}; }
-/* локальная копия: _plu объявлена в другом IIFE и отсюда недоступна */
-function _pluRu(n,a,b,c){ var m=n%100; if(m>=11&&m<=14) return c; var d=n%10; return d===1?a:((d>=2&&d<=4)?b:c); }
-function _unitRu(u,n){ n=n||0;
-  if(u==='evidence') return _pluRu(n,'подтверждение','подтверждения','подтверждений');
-  if(u==='region')   return _pluRu(n,'регион','региона','регионов');
-  if(u==='entity')   return _pluRu(n,'тип объекта','типа объекта','типов объектов');
-  return String(u||''); }
-/* Совместимость: старые данные приходят строкой «13 подтверждениях» */
-function _cbFallback(arr){ return (arr||[]).map(function(x){ var m=String(x).match(/^\s*(\d+)\s*(.*)$/); if(!m) return {value:null,unit:String(x)};
-  var t=m[2]||''; var u=/подтвержд/i.test(t)?'evidence':/регион/i.test(t)?'region':/тип/i.test(t)?'entity':t;
-  return {value:parseInt(m[1],10),unit:u}; }); }
-function _fSt(s){ return (s&&s.features&&s.features.state)||{}; }
-function _fDl(s){ return (s&&s.features&&s.features.delta)||{}; }
-function _fRegN(s){ var f=_fSt(s); if(typeof f.regions_count==='number') return f.regions_count;
-  return (s.places||[]).filter(function(p){return p&&p!=='Россия';}).length||0; }
-function _fGeoPending(s){ var f=_fSt(s); return f.geo_resolution==='pending'||_fRegN(s)===0; }
-/* Индикаторы сценариев = признаки модели. Статических чекбоксов нет:
+    /* Индикаторы сценариев = признаки модели. Статических чекбоксов нет:
    done=true — признак зафиксирован, false — пока нет, null — не вычисляется. */
 function _scenInd(s,keys){ var st=_fSt(s), dl=_fDl(s), has=!!(s&&s.features);
   var M={
