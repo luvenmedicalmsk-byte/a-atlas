@@ -12183,6 +12183,28 @@ window.grdfSetMode=function(mode){
     return '<svg width="14" height="14" viewBox="0 0 16 16" style="flex-shrink:0;vertical-align:middle">'+p+'</svg>';
   }
   function _capFirst(t){ t=String(t||''); if(!t) return t; return t.charAt(0).toUpperCase()+t.slice(1); }
+  // ── Delta Layer v1: блок «Что изменилось» (только рендер, без вычислений) ──
+  function _changesBlock(d){
+    var ch=(d&&d.changes)||[]; if(!ch.length) return '';
+    var TOP=4, head=ch.slice(0,TOP), rest=ch.slice(TOP);
+    var COL={geo:'#7f9bc7',evidence:'#7fb069',object:'#D4AF5A',causal:'#D4AF5A',intensity:'#e0a458'};
+    function row(x){
+      var c=COL[x.type]||'#7fb069';
+      return '<div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:7px">'
+        +'<span style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0;margin-top:5px"></span>'
+        +'<span style="font-size:12.5px;color:#dfe4ea;line-height:1.45">'+esc(x.text||'')+'</span></div>';
+    }
+    var when=d.changes_at?(' · '+String(d.changes_at).slice(11,16)):'';
+    var H='<div class="gd-sec" style="background:rgba(127,176,105,0.05);border:0.5px solid rgba(127,176,105,0.22);border-radius:10px;padding:12px;margin-top:8px">'
+      +'<div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#7fb069;font-family:Montserrat,sans-serif;margin-bottom:9px">'
+      +esc(d.changes_title||'Что изменилось')+when+'</div>'
+      +head.map(row).join('');
+    if(rest.length){
+      H+='<details style="margin-top:2px"><summary style="cursor:pointer;font-size:11.5px;color:#7fb069">Показать все изменения ('+ch.length+')</summary>'
+        +'<div style="margin-top:8px">'+rest.map(row).join('')+'</div></details>';
+    }
+    return H+'</div>';
+  }
   function detailHTML(s){
     if(!isPro()) return freeDetailHTML(s);   // FREE — демонстрация выполненного анализа
     var g=s.dna||{}, fc=s.forecast||{}, v=s.velocity||{}, ce=s.confidence_evolution||{}, ex=s.explain||{};
@@ -12357,6 +12379,7 @@ window.grdfSetMode=function(mode){
         if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:9px;padding:9px 11px;background:rgba(127,155,199,0.08);border:0.5px solid rgba(127,155,199,0.3);border-radius:8px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:12.5px;color:#c8d0da">Перейти к следующей стадии &middot; Обнаружение перехода</span>'+_hsArrowR('#7f9bc7')+'</div>'; }
         H+='</div>';
       })();
+      H+=_changesBlock(_o);   // Delta Layer
       // ── ADR-026 Этап8: гипотеза завершена — показываем только итог ──
       if(_o.lifecycle_state==='Подтверждён'||_o.lifecycle_state==='Закрыт'){ var _okk=(_o.lifecycle_state==='Подтверждён'); var _pt2=_pvCleanTitle((_o.parent_meta&&_o.parent_meta.title)||_o.parent_title||'подтверждённый процесс');
         H+='<div class="gd-sec" style="background:rgba('+(_okk?'127,176,105':'226,74,59')+',0.08);border:0.5px solid rgba('+(_okk?'127,176,105':'226,74,59')+',0.35);border-radius:10px;padding:14px"><div style="font-size:15px;font-weight:700;color:'+(_okk?'#7fb069':'#E24A3B')+'">'+(_okk?(_hsCheck('#7fb069')+' Гипотеза подтверждена'):(_hsCross('#E24A3B')+' Гипотеза закрыта'))+'</div>'+(_okk?'<div style="font-size:12px;color:#8a93a6;margin-top:8px">Создан новый процесс</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_pt2)+'</div>':'<p class="gd-note" style="margin-top:6px">'+esc(_o.close_explanation||_o.auto_close_when||'Недостаточно подтверждений.')+'</p>')+'</div>';
@@ -12428,6 +12451,7 @@ window.grdfSetMode=function(mode){
         if(_byId[_sib]){ H+='<div class="gd-conn" data-id="'+esc(_sib)+'" style="cursor:pointer;margin-top:9px;padding:9px 11px;background:rgba(224,164,88,0.08);border:0.5px solid rgba(224,164,88,0.3);border-radius:8px;display:flex;align-items:center;gap:8px">'+_hsArrowL('#e0a458')+'<span style="font-size:12.5px;color:#c8d0da">Перейти к предыдущей стадии &middot; Наблюдение</span></div>'; }
         H+='</div>';
       })();
+      H+=_changesBlock(_d);   // Delta Layer
       // ── ADR-026 Этап8: гипотеза завершена — только итог ──
       if(_d.lifecycle_state==='Подтверждён'||_d.lifecycle_state==='Закрыт'){ var _okk=(_d.lifecycle_state==='Подтверждён'); var _pt2=_pvCleanTitle((_d.parent_meta&&_d.parent_meta.title)||_d.parent_title||'подтверждённый процесс');
         H+='<div class="gd-sec" style="background:rgba('+(_okk?'127,176,105':'226,74,59')+',0.08);border:0.5px solid rgba('+(_okk?'127,176,105':'226,74,59')+',0.35);border-radius:10px;padding:14px"><div style="font-size:15px;font-weight:700;color:'+(_okk?'#7fb069':'#E24A3B')+'">'+(_okk?(_hsCheck('#7fb069')+' Гипотеза подтверждена'):(_hsCross('#E24A3B')+' Гипотеза закрыта'))+'</div>'+(_okk?'<div style="font-size:12px;color:#8a93a6;margin-top:8px">Создан новый процесс</div><div style="font-size:13.5px;color:#e8e4dc;font-weight:600;margin-top:2px">'+esc(_pt2)+'</div>':'<p class="gd-note" style="margin-top:6px">Недостаточно подтверждений.</p>')+'</div>';
