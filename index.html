@@ -11693,6 +11693,24 @@ function _unitRu(u,n){ n=n||0;
 function _cbFallback(arr){ return (arr||[]).map(function(x){ var m=String(x).match(/^\s*(\d+)\s*(.*)$/); if(!m) return {value:null,unit:String(x)};
   var t=m[2]||''; var u=/подтвержд/i.test(t)?'evidence':/регион/i.test(t)?'region':/тип/i.test(t)?'entity':t;
   return {value:parseInt(m[1],10),unit:u}; }); }
+/* Единая цепочка жизненного цикла гипотезы: одна и та же полоса на всех этапах,
+   чтобы карточки читались как развитие одной модели, а не как отдельные сущности. */
+function _lcChain(cur){
+  var steps=[['Наблюдение','наблюдение'],['Обнаружение перехода','обнаружение'],
+             ['Инфраструктурный процесс','процесс'],['Experimental Intelligence','сценарии']];
+  var H='<div style="display:flex;align-items:stretch;gap:4px;margin:2px 0 10px">';
+  steps.forEach(function(st,i){
+    var done=(i<cur), now=(i===cur);
+    var col=now?'#D4AF5A':(done?'rgba(127,176,105,0.75)':'rgba(148,163,184,0.35)');
+    var bg=now?'rgba(212,175,90,0.10)':(done?'rgba(127,176,105,0.06)':'rgba(148,163,184,0.03)');
+    H+='<div style="flex:1;min-width:0;padding:5px 6px;background:'+bg+';border-radius:5px;border:0.5px solid '+(now?'rgba(212,175,90,0.35)':'transparent')+'">'
+      +'<div style="font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:'+col+';font-family:Montserrat,sans-serif;line-height:1.25;overflow:hidden;text-overflow:ellipsis">'
+      +esc(st[1])+'</div></div>';
+    if(i<steps.length-1) H+='<div style="align-self:center;color:rgba(148,163,184,0.35);font-size:9px">›</div>';
+  });
+  return H+'</div>';
+}
+
 /* features приходят либо в корне сигнала, либо в _preview (адаптер preview-процессов) */
 function _fRoot(s){ return (s&&s.features)||(s&&s._preview&&s._preview.features)||{}; }
 function _fSt(s){ return _fRoot(s).state||{}; }
@@ -12260,6 +12278,7 @@ window.grdfSetMode=function(mode){
       +'<h2>'+esc(_titleType(s))+'</h2>'+(_isSys(s)?'<div class="gd-sysbadge">Системный процесс</div>':'')+'<div class="gd-place">'+esc(s.process_place||'')+'</div></div>';
     // Сводка — для гипотез (observation/detection) без «возраста процесса»
     var _isHyp=(s._preview&&(s._preview.process_type==='observation'||s._preview.process_type==='detection'));
+    if(s._preview&&s._preview.process_type==='infrastructure') H+=_lcChain(2);   // этап: зрелый процесс
     if(_isHyp){ /* ADR-026: статус свёрнут в компактную шапку гипотезы */
     } else {
     H+='<div class="gd-sec"><div class="gd-sh">Сводка</div>'
@@ -12348,45 +12367,25 @@ function _scenJustify(s,top){
   var mc=st.member_count||s.evidence_count||(s.evidence||[]).length||0;
   var rc=_fRegN(s);
   var W=st.watch_window||null, Z=st.watch_zones||null, O=st.watch_objects||null;
-  function sh(n,t){ return '<div style="margin-top:13px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+n+' · '+t+'</div>'; }
+  function sh(n,t){ return '<div style="margin-top:13px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8a93a6;font-family:Montserrat,sans-serif">'+t+'</div>'; }
   var H='<div class="gd-sec" style="margin-top:14px;border-top:0.5px solid rgba(155,127,196,0.25);padding-top:12px">'
     +'<div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Обоснование аналитической гипотезы</div>'
     +(top&&top.title?'<div style="font-size:11px;color:rgba(148,163,184,0.7);margin-top:3px">к сценарию '+esc(top.key)+' · '+esc(top.title)+'</div>':'')
     +'<p class="gd-note" style="margin-top:7px;font-size:11.5px;line-height:1.55">Atlas не утверждает, что описанный сценарий обязательно реализуется. Модель анализирует структуру процесса, сравнивает конкурирующие объяснения и определяет, какой сценарий на текущий момент лучше всего соответствует накопленным данным. По мере поступления новых событий гипотеза автоматически усиливается, корректируется или отклоняется.</p>';
 
-  /* 1 · Период усиленного наблюдения */
+    H+='<div style="margin-top:16px;padding-top:10px;border-top:0.5px solid rgba(155,127,196,0.2)"><div style="font-size:11.5px;color:#e8e4dc;font-family:\'Cormorant Garamond\',serif;font-size:16px">Что Atlas наблюдает для проверки сценария</div><div style="font-size:10.5px;color:rgba(148,163,184,0.65);margin-top:2px">рабочая панель модели — где новые данные изменят гипотезу</div></div>';
+/* 1 · Период усиленного наблюдения */
   if(W&&W.label){
-    H+=sh(1,'Период усиленного наблюдения')
+    H+=sh('','Период усиленного наблюдения')
       +'<div style="margin-top:6px;padding:10px 12px;background:rgba(155,127,196,0.07);border-radius:8px">'
       +'<div style="font-size:15px;color:#e8e4dc;font-family:\'Cormorant Garamond\',serif">'+esc(W.label)+'</div>'
       +'<div style="font-size:10.5px;color:rgba(148,163,184,0.75);margin-top:3px">'+esc(W.basis||'')+'</div>'
       +'<div style="font-size:10.5px;color:rgba(148,163,184,0.6);margin-top:4px">Период, в течение которого новые данные наиболее значимы для проверки гипотезы. Это не прогноз события.</div></div>';
   }
 
-  /* 2 · Динамика процесса */
-  if(R){
-    H+=sh(2,'Динамика процесса')
-      +'<div style="margin-top:6px;font-size:11.5px">'
-      +'<div style="display:flex;color:rgba(148,163,184,0.6);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding-bottom:4px;border-bottom:0.5px solid rgba(148,163,184,0.15)">'
-      +'<span style="flex:1.4">Дата</span><span style="flex:1;text-align:center">Событий</span><span style="flex:1;text-align:right">Интервал</span></div>';
-    R.rows.forEach(function(r){
-      H+='<div style="display:flex;padding:4px 0;border-bottom:0.5px solid rgba(148,163,184,0.07)">'
-        +'<span style="flex:1.4;color:#c8d0da">'+esc(_dRU(r.date))+'</span>'
-        +'<span style="flex:1;text-align:center;color:#e8e4dc">'+r.count+'</span>'
-        +'<span style="flex:1;text-align:right;color:'+(r.gap===null?'rgba(148,163,184,0.5)':'#c8d0da')+'">'
-        +(r.gap===null?'—':(r.gap+' '+_pluRu(r.gap,'день','дня','дней')))+'</span></div>';
-    });
-    var _rt=(R.trend==='faster')
-      ? 'Atlas фиксирует сокращение интервалов между связанными событиями (с '+R.first+' '+_pluRu(R.first,'дня','дней','дней')+' до '+R.last+') и рост плотности процесса. Этот признак усиливает текущую аналитическую гипотезу, однако сам по себе не подтверждает дальнейшее развитие процесса.'
-      : (R.trend==='slower')
-      ? 'Интервалы между связанными событиями увеличиваются (с '+R.first+' до '+R.last+' '+_pluRu(R.last,'дня','дней','дней')+'). Плотность процесса снижается — гипотеза о продолжении развития ослабевает.'
-      : 'Интервалы между связанными событиями остаются сопоставимыми. Ритм процесса устойчив, признаков ускорения или затухания модель не фиксирует.';
-    H+='</div><p class="gd-note" style="margin-top:7px;font-size:11.5px;line-height:1.55">'+esc(_rt)+'</p>';
-  }
-
   /* 3 · Приоритетные зоны наблюдения */
   if(Z&&((Z.open&&Z.open.length)||(Z.covered&&Z.covered.length))){
-    H+=sh(3,'Приоритетные зоны наблюдения')
+    H+=sh('','Приоритетные зоны наблюдения')
       +'<p class="gd-note" style="margin-top:5px;font-size:11.5px;line-height:1.5">Это не перечень ожидаемых событий. Это кластеры, где появление новых подтверждений сильнее всего повлияет на проверку аналитической модели.</p>';
     (Z.open||[]).forEach(function(z){
       H+='<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid rgba(148,163,184,0.07)">'
@@ -12405,7 +12404,7 @@ function _scenJustify(s,top){
 
   /* 4 · Объекты в зоне наблюдения */
   if(O&&((O.operators&&O.operators.length)||(O.object_types&&O.object_types.length))){
-    H+=sh(4,'Объекты в зоне наблюдения');
+    H+=sh('','Объекты в зоне наблюдения');
     if(O.operators&&O.operators.length){
       H+='<div style="margin-top:5px;font-size:11.5px;color:#c8d0da">Уже наблюдаются в процессе:</div><div style="margin-top:4px">';
       O.operators.forEach(function(o){
@@ -12421,7 +12420,7 @@ function _scenJustify(s,top){
     if(O.note) H+='<div style="font-size:10px;color:rgba(148,163,184,0.5);margin-top:6px">'+esc(O.note)+'</div>';
   }
 
-  /* 5 · Какие признаки усилят гипотезу */
+  /* 5 · Какие признаки подтвердят сценарий */
   var relCount=((s.amplifies||[]).length+(s.causes||[]).length+(s.related||[]).length+(s.relationships||[]).length);
   var watch=[
     ['дальнейшее сокращение интервалов между связанными событиями',(R&&R.trend==='faster')],
@@ -12431,7 +12430,7 @@ function _scenJustify(s,top){
     ['усиление связности процесса',relCount>0],
     ['формирование новых связанных процессов',relCount>1]
   ];
-  H+=sh(5,'Какие признаки усилят гипотезу');
+  H+=sh('','Какие признаки подтвердят сценарий');
   watch.forEach(function(w){
     H+='<div style="display:flex;align-items:flex-start;gap:8px;padding:3.5px 0;font-size:11.5px">'
       +(w[1]?_hsCheck('#7fb069'):_hsRing('rgba(148,163,184,0.45)'))
@@ -12439,7 +12438,7 @@ function _scenJustify(s,top){
       +(w[1]?' <span style="font-size:10px;color:rgba(148,163,184,0.55)">· уже зафиксировано</span>':'')+'</span></div>';
   });
 
-  /* 6 · Какие признаки ослабят гипотезу */
+  /* 6 · Какие признаки ослабят сценарий */
   var falsify=[
     ['отсутствие новых подтверждений в пределах окна наблюдения','ослабляет сценарий расширения охвата'],
     ['прекращение развития процесса','отменяет гипотезу о продолжении развития'],
@@ -12447,12 +12446,34 @@ function _scenJustify(s,top){
     ['смена инфраструктурного класса объектов','отменяет гипотезу о едином причинном механизме'],
     ['появление модели, лучше объясняющей структуру процесса','переводит альтернативу в основную рабочую модель']
   ];
-  H+=sh(6,'Какие признаки ослабят гипотезу');
+  H+=sh('','Какие признаки ослабят сценарий');
   falsify.forEach(function(f){
     H+='<div style="padding:5px 0;font-size:11.5px;border-bottom:0.5px solid rgba(148,163,184,0.07)">'
       +'<div style="color:#c8d0da">'+esc(f[0])+'</div>'
       +'<div style="font-size:10px;color:rgba(148,163,184,0.6);margin-top:1px">'+esc(f[1])+'</div></div>';
   });
+
+    H+='<div style="margin-top:16px;padding-top:10px;border-top:0.5px solid rgba(155,127,196,0.2)"><div style="font-size:11.5px;color:#e8e4dc;font-family:\'Cormorant Garamond\',serif;font-size:16px">Аналитическое обоснование</div><div style="font-size:10.5px;color:rgba(148,163,184,0.65);margin-top:2px">почему модель пришла к этому выводу</div></div>';
+/* 2 · Динамика процесса */
+  if(R){
+    H+=sh('','Динамика процесса')
+      +'<div style="margin-top:6px;font-size:11.5px">'
+      +'<div style="display:flex;color:rgba(148,163,184,0.6);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding-bottom:4px;border-bottom:0.5px solid rgba(148,163,184,0.15)">'
+      +'<span style="flex:1.4">Дата</span><span style="flex:1;text-align:center">Событий</span><span style="flex:1;text-align:right">Интервал</span></div>';
+    R.rows.forEach(function(r){
+      H+='<div style="display:flex;padding:4px 0;border-bottom:0.5px solid rgba(148,163,184,0.07)">'
+        +'<span style="flex:1.4;color:#c8d0da">'+esc(_dRU(r.date))+'</span>'
+        +'<span style="flex:1;text-align:center;color:#e8e4dc">'+r.count+'</span>'
+        +'<span style="flex:1;text-align:right;color:'+(r.gap===null?'rgba(148,163,184,0.5)':'#c8d0da')+'">'
+        +(r.gap===null?'—':(r.gap+' '+_pluRu(r.gap,'день','дня','дней')))+'</span></div>';
+    });
+    var _rt=(R.trend==='faster')
+      ? 'Atlas фиксирует сокращение интервалов между связанными событиями (с '+R.first+' '+_pluRu(R.first,'дня','дней','дней')+' до '+R.last+') и рост плотности процесса. Этот признак усиливает текущую аналитическую гипотезу, однако сам по себе не подтверждает дальнейшее развитие процесса.'
+      : (R.trend==='slower')
+      ? 'Интервалы между связанными событиями увеличиваются (с '+R.first+' до '+R.last+' '+_pluRu(R.last,'дня','дней','дней')+'). Плотность процесса снижается — гипотеза о продолжении развития ослабевает.'
+      : 'Интервалы между связанными событиями остаются сопоставимыми. Ритм процесса устойчив, признаков ускорения или затухания модель не фиксирует.';
+    H+='</div><p class="gd-note" style="margin-top:7px;font-size:11.5px;line-height:1.55">'+esc(_rt)+'</p>';
+  }
 
   /* 7 · Конкурирующие объяснения */
   var alts=[];
@@ -12464,7 +12485,7 @@ function _scenJustify(s,top){
   alts.push({t:'Статистический разброс',
     st:(R&&R.trend==='faster')?'ослабляется':'рассматривается',
     n:(R&&R.trend==='faster')?('рост плотности процесса: интервалы сократились с '+R.first+' до '+R.last+' '+_pluRu(R.last,'дня','дней','дней')):'ритм процесса не даёт оснований отклонить'});
-  H+=sh(7,'Конкурирующие объяснения')
+  H+=sh('','Конкурирующие объяснения')
     +'<div style="margin-top:6px;padding:9px 11px;background:rgba(155,127,196,0.07);border-left:2px solid '+C+';border-radius:0 6px 6px 0">'
     +'<div style="font-size:12px;color:#e8e4dc;font-weight:600">Единый инфраструктурный процесс продолжает развиваться</div>'
     +'<div style="font-size:10.5px;color:'+C+';margin-top:2px">основная рабочая модель · '+((R&&R.trend==='faster')?'усиливается':'проверяется')+'</div></div>';
@@ -12477,7 +12498,7 @@ function _scenJustify(s,top){
   });
 
   /* 8 · Аналитическая уверенность модели */
-  H+=sh(8,'Аналитическая уверенность модели');
+  H+=sh('','Аналитическая уверенность модели');
   _confLevels(s,R).forEach(function(c){
     H+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:5px 0;border-bottom:0.5px solid rgba(148,163,184,0.07)">'
       +'<div style="flex:1"><div style="font-size:11.5px;color:#c8d0da">'+esc(c[0])+'</div>'
@@ -12606,6 +12627,7 @@ function _scenIntel(s){
       if(!a&&!b&&!c)return '';
       var H='<div class="gd-sec" style="background:rgba(155,127,196,0.035);border:0.5px solid rgba(155,127,196,0.2);border-radius:11px;padding:13px;margin-top:8px">';
       H+='<div><span style="font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#06050A;background:linear-gradient(90deg,#9b7fc4,#7f9bc7);border-radius:4px;padding:3px 10px;font-family:Montserrat,sans-serif">Experimental Intelligence</span></div>';
+      H+=_lcChain(3);
       H+='<p class="gd-note" style="font-size:11px;color:rgba(148,163,184,0.72);margin-top:8px;line-height:1.55">Этот слой не прогнозирует события и не рассчитывает риск. Он визуализирует возможные направления распространения системного воздействия, детерминированно выведенные из текущей структуры процессов и их связей.</p>';
       H+=a+b+c+'</div>';return H;
     }
@@ -12613,6 +12635,7 @@ function _scenIntel(s){
     if(s._preview && s._preview.process_type==='observation'){
       if(!isPro()){ H+=_hypLocked(); return H; }
       var _o=s._preview;
+      H+=_lcChain(0);
       // ── ADR-026 Этап1/4: компактная шапка гипотезы ──
       (function(){
         var _sfx=((_o.parent_id||_o.process_id||'')+'').split('-').pop()||'0000';
@@ -12685,6 +12708,7 @@ function _scenIntel(s){
     if(s._preview && s._preview.process_type==='detection'){
       if(!isPro()){ H+=_hypLocked(); return H; }
       var _d=s._preview;
+      H+=_lcChain(1);
       // ── ADR-026 Этап1/4: компактная шапка гипотезы (Обнаружение) ──
       (function(){
         var _sfx=((_d.parent_id||_d.process_id||'')+'').split('-').pop()||'0000';
