@@ -12259,10 +12259,12 @@ window.grdfSetMode=function(mode){
     /* ADR-035: UI читает готовые признаки, не вычисляет их. Fallback — на случай,
    когда features ещё не пришли из пайплайна (FEATURES_LAYER=false). */
 /* Склонение по числу. \w в JS не покрывает кириллицу — regex-замены слов запрещены. */
+/* локальная копия: _plu объявлена в другом IIFE и отсюда недоступна */
+function _pluRu(n,a,b,c){ var m=n%100; if(m>=11&&m<=14) return c; var d=n%10; return d===1?a:((d>=2&&d<=4)?b:c); }
 function _unitRu(u,n){ n=n||0;
-  if(u==='evidence') return _plu(n,'подтверждение','подтверждения','подтверждений');
-  if(u==='region')   return _plu(n,'регион','региона','регионов');
-  if(u==='entity')   return _plu(n,'тип объекта','типа объекта','типов объектов');
+  if(u==='evidence') return _pluRu(n,'подтверждение','подтверждения','подтверждений');
+  if(u==='region')   return _pluRu(n,'регион','региона','регионов');
+  if(u==='entity')   return _pluRu(n,'тип объекта','типа объекта','типов объектов');
   return String(u||''); }
 /* Совместимость: старые данные приходят строкой «13 подтверждениях» */
 function _cbFallback(arr){ return (arr||[]).map(function(x){ var m=String(x).match(/^\s*(\d+)\s*(.*)$/); if(!m) return {value:null,unit:String(x)};
@@ -12280,7 +12282,7 @@ function _scenInd(s,keys){ var st=_fSt(s), dl=_fDl(s), has=!!(s&&s.features);
    geo:   {label:'Расширение географии', done:has?(dl.geo_expansion===true||dl.new_region===true):null,
            detail:has?((dl.new_regions||[]).slice(0,3).join(', ')||(st.regions_count+' региона в процессе')):''},
    object:{label:'Новый объект того же класса', done:has?(dl.new_object_type===true):null,
-           detail:has?((dl.new_object_types||[]).length+' новых типов'):''},
+           detail:has?(function(){var _n=(dl.new_object_types||[]).length; return _n+' '+_pluRu(_n,'новый тип','новых типа','новых типов');})():''},
    repeat:{label:'Рост повторяемости', done:has?(dl.repeatability_growth===true):null,
            detail:has?((dl.member_delta>0?'+'+dl.member_delta+' подтверждений':st.member_count+' подтверждений')):''},
    linked:{label:'Появление нового связанного процесса', done:null, detail:'межпроцессный анализ недоступен'},
