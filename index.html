@@ -12322,10 +12322,13 @@ function _scenInd(s,keys){ var st=_fSt(s), dl=_fDl(s), has=!!(_fRoot(s).delta);
   var M={
    geo:   {label:'Расширение географии', done:has?(dl.geo_expansion===true||dl.new_region===true):null,
            detail:has?(function(){
-             var _lc=dl.last_confirmation, _nr=dl.new_regions||[];
-             if(_lc&&_lc.region){
-               var _rest=_nr.filter(function(r){return r!==_lc.region;});
-               return (_rest.length?_rest.slice(0,3).join(', ')+' → ':'')+_lc.region+' (новое· '+(_lc.date||'')+')';
+             var _nr=dl.new_regions||[];
+             // последнее подтверждение выводится из canonical timeline, не из хранимого поля
+             var _tl=(s.timeline||[]).filter(function(x){return x&&x.t&&x.place;});
+             var _last=_tl.length?_tl[_tl.length-1]:null;   // timeline отсортирован по дате
+             if(_last&&_last.place){
+               var _rest=_nr.filter(function(r){return r!==_last.place;});
+               return (_rest.length?_rest.slice(0,3).join(', ')+' → ':'')+_last.place+' (новое· '+(String(_last.t).slice(0,10))+')';
              }
              return _nr.slice(0,3).join(', ')||(st.regions_count+' региона в процессе');
            })():''},
