@@ -12321,7 +12321,14 @@ window.grdfSetMode=function(mode){
 function _scenInd(s,keys){ var st=_fSt(s), dl=_fDl(s), has=!!(_fRoot(s).delta);
   var M={
    geo:   {label:'Расширение географии', done:has?(dl.geo_expansion===true||dl.new_region===true):null,
-           detail:has?((dl.new_regions||[]).slice(0,3).join(', ')||(st.regions_count+' региона в процессе')):''},
+           detail:has?(function(){
+             var _lc=dl.last_confirmation, _nr=dl.new_regions||[];
+             if(_lc&&_lc.region){
+               var _rest=_nr.filter(function(r){return r!==_lc.region;});
+               return (_rest.length?_rest.slice(0,3).join(', ')+' → ':'')+_lc.region+' (новое· '+(_lc.date||'')+')';
+             }
+             return _nr.slice(0,3).join(', ')||(st.regions_count+' региона в процессе');
+           })():''},
    object:{label:'Новый объект того же класса', done:has?(dl.new_object_type===true):null,
            detail:has?(function(){var _n=(dl.new_object_types||[]).length; return _n+' '+_pluRu(_n,'новый тип','новых типа','новых типов');})():''},
    repeat:{label:'Рост повторяемости', done:has?(dl.repeatability_growth===true):null,
