@@ -12465,11 +12465,27 @@ function _scenIntel(s){
       scen.forEach(function(sc){var pc=(sc.prio==='Высокий'?'#e0a458':sc.prio==='Средний'?'#D4AF5A':'rgba(148,163,184,0.7)');
         H+='<div style="margin-top:11px;padding:11px;background:rgba(148,163,184,0.04);border:0.5px solid rgba(148,163,184,0.15);border-radius:9px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:700;color:#dfe4ea">Сценарий '+sc.key+' \u00b7 '+esc(sc.title)+'</span><span style="font-size:10px;font-weight:700;color:'+pc+';border:0.5px solid '+pc+'55;border-radius:4px;padding:2px 7px">'+sc.prio+'</span></div><p class="gd-note" style="font-size:12px;margin-top:6px">'+esc(sc.desc)+'</p><div style="margin-top:7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Системная логика</div><div style="font-size:11.5px;color:#c8d0da;margin-top:2px">'+esc(sc.logic)+'</div>';
         if(sc.objects&&sc.objects.length){H+='<div style="margin-top:7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Текущий охват процесса</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">'+sc.objects.map(function(o){return '<span style="font-size:11px;color:#c8d0da;background:rgba(155,127,196,0.1);border:0.5px solid rgba(155,127,196,0.25);border-radius:5px;padding:2px 8px">'+esc(String(o))+'</span>';}).join('')+'</div>';}
-        H+='<div style="margin-top:6px;font-size:11px;color:rgba(148,163,184,0.75)"><span style="color:'+C+'">Почему они: </span>'+esc(sc.why)+'</div><div style="margin-top:7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Индикаторы подтверждения</div>'+sc.ind.map(function(x){ var _o=(x&&typeof x==='object'), _lb=_o?x.label:x, _dn=_o?x.done:null, _dt=(_o&&x.detail)?x.detail:'';
-          var _mk=(_dn===true)?_hsCheck('#7fb069'):(_dn===false)?_hsRing('rgba(155,127,196,0.7)'):_hsRing('rgba(148,163,184,0.45)');
-          var _cl=(_dn===true)?'#c8d0da':(_dn===false)?'rgba(200,208,218,0.75)':'rgba(148,163,184,0.6)';
-          var _nt=(_dn===null)?' <span style="font-size:10px;color:rgba(148,163,184,0.5)">— недостаточно данных</span>':(_dt?' <span style="font-size:10px;color:rgba(148,163,184,0.55)">'+esc(_dt)+'</span>':'');
-          return '<div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:'+_cl+';margin-top:3px">'+_mk+'<span>'+esc(_lb)+_nt+'</span></div>';}).join('')+'</div>';
+        H+='<div style="margin-top:6px;font-size:11px;color:rgba(148,163,184,0.75)"><span style="color:'+C+'">Почему они: </span>'+esc(sc.why)+'</div><div style="margin-top:7px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:'+C+';font-family:Montserrat,sans-serif">Проверка сценария</div>'+(function(){
+          var _items=sc.ind.map(function(x){ return (x&&typeof x==='object')?x:{label:x,done:null,detail:''}; });
+          var _done=_items.filter(function(x){return x.done===true;});
+          var _todo=_items.filter(function(x){return x.done!==true;});
+          function _row(x,confirmed){
+            var _mk=confirmed?_hsCheck('#7fb069'):(x.done===false?_hsRing('rgba(155,127,196,0.7)'):_hsRing('rgba(148,163,184,0.45)'));
+            var _cl=confirmed?'#c8d0da':(x.done===false?'rgba(200,208,218,0.75)':'rgba(148,163,184,0.6)');
+            var _nt=(!confirmed&&x.done===null)?' <span style="font-size:10px;color:rgba(148,163,184,0.5)">— недостаточно данных</span>':(x.detail?' <span style="font-size:10px;color:rgba(148,163,184,0.55)">'+esc(x.detail)+'</span>':'');
+            return '<div style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:'+_cl+';margin-top:3px">'+_mk+'<span>'+esc(x.label)+_nt+'</span></div>';
+          }
+          var _h='';
+          if(_done.length){
+            _h+='<div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(127,176,105,0.85);font-family:Montserrat,sans-serif;margin-top:2px">Уже подтверждено</div>';
+            _h+=_done.map(function(x){return _row(x,true);}).join('');
+          }
+          if(_todo.length){
+            _h+='<div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(148,163,184,0.6);font-family:Montserrat,sans-serif;margin-top:'+(_done.length?'8px':'2px')+'">Что усилит модель дальше</div>';
+            _h+=_todo.map(function(x){return _row(x,false);}).join('');
+          }
+          return _h;
+        })()+'</div>';
       });
       H+='<p class="gd-note" style="font-size:10px;color:rgba(148,163,184,0.55);margin-top:8px">Экспериментальная оценка приоритета сценариев Atlas — не статистическая вероятность.</p>';
 /* Кандидаты следующего развития убраны: блок отвечал на вопрос «что будет дальше».
