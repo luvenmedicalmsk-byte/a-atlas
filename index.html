@@ -12323,12 +12323,15 @@ function _scenInd(s,keys){ var st=_fSt(s), dl=_fDl(s), has=!!(_fRoot(s).delta);
    geo:   {label:'Расширение географии', done:has?(dl.geo_expansion===true||dl.new_region===true):null,
            detail:has?(function(){
              var _nr=dl.new_regions||[];
-             // последнее подтверждение выводится из canonical timeline, не из хранимого поля
+             // Последнее ПОДТВЕРЖДЕНИЕ модели ≠ последнее событие хроники. Показываем
+             // событие, которое ИЗМЕНИЛО состояние — первое появление региона (расширило
+             // охват), а не повторное сообщение из уже подтверждённой зоны.
              var _tl=(s.timeline||[]).filter(function(x){return x&&x.t&&x.place;});
-             var _last=_tl.length?_tl[_tl.length-1]:null;   // timeline отсортирован по дате
-             if(_last&&_last.place){
-               var _rest=_nr.filter(function(r){return r!==_last.place;});
-               return (_rest.length?_rest.slice(0,3).join(', ')+' → ':'')+_last.place+' (новое· '+(String(_last.t).slice(0,10))+')';
+             var _seen={}, _lastExp=null;
+             _tl.forEach(function(x){ if(!_seen[x.place]){ _seen[x.place]=1; _lastExp=x; } });
+             if(_lastExp&&_lastExp.place){
+               var _rest=_nr.filter(function(r){return r!==_lastExp.place;});
+               return (_rest.length?_rest.slice(0,3).join(', ')+' → ':'')+_lastExp.place+' (новое· '+(String(_lastExp.t).slice(0,10))+')';
              }
              return _nr.slice(0,3).join(', ')||(st.regions_count+' региона в процессе');
            })():''},
