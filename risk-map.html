@@ -1952,6 +1952,18 @@ function updateStats() {
   var _sa = document.getElementById('s-a'); if(_sa) _sa.textContent = M.avgSev;  // s-a = CRI/avg
 }
 
+window._evImpactRegion = function(ev){
+  // G-D (ADR-D): при пустом region показать impact-страну с пометкой «затронутая».
+  // ГЛОБАЛЬНАЯ: вызывается из renderList (вне applyEvents). Fix: ReferenceError ломал renderMarkers.
+  try{
+    if(!ev) return null;
+    var g = ev.geo || {};
+    var ic = g.impact_countries || ev.impact_countries || [];
+    if(!ic.length) return null;
+    var iso = ic[0];
+    return (typeof _ISO2RU!=='undefined' && _ISO2RU[iso]) || iso;
+  }catch(e){ return null; }
+};
 function renderList() {
   const list = document.getElementById('ev-list');
   list.innerHTML = '';
@@ -1980,7 +1992,7 @@ function renderList() {
     const d = document.createElement('div');
     d.className = 'ei' + (selected?.id===ev.id ? ' sel' : '');
     var _ctxTag = (window._sicRoutingOn() && window._SIC_VIEW==='context') ? '<span class="sic-ctx-tag">'+esc(window._sicLaneLabel(ev))+'</span>' : '';
-    d.innerHTML = `<div class="ei-tag" style="color:${col}"><div class="ei-dot" style="background:${col}"></div>${DL[ev.domain]||ev.domain}${_ctxTag}</div><div class="ei-title">${esc(ev.title)}</div><div class="ei-meta"><span>${ev.region ? esc(ev.region) : (function(){var _ir=_evImpactRegion(ev); return _ir ? esc(_ir)+' <span style="opacity:.6;font-size:9px">(затронута)</span>' : '';})()}</span><span>${fd(ev.date)}</span></div><div class="ei-bar"><div class="ei-fill" style="width:${ev.severity}%;background:${sc(ev.severity)}"></div></div>`;
+    d.innerHTML = `<div class="ei-tag" style="color:${col}"><div class="ei-dot" style="background:${col}"></div>${DL[ev.domain]||ev.domain}${_ctxTag}</div><div class="ei-title">${esc(ev.title)}</div><div class="ei-meta"><span>${ev.region ? esc(ev.region) : (function(){var _ir=(window._evImpactRegion?window._evImpactRegion(ev):null); return _ir ? esc(_ir)+' <span style="opacity:.6;font-size:9px">(затронута)</span>' : '';})()}</span><span>${fd(ev.date)}</span></div><div class="ei-bar"><div class="ei-fill" style="width:${ev.severity}%;background:${sc(ev.severity)}"></div></div>`;
     d.onclick = () => { try{ if(window.atlasTrackMaterial) atlasTrackMaterial(ev.id||ev.title); }catch(_e){} var _fc=(window._floc?window._floc(ev):null); var _la=_fc?_fc.lat:ev.lat, _ln=_fc?_fc.lng:ev.lng; if(_la&&_ln){ try{ map.setView([_la,_ln], Math.max(map.getZoom()||3,4)); L.popup({maxWidth:240}).setLatLng([_la,_ln]).setContent(_evPopup(ev)).openOn(map); }catch(_){} } };
     list.appendChild(d);
   });
@@ -2187,17 +2199,6 @@ function applyEvents(events, updatedIso) {
     GE:'Грузия',AM:'Армения',AZ:'Азербайджан',MD:'Молдавия',RS:'Сербия',IQ:'Ирак',
     AF:'Афганистан',YE:'Йемен',SA:'Саудовская Аравия',EG:'Египет',LY:'Ливия',SD:'Судан',
     VE:'Венесуэла',BR:'Бразилия',MX:'Мексика',ES:'Испания',IT:'Италия',GR:'Греция'};
-  function _evImpactRegion(ev){
-    // G-D (ADR-D): при пустом region показать impact-страну с пометкой «затронутая».
-    // Использует существующее поле geo.impact_countries; данные/контракт не меняются.
-    if(!ev) return null;
-    var g = ev.geo || {};
-    var ic = g.impact_countries || ev.impact_countries || [];
-    if(!ic.length) return null;
-    var iso = ic[0];
-    var ru = (typeof _ISO2RU!=='undefined' && _ISO2RU[iso]) || iso;
-    return ru;
-  }
   function _evCountry(ev){
     if(!ev) return null;
     var g = ev.geo || {};
