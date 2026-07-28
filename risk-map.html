@@ -1575,7 +1575,7 @@ html,body{overscroll-behavior-y:contain}
   if (!isReq) return;
   var t = '';
   try { t = localStorage.getItem('tg_session_token') || ''; } catch(e) {}
-  if (t) { location.replace('https://api.a-atlas.com/console?t=' + encodeURIComponent(t)); return; }
+  if (t) { location.replace('https://api.a-atlas.com/api/console?t=' + encodeURIComponent(t)); return; }
   // сессии нет — показываем подсказку поверх страницы, когда DOM готов
   function show(){
     var b = document.createElement('div');
