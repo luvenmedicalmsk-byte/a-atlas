@@ -13042,7 +13042,22 @@ function _scenIntel(s){
   var COL={geopolitics:'#ff7a00',climate:'#22c55e',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'};
   var cache={};
   function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-  function months(){var o=[],d=new Date();for(var i=0;i<6;i++){o.push(d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0'));d.setUTCMonth(d.getUTCMonth()-1);}return o;}
+  /* Показываем только месяцы, для которых архив реально существует.
+     Система работает с июня 2026 — более ранние месяцы не проверяем. */
+  var START='2026-06';
+  function months(){
+    var o=[],d=new Date();
+    for(var i=0;i<12;i++){
+      var mk=d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0');
+      if(mk<START) break;
+      o.push(mk); d.setUTCMonth(d.getUTCMonth()-1);
+    }
+    return o;
+  }
+  function probe(iso,mk){
+    return fetch(BASE+iso+'/'+mk+'.json?v='+Date.now(),{method:'GET'})
+      .then(function(r){ return r.ok?mk:null; }).catch(function(){ return null; });
+  }
   function label(mk){var M=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];var p=mk.split('-');return (M[parseInt(p[1],10)-1]||p[1])+' '+p[0];}
   function render(d,box){
     var drv=d.drivers||[];
@@ -13079,12 +13094,22 @@ function _scenIntel(s){
     if(!el)return;
     iso=iso||el.getAttribute('data-iso')||'';
     if(!iso)return;
-    var h='';
-    months().forEach(function(mk){
-      h+='<div class="cc-arch-m" data-m="'+mk+'" style="cursor:pointer;font-size:11px;color:#B8973A;padding:4px 0"><span class="cc-arch-caret">▶</span> '+label(mk)+'</div>'
-        +'<div class="cc-arch-body" id="cc-arch-'+mk+'" style="display:none;padding-left:10px"></div>';
+    var CARET='<svg class="cc-arch-caret" width="9" height="9" viewBox="0 0 24 24" style="vertical-align:-1px;margin-right:5px;transition:transform .15s"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    // проверяем наличие архива и рисуем только существующие месяцы
+    Promise.all(months().map(function(mk){ return probe(iso,mk); })).then(function(res){
+      var av=res.filter(function(x){ return x; });
+      if(!av.length){ el.innerHTML='<div style="font-size:10px;color:#6f88ab">архив пока не сформирован</div>'; return; }
+      var h='';
+      av.forEach(function(mk){
+        h+='<div class="cc-arch-m" data-m="'+mk+'" style="cursor:pointer;font-size:11px;color:#B8973A;padding:4px 0">'+CARET+label(mk)+'</div>'
+          +'<div class="cc-arch-body" id="cc-arch-'+mk+'" style="display:none;padding-left:10px"></div>';
+      });
+      el.innerHTML=h;
+      bind(el,iso);
     });
-    el.innerHTML=h;
+  };
+
+  function bind(el,iso){
     var ns=el.querySelectorAll('.cc-arch-m');
     for(var i=0;i<ns.length;i++)(function(n){
       n.onclick=function(){
@@ -13092,11 +13117,12 @@ function _scenIntel(s){
         if(!b)return;
         var open=b.style.display!=='none';
         b.style.display=open?'none':'block';
-        n.querySelector('.cc-arch-caret').textContent=open?'▶':'▼';
+        var cr=n.querySelector('.cc-arch-caret');
+        if(cr) cr.style.transform=open?'rotate(0deg)':'rotate(90deg)';
         if(!open) load(iso,mk,b);
       };
     })(ns[i]);
-  };
+  }
   window._archWait=function(iso,tries){
     tries=tries||0;
     var el=document.getElementById('cc-arch-block');
