@@ -13238,7 +13238,7 @@ function _scenIntel(s){
       var head = '<div class="ann-head" data-t="'+id+'" style="padding:15px;cursor:pointer">'
         + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">'
         +   chip(esc(DOMS[a.domain]||a.domain||''), dc)
-        +   chip('Atlas Intelligence', '#b8973a')
+        +   chip('Atlas Intelligence', '#5eb4de')   // фирменный голубой Atlas
         +   ((a.evidence||[]).length>=4 ? chip('Высокая уверенность','#5fae7a') : '')
         + '</div>'
         + '<div style="display:flex;gap:12px;align-items:flex-start">'
@@ -13508,14 +13508,14 @@ function _scenIntel(s){
 
       /* Системная подпись */
       b += '<div style="margin-top:18px;padding:13px 14px;border-radius:9px;'
-        +   'background:rgba(184,151,58,.035);border:1px solid rgba(184,151,58,.14)">'
+        +   'background:rgba(94,180,222,.04);border:1px solid rgba(94,180,222,.2)">'
         + '<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">'
         +   '<svg width="12" height="12" viewBox="0 0 24 24" fill="none">'
-        +     '<circle cx="12" cy="12" r="9.2" stroke="#b8973a" stroke-width="1.3" opacity=".55"/>'
-        +     '<ellipse cx="12" cy="12" rx="4" ry="9.2" stroke="#b8973a" stroke-width="1.3" opacity=".45"/>'
-        +     '<path d="M3 12h18" stroke="#b8973a" stroke-width="1.3" opacity=".45"/>'
-        +     '<circle cx="12" cy="12" r="2.1" fill="#b8973a"/></svg>'
-        +   '<span style="font-size:10px;color:#d4af5a;letter-spacing:.14em;text-transform:uppercase;'
+        +     '<circle cx="12" cy="12" r="9.2" stroke="#5eb4de" stroke-width="1.3" opacity=".55"/>'
+        +     '<ellipse cx="12" cy="12" rx="4" ry="9.2" stroke="#5eb4de" stroke-width="1.3" opacity=".45"/>'
+        +     '<path d="M3 12h18" stroke="#5eb4de" stroke-width="1.3" opacity=".45"/>'
+        +     '<circle cx="12" cy="12" r="2.1" fill="#229ED9"/></svg>'
+        +   '<span style="font-size:10px;color:#7ec8ea;letter-spacing:.14em;text-transform:uppercase;'
         +     'font-weight:600">Atlas Intelligence</span>'
         + '</div>'
         + '<div style="display:flex;flex-wrap:wrap;gap:5px 16px;font-size:8.5px;color:#5a6b7d;'
