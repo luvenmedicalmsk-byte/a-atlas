@@ -13254,7 +13254,7 @@ function _scenIntel(s){
              ? '<div style="text-align:right;flex-shrink:0;padding-left:6px">'
              +   '<div style="font-size:31px;font-weight:700;color:'+rc+';line-height:1;'
              +     'font-variant-numeric:tabular-nums">'
-             +     '<span class="ann-cnt" data-n="'+a.risk_index+'">0</span>'
+             +     '<span class="ann-cnt">'+a.risk_index+'</span>'
              +     '<span style="font-size:11px;color:#6f88ab;font-weight:400">/100</span></div>'
              +   '<div style="font-size:8.5px;color:'+rc+';letter-spacing:.06em;margin-top:5px;'
              +     'text-transform:uppercase">'+riskLabel(a.risk_index)+'</div>'
@@ -13475,18 +13475,8 @@ function _scenIntel(s){
           // карточки свидетельств появляются последовательно
           var evs=bx.querySelectorAll('.ann-ev');
           for(var q=0;q<evs.length;q++){ evs[q].style.opacity='1'; evs[q].style.transform='translateX(0)'; }
-          // счётчик риска
-          var cn=n.querySelector('.ann-cnt');
-          if(cn && !cn.getAttribute('data-done')){
-            cn.setAttribute('data-done','1');
-            var target=parseInt(cn.getAttribute('data-n'),10)||0, cur=0;
-            var step=Math.max(1,Math.round(target/22));
-            var tm=setInterval(function(){
-              cur+=step;
-              if(cur>=target){ cur=target; clearInterval(tm); }
-              cn.textContent=cur;
-            },26);
-          }
+          // Счётчик не анимируем: в свёрнутом виде висел 0/100 —
+          // читалось как «риск ноль».
         }
         var cr=n.querySelector('.ann-car');
         if(cr) cr.style.transform=open?'rotate(0deg)':'rotate(90deg)';
