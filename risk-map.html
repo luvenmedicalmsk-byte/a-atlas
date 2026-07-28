@@ -13176,83 +13176,223 @@ function _scenIntel(s){
   var COL={geopolitics:'#ff7a00',climate:'#22c55e',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'};
   function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function tok(){ try{ return localStorage.getItem('tg_session_token')||''; }catch(e){ return ''; } }
+  /* ── Premium Intelligence UI: аналитический брифинг, не текстовая страница ── */
   function render(list, box){
     if(!list.length){ box.innerHTML=''; return; }
+
+    // Цвет индекса риска: 0–39 серо-синий · 40–59 золото · 60–79 оранжевый · 80–100 красный
+    function riskColor(n){
+      n = n==null ? 0 : n;
+      if(n >= 80) return '#e0574f';
+      if(n >= 60) return '#e08a3c';
+      if(n >= 40) return '#d4af5a';
+      return '#6f88ab';
+    }
+    function riskLabel(n){
+      n = n==null ? 0 : n;
+      if(n >= 80) return 'Критический риск';
+      if(n >= 60) return 'Высокий риск';
+      if(n >= 40) return 'Средний риск';
+      return 'Низкий риск';
+    }
+    var HR = '<div style="height:1px;background:linear-gradient(90deg,transparent,'
+           + 'rgba(184,151,58,.22),transparent);margin:16px 0"></div>';
+    function cap(t,c){
+      return '<div style="font-size:9px;color:'+(c||'#6f88ab')+';letter-spacing:.12em;'
+           + 'text-transform:uppercase;margin-bottom:8px;font-weight:600">'+t+'</div>';
+    }
+    // Ширина строки ≈70 символов: комфортное чтение с телефона одной рукой
+    function body(t){
+      return '<div style="font-size:12px;color:#cbd5e1;line-height:1.65;max-width:70ch;'
+           + 'white-space:pre-line">'+esc(t)+'</div>';
+    }
+
     var h='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;'
       + 'letter-spacing:.1em;text-transform:uppercase;margin:20px 14px 9px;padding-top:12px;'
       + 'border-top:0.5px solid rgba(184,151,58,.20)">Atlas фиксирует</div>';
-    list.forEach(function(a,ix){
-      var c=COL[a.domain]||'#B8973A', id='ann-'+ix;
-      function block(t,body){ return body ? '<div style="margin-top:11px"><div style="font-size:9px;color:#6f88ab;'
-        + 'letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">'+t+'</div>'+body+'</div>' : ''; }
-      function items(arr,num){
-        if(!arr||!arr.length) return '';
-        return '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.55">'
-          + arr.map(function(x,n){ return '<div style="display:flex;gap:7px;margin-bottom:5px">'
-              + '<span style="color:'+c+';flex-shrink:0">'+(num?(n+1)+'.':'—')+'</span>'
-              + '<span>'+esc(x)+'</span></div>'; }).join('') + '</div>';
-      }
-      function para(t){ return t ? '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.6;white-space:pre-line">'
-        + esc(t)+'</div>' : ''; }
 
-      h+='<div style="margin:0 14px 12px;border:1px solid rgba(184,151,58,.22);border-radius:9px;'
-        +   'background:rgba(184,151,58,.04);overflow:hidden">'
-        // ── шапка: кликабельная ──
-        + '<div class="ann-head" data-t="'+id+'" style="padding:12px;cursor:pointer">'
-        +   '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px">'
-        +     '<span style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'
-        +     '<b style="color:#e8eaf0;font-size:12.5px;line-height:1.4">'+esc(a.title||a.object||'')+'</b>'
-        +     (a.risk_index!=null?'<span style="margin-left:auto;color:'+c+';font-size:14px;font-weight:600;'
-        +       'flex-shrink:0">'+a.risk_index+'<span style="font-size:9px;color:#6f88ab">/100</span></span>':'')
+    list.forEach(function(a,ix){
+      var dc = COL[a.domain]||'#B8973A';       // цвет домена
+      var rc = riskColor(a.risk_index);        // цвет индекса
+      var id = 'ann-'+ix;
+
+      /* ── ПАСПОРТ СОБЫТИЯ: шапка-карточка, индекс — главный элемент ── */
+      var head = '<div class="ann-head" data-t="'+id+'" style="padding:14px;cursor:pointer">'
+        + '<div style="display:flex;gap:12px;align-items:flex-start">'
+        +   '<div style="flex:1;min-width:0">'
+        +     '<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">'
+        +       '<span style="width:6px;height:6px;border-radius:50%;background:'+dc+';flex-shrink:0"></span>'
+        +       '<span style="font-size:8.5px;color:#6f88ab;letter-spacing:.12em;text-transform:uppercase">'
+        +         esc(DOMS[a.domain]||a.domain||'')+'</span>'
+        +     '</div>'
+        +     '<div style="color:#e8eaf0;font-size:13px;font-weight:600;line-height:1.4;'
+        +       'letter-spacing:.01em">'+esc(a.title||a.object||'')+'</div>'
+        +     '<div style="font-size:10px;color:#6f88ab;margin-top:6px">'+esc(a.date||'')+'</div>'
         +   '</div>'
-        +   '<div style="font-size:9.5px;color:#6f88ab">'+esc(a.date||'')
-        +     (a.domain?' · '+(DOMS[a.domain]||a.domain):'')+'</div>'
-        +   '<div style="display:flex;align-items:center;gap:5px;margin-top:7px;font-size:10.5px;color:'+c+'">'
-        +     '<svg class="ann-car" width="9" height="9" viewBox="0 0 24 24" style="transition:transform .15s">'
-        +       '<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" '
-        +       'stroke-linecap="round" stroke-linejoin="round"/></svg>Открыть анализ</div>'
+        // индекс риска — крупно, справа
+        +   (a.risk_index!=null
+             ? '<div style="text-align:right;flex-shrink:0;padding-left:6px">'
+             +   '<div style="font-size:30px;font-weight:700;color:'+rc+';line-height:1;'
+             +     'font-variant-numeric:tabular-nums">'+a.risk_index
+             +     '<span style="font-size:11px;color:#6f88ab;font-weight:400">/100</span></div>'
+             +   '<div style="font-size:8.5px;color:'+rc+';letter-spacing:.06em;margin-top:4px;'
+             +     'text-transform:uppercase">'+riskLabel(a.risk_index)+'</div>'
+             + '</div>'
+             : '')
         + '</div>'
-        // ── тело: семь блоков ──
-        + '<div class="ann-body" id="'+id+'" style="display:none;padding:0 12px 13px">'
-        +   block('Объект', para(a.object))
-        +   block('Локация', para(a.location))
-        +   block('Оценка риска', para(a.risk_assessment))
-        +   block('Свидетельства', items(a.evidence,false))
-        +   block('Инженерная интерпретация', para(a.engineering_interpretation))
-      +   (a.cascade ? '<div style="margin-top:11px"><div style="font-size:9px;color:#6f88ab;'
-          + 'letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;display:flex;'
-          + 'align-items:center;gap:5px">'
-          + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">'
-          +   '<circle cx="5" cy="5" r="2.2" fill="'+c+'"/>'
-          +   '<circle cx="12" cy="12" r="2.2" fill="'+c+'" opacity=".7"/>'
-          +   '<circle cx="19" cy="19" r="2.2" fill="'+c+'" opacity=".45"/>'
-          +   '<path d="M6.6 6.6L10.4 10.4M13.6 13.6L17.4 17.4" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round"/>'
-          +   '<path d="M5 5h6M12 12h7" stroke="'+c+'" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>'
-          + '</svg>Каскадная схема</div>'
-          // pre: пробелы и переносы сохраняются как есть — схема значима форматированием
-          + '<pre style="margin:0;padding:10px 11px;background:rgba(0,0,0,.28);'
-          + 'border:1px solid rgba(184,151,58,.16);border-radius:7px;overflow-x:auto;'
-          + 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;'
-          + 'line-height:1.65;color:#cbd5e1;white-space:pre">'+esc(a.cascade)+'</pre></div>' : '')
-        +   block('Что это значит', items(a.what_it_means,true))
-        +   block('Что отслеживать', items(a.monitoring,false))
-        +   block('Системный вывод', para(a.systemic_conclusion))
-        +   (a.disclaimer?'<div style="margin-top:12px;padding-top:9px;border-top:1px solid rgba(184,151,58,.14);'
-        +     'font-size:10px;color:#6f88ab;line-height:1.5;font-style:italic">'+esc(a.disclaimer)+'</div>':'')
-        + '</div></div>';
+        + '<div style="display:flex;align-items:center;gap:5px;margin-top:11px;font-size:10.5px;color:'+dc+'">'
+        +   '<svg class="ann-car" width="9" height="9" viewBox="0 0 24 24" style="transition:transform .18s">'
+        +     '<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" '
+        +     'stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        +   '<span class="ann-lbl">Открыть анализ</span></div>'
+        + '</div>';
+
+      /* ── ПАНЕЛИ РАЗБОРА ── */
+      var b = '';
+
+      // Паспорт: объект / локация / оценка
+      if(a.object || a.location || a.risk_assessment){
+        b += cap('Паспорт события')
+          + '<div style="background:rgba(255,255,255,.02);border:1px solid rgba(184,151,58,.12);'
+          +   'border-radius:8px;padding:11px 12px">'
+          + (a.object   ? '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">Объект</div>'+body(a.object) : '')
+          + (a.location ? '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.1em;text-transform:uppercase;margin:9px 0 3px">Локация</div>'+body(a.location) : '')
+          + (a.risk_assessment ? '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.1em;text-transform:uppercase;margin:9px 0 3px">Оценка риска</div>'
+              + '<div style="font-size:12px;color:'+rc+';line-height:1.6;max-width:70ch">'+esc(a.risk_assessment)+'</div>' : '')
+          + '</div>';
+      }
+
+      // Свидетельства — карточки с акцентной чертой
+      if((a.evidence||[]).length){
+        b += HR + cap('Свидетельства')
+          + a.evidence.map(function(x){
+              return '<div style="border-left:2px solid '+dc+';padding:7px 0 7px 11px;margin-bottom:7px;'
+                + 'background:linear-gradient(90deg,'+dc+'0d,transparent 60%);border-radius:0 6px 6px 0;'
+                + 'font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch">'+esc(x)+'</div>';
+            }).join('');
+      }
+
+      // Инженерная интерпретация — первая строка акцентом
+      if(a.engineering_interpretation){
+        var txt = String(a.engineering_interpretation);
+        var nl  = txt.indexOf('\n');
+        var lead = nl>0 ? txt.slice(0,nl) : txt;
+        var rest = nl>0 ? txt.slice(nl+1).replace(/^\n+/,'') : '';
+        b += HR + cap('Инженерная интерпретация')
+          + '<div style="font-size:13px;color:#e8eaf0;line-height:1.55;font-weight:500;'
+          +   'max-width:70ch;margin-bottom:'+(rest?'10px':'0')+'">'+esc(lead)+'</div>'
+          + (rest ? body(rest) : '');
+      }
+
+      // Каскадная схема — терминальная панель
+      if(a.cascade){
+        b += HR
+          + '<div style="font-size:9px;color:'+dc+';letter-spacing:.12em;text-transform:uppercase;'
+          +   'margin-bottom:8px;font-weight:600;display:flex;align-items:center;gap:6px">'
+          +   '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">'
+          +     '<circle cx="5" cy="5" r="2.2" fill="'+dc+'"/>'
+          +     '<circle cx="12" cy="12" r="2.2" fill="'+dc+'" opacity=".7"/>'
+          +     '<circle cx="19" cy="19" r="2.2" fill="'+dc+'" opacity=".45"/>'
+          +     '<path d="M6.6 6.6L10.4 10.4M13.6 13.6L17.4 17.4" stroke="'+dc+'" stroke-width="1.6" stroke-linecap="round"/>'
+          +     '<path d="M5 5h6M12 12h7" stroke="'+dc+'" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>'
+          +   '</svg>Каскадная схема</div>'
+          + '<pre style="margin:0;padding:13px;background:rgba(0,0,0,.32);'
+          +   'border:1px solid '+dc+'2e;border-radius:8px;overflow-x:auto;'
+          +   'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;'
+          +   'line-height:1.75;color:#cbd5e1;white-space:pre">'+esc(a.cascade)+'</pre>';
+      }
+
+      // Что это значит — строки с маркером-пином
+      if((a.what_it_means||[]).length){
+        b += HR + cap('Что это значит')
+          + a.what_it_means.map(function(x,n){
+              var parts = String(x).split('—');
+              var lead  = parts.length>1 ? parts[0].trim() : '';
+              var tail  = parts.length>1 ? parts.slice(1).join('—').trim() : String(x);
+              return '<div style="padding:9px 0;border-bottom:1px solid rgba(184,151,58,.08)">'
+                + '<div style="display:flex;gap:8px;align-items:flex-start">'
+                +   '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:3px">'
+                +     '<path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="'+dc+'" stroke-width="1.7"/>'
+                +     '<circle cx="12" cy="10" r="2.4" fill="'+dc+'"/></svg>'
+                +   '<div style="flex:1;min-width:0;max-width:70ch">'
+                +     (lead ? '<div style="font-size:12px;color:#e8eaf0;font-weight:600;margin-bottom:2px">'+esc(lead)+'</div>' : '')
+                +     '<div style="font-size:11.5px;color:#94a3b8;line-height:1.55">'+esc(tail)+'</div>'
+                +   '</div></div></div>';
+            }).join('');
+      }
+
+      // Что отслеживать — индикаторы со статус-точкой
+      if((a.monitoring||[]).length){
+        b += HR + cap('Что отслеживать')
+          + a.monitoring.map(function(x){
+              return '<div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0">'
+                + '<span style="width:7px;height:7px;border-radius:50%;border:1.5px solid '+dc+';'
+                +   'flex-shrink:0;margin-top:5px;opacity:.7"></span>'
+                + '<span style="font-size:11.5px;color:#94a3b8;line-height:1.55;max-width:70ch">'+esc(x)+'</span></div>';
+            }).join('');
+      }
+
+      // Системный вывод — акцентная карточка, причины нумерованы
+      if(a.systemic_conclusion){
+        var sc = String(a.systemic_conclusion);
+        // Нумерованные причины оформляем кружками ①②③④
+        var CIRC = ['①','②','③','④','⑤','⑥','⑦'];
+        var scHtml = sc.split('\n').map(function(ln){
+          var m2 = ln.match(/^\s*(\d)[.)]\s*(.+)$/);
+          if(m2){
+            var n2 = parseInt(m2[1],10);
+            return '<div style="display:flex;gap:9px;align-items:flex-start;margin:6px 0">'
+              + '<span style="color:'+rc+';font-size:14px;line-height:1.2;flex-shrink:0">'
+              +   (CIRC[n2-1]||n2)+'</span>'
+              + '<span style="font-size:11.5px;color:#cbd5e1;line-height:1.6;max-width:70ch">'+esc(m2[2])+'</span></div>';
+          }
+          return ln.trim()
+            ? '<div style="font-size:12px;color:#cbd5e1;line-height:1.65;max-width:70ch;margin:6px 0">'+esc(ln)+'</div>'
+            : '';
+        }).join('');
+        b += HR
+          + '<div style="border:1px solid '+rc+'33;border-radius:9px;padding:13px;'
+          +   'background:linear-gradient(180deg,'+rc+'0a,transparent)">'
+          + cap('Инженерный вывод', rc)
+          + scHtml
+          + '</div>';
+      }
+
+      // Дисклеймер — минимальный, без рамки
+      if(a.disclaimer){
+        b += '<div style="margin-top:14px;font-size:9.5px;color:#5a6b7d;line-height:1.5;'
+          +   'font-style:italic;max-width:70ch">'+esc(a.disclaimer)+'</div>';
+      }
+
+      h += '<div style="margin:0 14px 14px;border:1px solid rgba(184,151,58,.20);border-radius:11px;'
+        +   'background:linear-gradient(180deg,rgba(184,151,58,.05),rgba(184,151,58,.02));overflow:hidden">'
+        + head
+        + '<div class="ann-body" id="'+id+'" style="display:none;padding:2px 14px 16px">'+b+'</div>'
+        + '</div>';
     });
-    box.innerHTML=h;
-    var hs=box.querySelectorAll('.ann-head');
+
+    box.innerHTML = h;
+
+    // Плавное появление секций при раскрытии
+    var hs = box.querySelectorAll('.ann-head');
     for(var i=0;i<hs.length;i++)(function(n){
-      n.onclick=function(){
-        var b=document.getElementById(n.getAttribute('data-t'));
-        if(!b) return;
-        var open=b.style.display!=='none';
-        b.style.display=open?'none':'block';
-        var cr=n.querySelector('.ann-car');
-        if(cr) cr.style.transform=open?'rotate(0deg)':'rotate(90deg)';
-        var lb=n.querySelector('div:last-child');
-        if(lb) lb.lastChild.textContent=open?'Открыть анализ':'Свернуть';
+      n.onclick = function(){
+        var bx = document.getElementById(n.getAttribute('data-t'));
+        if(!bx) return;
+        var open = bx.style.display !== 'none';
+        if(open){
+          bx.style.display='none';
+        } else {
+          bx.style.display='block';
+          bx.style.opacity='0';
+          bx.style.transform='translateY(-4px)';
+          bx.style.transition='opacity .22s ease, transform .22s ease';
+          setTimeout(function(){ bx.style.opacity='1'; bx.style.transform='translateY(0)'; }, 10);
+        }
+        var cr = n.querySelector('.ann-car');
+        if(cr) cr.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+        var lb = n.querySelector('.ann-lbl');
+        if(lb) lb.textContent = open ? 'Открыть анализ' : 'Свернуть';
       };
     })(hs[i]);
   }
