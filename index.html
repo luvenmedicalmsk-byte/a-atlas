@@ -8956,6 +8956,10 @@ function _grdfContextHtml(c){
     H+=card('Горячие регионы', f4);
   } else { H+=card('Горячие регионы', '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>'); }
 
+  // ── Atlas фиксирует — экспертный слой поверх процессов (после Картины давления) ──
+  H+='<div id="cc-ann-block" data-iso="'+String(c.country||'').toUpperCase()+'"></div>';
+  try{ if(window._annWait) window._annWait(String(c.country||'').toUpperCase()); }catch(e){}
+
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
   // ── 5. Прогноз риска (линейная проекция + сценарии модели) ──
   (function(){
@@ -13128,6 +13132,53 @@ function _scenIntel(s){
     var el=document.getElementById('cc-arch-block');
     if(el&&!el.getAttribute('data-done')){el.setAttribute('data-done','1');try{window._ccArchive(iso);}catch(e){}return;}
     if(tries<60) setTimeout(function(){window._archWait(iso,tries+1);},50);
+  };
+})();
+</script>
+<script>
+/* ── ATLAS ФИКСИРУЕТ — чтение экспертного слоя в карточке страны ───────────
+   Функции на window: вызов идёт из другого <script> (IIFE-изоляция). ────── */
+(function(){
+  var API='https://api.a-atlas.com';
+  var DOMS={geopolitics:'Геополитика',economy:'Экономика',climate:'Климат',technology:'Технологии',social:'Социум'};
+  var COL={geopolitics:'#ff7a00',climate:'#22c55e',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'};
+  function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function tok(){ try{ return localStorage.getItem('tg_session_token')||''; }catch(e){ return ''; } }
+  function render(list, box){
+    if(!list.length){ box.innerHTML=''; return; }
+    var h='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Atlas фиксирует</div>';
+    list.forEach(function(a){
+      var c=COL[a.domain]||'#B8973A';
+      h+='<div style="margin:0 14px 12px;padding:11px 12px;border:1px solid rgba(184,151,58,.22);border-radius:9px;background:rgba(184,151,58,.04)">'
+        + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">'
+        +   '<span style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'
+        +   '<b style="color:#e8eaf0;font-size:12.5px">'+esc(a.object||'')+'</b>'
+        +   (a.risk_index!=null?'<span style="margin-left:auto;color:'+c+';font-size:13px;font-weight:600">'+a.risk_index+'<span style="font-size:9px;color:#6f88ab">/100</span></span>':'')
+        + '</div>'
+        + (a.location?'<div style="font-size:10.5px;color:#94a3b8;margin-bottom:2px">'+esc(a.location)+'</div>':'')
+        + '<div style="font-size:9.5px;color:#6f88ab;margin-bottom:7px">'+esc(a.date||'')+(a.domain?' · '+(DOMS[a.domain]||a.domain):'')+'</div>'
+        + (a.consequences?'<div style="font-size:9px;color:#6f88ab;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">Что это значит</div><div style="font-size:11.5px;color:#cbd5e1;line-height:1.5;margin-bottom:8px">'+esc(a.consequences)+'</div>':'')
+        + (a.interpretation?'<div style="font-size:9px;color:#6f88ab;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">Инженерная интерпретация</div><div style="font-size:11.5px;color:#cbd5e1;line-height:1.5">'+esc(a.interpretation)+'</div>':'')
+        + '</div>';
+    });
+    box.innerHTML=h;
+  }
+  window._ccAnnotations=function(iso){
+    var el=document.getElementById('cc-ann-block');
+    if(!el) return;
+    iso=iso||el.getAttribute('data-iso')||'';
+    if(!iso) return;
+    var hd={}; var t=tok(); if(t) hd['X-Session-Token']=t;
+    fetch(API+'/api/annotations?country='+iso,{headers:hd})
+      .then(function(r){ return r.ok?r.json():{annotations:[]}; })
+      .then(function(d){ render((d&&d.annotations)||[], el); })
+      .catch(function(){ el.innerHTML=''; });
+  };
+  window._annWait=function(iso,tries){
+    tries=tries||0;
+    var el=document.getElementById('cc-ann-block');
+    if(el&&!el.getAttribute('data-done')){ el.setAttribute('data-done','1'); try{ window._ccAnnotations(iso); }catch(e){} return; }
+    if(tries<60) setTimeout(function(){ window._annWait(iso,tries+1); },50);
   };
 })();
 </script>
