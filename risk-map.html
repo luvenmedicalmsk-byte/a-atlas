@@ -13176,11 +13176,13 @@ function _scenIntel(s){
   var COL={geopolitics:'#ff7a00',climate:'#22c55e',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'};
   function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function tok(){ try{ return localStorage.getItem('tg_session_token')||''; }catch(e){ return ''; } }
-  /* ── Premium Intelligence UI: аналитический брифинг, не текстовая страница ── */
+  /* ── Atlas Intelligence Premium UI (V2) ─────────────────────────────────────
+     Инженерный брифинг: паспорт, доказательная база, каскад, вывод.
+     Каждый раздел — самостоятельный блок с навигацией и подсветкой. ───────── */
   function render(list, box){
     if(!list.length){ box.innerHTML=''; return; }
 
-    // Цвет индекса риска: 0–39 серо-синий · 40–59 золото · 60–79 оранжевый · 80–100 красный
+    // Шкала риска: 0–39 серо-синий · 40–59 золото · 60–79 оранжевый · 80+ красный
     function riskColor(n){
       n = n==null ? 0 : n;
       if(n >= 80) return '#e0574f';
@@ -13195,16 +13197,28 @@ function _scenIntel(s){
       if(n >= 40) return 'Средний риск';
       return 'Низкий риск';
     }
-    var HR = '<div style="height:1px;background:linear-gradient(90deg,transparent,'
-           + 'rgba(184,151,58,.22),transparent);margin:16px 0"></div>';
-    function cap(t,c){
-      return '<div style="font-size:9px;color:'+(c||'#6f88ab')+';letter-spacing:.12em;'
-           + 'text-transform:uppercase;margin-bottom:8px;font-weight:600">'+t+'</div>';
+    function ruDate(s){
+      var M=['января','февраля','марта','апреля','мая','июня','июля','августа',
+             'сентября','октября','ноября','декабря'];
+      var m=String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return m ? (parseInt(m[3],10)+' '+M[parseInt(m[2],10)-1]+' '+m[1]) : String(s||'');
     }
-    // Ширина строки ≈70 символов: комфортное чтение с телефона одной рукой
-    function body(t){
-      return '<div style="font-size:12px;color:#cbd5e1;line-height:1.65;max-width:70ch;'
-           + 'white-space:pre-line">'+esc(t)+'</div>';
+    // Разделитель разделов
+    var HR='<div style="height:1px;background:linear-gradient(90deg,transparent,'
+         + 'rgba(184,151,58,.2),transparent);margin:18px 0"></div>';
+    // Заголовок раздела
+    function cap(t,c){
+      return '<div style="font-size:9px;color:'+(c||'#6f88ab')+';letter-spacing:.14em;'
+           + 'text-transform:uppercase;margin-bottom:9px;font-weight:600">'+t+'</div>';
+    }
+    // Поле паспорта: подпись + значение
+    function pf(label,val,c){
+      if(!val) return '';
+      return '<div style="padding:10px 0;border-bottom:1px solid rgba(184,151,58,.09)">'
+        + '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.14em;text-transform:uppercase;'
+        +   'margin-bottom:4px">'+label+'</div>'
+        + '<div style="font-size:12.5px;color:'+(c||'#cbd5e1')+';line-height:1.6;max-width:70ch;'
+        +   'white-space:pre-line">'+esc(val)+'</div></div>';
     }
 
     var h='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;'
@@ -13212,189 +13226,299 @@ function _scenIntel(s){
       + 'border-top:0.5px solid rgba(184,151,58,.20)">Atlas фиксирует</div>';
 
     list.forEach(function(a,ix){
-      var dc = COL[a.domain]||'#B8973A';       // цвет домена
-      var rc = riskColor(a.risk_index);        // цвет индекса
+      var dc = COL[a.domain]||'#B8973A';
+      var rc = riskColor(a.risk_index);
       var id = 'ann-'+ix;
 
-      /* ── ПАСПОРТ СОБЫТИЯ: шапка-карточка, индекс — главный элемент ── */
-      var head = '<div class="ann-head" data-t="'+id+'" style="padding:14px;cursor:pointer">'
+      /* ── ВЕРХНЯЯ КАРТОЧКА: метки + индекс ── */
+      function chip(t,col){
+        return '<span style="display:inline-block;padding:3px 8px;border-radius:11px;font-size:8.5px;'
+          + 'letter-spacing:.08em;text-transform:uppercase;background:'+col+'14;'
+          + 'border:1px solid '+col+'2e;color:'+col+';white-space:nowrap">'+t+'</span>';
+      }
+      var head = '<div class="ann-head" data-t="'+id+'" style="padding:15px;cursor:pointer">'
+        + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">'
+        +   chip(esc(DOMS[a.domain]||a.domain||''), dc)
+        +   chip('Atlas Intelligence', '#b8973a')
+        +   ((a.evidence||[]).length>=4 ? chip('Высокая уверенность','#5fae7a') : '')
+        + '</div>'
         + '<div style="display:flex;gap:12px;align-items:flex-start">'
         +   '<div style="flex:1;min-width:0">'
-        +     '<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">'
-        +       '<span style="width:6px;height:6px;border-radius:50%;background:'+dc+';flex-shrink:0"></span>'
-        +       '<span style="font-size:8.5px;color:#6f88ab;letter-spacing:.12em;text-transform:uppercase">'
-        +         esc(DOMS[a.domain]||a.domain||'')+'</span>'
-        +     '</div>'
-        +     '<div style="color:#e8eaf0;font-size:13px;font-weight:600;line-height:1.4;'
+        +     '<div style="color:#e8eaf0;font-size:13.5px;font-weight:600;line-height:1.4;'
         +       'letter-spacing:.01em">'+esc(a.title||a.object||'')+'</div>'
-        +     '<div style="font-size:10px;color:#6f88ab;margin-top:6px">'+esc(a.date||'')+'</div>'
+        +     '<div style="font-size:10px;color:#6f88ab;margin-top:7px">'+esc(ruDate(a.date))+'</div>'
         +   '</div>'
-        // индекс риска — крупно, справа
         +   (a.risk_index!=null
              ? '<div style="text-align:right;flex-shrink:0;padding-left:6px">'
-             +   '<div style="font-size:30px;font-weight:700;color:'+rc+';line-height:1;'
-             +     'font-variant-numeric:tabular-nums">'+a.risk_index
+             +   '<div style="font-size:31px;font-weight:700;color:'+rc+';line-height:1;'
+             +     'font-variant-numeric:tabular-nums">'
+             +     '<span class="ann-cnt" data-n="'+a.risk_index+'">0</span>'
              +     '<span style="font-size:11px;color:#6f88ab;font-weight:400">/100</span></div>'
-             +   '<div style="font-size:8.5px;color:'+rc+';letter-spacing:.06em;margin-top:4px;'
+             +   '<div style="font-size:8.5px;color:'+rc+';letter-spacing:.06em;margin-top:5px;'
              +     'text-transform:uppercase">'+riskLabel(a.risk_index)+'</div>'
              + '</div>'
              : '')
         + '</div>'
-        + '<div style="display:flex;align-items:center;gap:5px;margin-top:11px;font-size:10.5px;color:'+dc+'">'
+        + '<div style="display:flex;align-items:center;gap:5px;margin-top:12px;font-size:10.5px;color:'+dc+'">'
         +   '<svg class="ann-car" width="9" height="9" viewBox="0 0 24 24" style="transition:transform .18s">'
         +     '<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" '
         +     'stroke-linecap="round" stroke-linejoin="round"/></svg>'
         +   '<span class="ann-lbl">Открыть анализ</span></div>'
         + '</div>';
 
-      /* ── ПАНЕЛИ РАЗБОРА ── */
-      var b = '';
+      /* ── НАВИГАЦИЯ ПО РАЗДЕЛАМ ── */
+      var secs=[];
+      if(a.object||a.location||a.risk_assessment) secs.push(['pass','Паспорт']);
+      if((a.evidence||[]).length)      secs.push(['evid','Свидетельства']);
+      if(a.engineering_interpretation) secs.push(['intr','Интерпретация']);
+      if(a.cascade)                    secs.push(['casc','Каскад']);
+      if((a.what_it_means||[]).length) secs.push(['mean','Что это значит']);
+      if((a.monitoring||[]).length)    secs.push(['moni','Мониторинг']);
+      if(a.systemic_conclusion)        secs.push(['conc','Вывод']);
 
-      // Паспорт: объект / локация / оценка
-      if(a.object || a.location || a.risk_assessment){
-        b += cap('Паспорт события')
-          + '<div style="background:rgba(255,255,255,.02);border:1px solid rgba(184,151,58,.12);'
-          +   'border-radius:8px;padding:11px 12px">'
-          + (a.object   ? '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px">Объект</div>'+body(a.object) : '')
-          + (a.location ? '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.1em;text-transform:uppercase;margin:9px 0 3px">Локация</div>'+body(a.location) : '')
-          + (a.risk_assessment ? '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.1em;text-transform:uppercase;margin:9px 0 3px">Оценка риска</div>'
-              + '<div style="font-size:12px;color:'+rc+';line-height:1.6;max-width:70ch">'+esc(a.risk_assessment)+'</div>' : '')
+      var nav='';
+      if(secs.length>2){
+        nav='<div class="ann-nav" style="display:flex;flex-wrap:wrap;gap:4px;padding:2px 0 14px">'
+          + secs.map(function(s){
+              return '<a href="#" class="ann-navi" data-s="'+id+'-'+s[0]+'" style="font-size:9px;'
+                + 'padding:4px 9px;border-radius:10px;text-decoration:none;color:#6f88ab;'
+                + 'border:1px solid rgba(184,151,58,.14);transition:all .16s">'+s[1]+'</a>';
+            }).join('') + '</div>';
+      }
+
+      /* ── РАЗДЕЛЫ ── */
+      var b = nav;
+
+      // 1 · Паспорт события
+      if(a.object||a.location||a.risk_assessment){
+        b += '<div class="ann-sec" id="'+id+'-pass">'
+          + cap('Паспорт события')
+          + '<div style="background:rgba(255,255,255,.02);border:1px solid rgba(184,151,58,.13);'
+          +   'border-radius:9px;padding:2px 13px 4px">'
+          + pf('Объект', a.object)
+          + pf('Локация', a.location)
+          + pf('Дата', ruDate(a.date))
+          + (a.risk_assessment
+              ? '<div style="padding:11px 0 4px">'
+              +   '<div style="font-size:8.5px;color:#6f88ab;letter-spacing:.14em;text-transform:uppercase;'
+              +     'margin-bottom:5px">Риск</div>'
+              +   '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">'
+              +     '<span style="font-size:22px;font-weight:700;color:'+rc+';line-height:1">'
+              +       (a.risk_index==null?'—':a.risk_index)
+              +       '<span style="font-size:10px;color:#6f88ab;font-weight:400">/100</span></span>'
+              +     '<span style="font-size:10px;color:'+rc+'">'+riskLabel(a.risk_index)+'</span>'
+              +   '</div>'
+              +   '<div style="font-size:11.5px;color:#94a3b8;line-height:1.6;max-width:70ch">'
+              +     esc(a.risk_assessment)+'</div></div>'
+              : '')
+          + '</div></div>';
+      }
+
+      // 2 · Свидетельства — доказательная база
+      if((a.evidence||[]).length){
+        b += HR + '<div class="ann-sec" id="'+id+'-evid">'
+          + cap('Свидетельства · '+a.evidence.length)
+          + a.evidence.map(function(x,n){
+              // Источник в скобках выносим меткой
+              var src=''; var body=String(x);
+              var m2=body.match(/\(([^()]{2,40})\)\s*$/);
+              if(m2){ src=m2[1]; body=body.slice(0,m2.index).trim(); }
+              return '<div class="ann-ev" style="border-left:2px solid '+dc+';border-radius:0 8px 8px 0;'
+                + 'padding:9px 12px;margin-bottom:8px;background:linear-gradient(90deg,'+dc+'0f,'+dc+'03 70%);'
+                + 'opacity:0;transform:translateX(-6px);transition:opacity .3s ease '+(n*70)+'ms,'
+                + 'transform .3s ease '+(n*70)+'ms">'
+                + (src?'<div style="font-size:8.5px;color:'+dc+';letter-spacing:.08em;text-transform:uppercase;'
+                     + 'margin-bottom:4px">'+esc(src)+'</div>':'')
+                + '<div style="font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch">'
+                + esc(body)+'</div></div>';
+            }).join('') + '</div>';
+      }
+
+      // 3 · Инженерная интерпретация — вывод крупно
+      if(a.engineering_interpretation){
+        var txt=String(a.engineering_interpretation);
+        var nl=txt.indexOf('\n');
+        var lead=nl>0?txt.slice(0,nl):txt;
+        var rest=nl>0?txt.slice(nl+1).replace(/^\n+/,''):'';
+        b += HR + '<div class="ann-sec" id="'+id+'-intr">'
+          + cap('Инженерная интерпретация')
+          + '<div style="font-size:14.5px;color:#e8eaf0;line-height:1.5;font-weight:600;'
+          +   'letter-spacing:-.01em;max-width:70ch;margin-bottom:'+(rest?'12px':'0')+'">'
+          +   esc(lead)+'</div>'
+          + (rest?'<div style="font-size:12px;color:#94a3b8;line-height:1.7;max-width:70ch;'
+               + 'white-space:pre-line">'+esc(rest)+'</div>':'')
           + '</div>';
       }
 
-      // Свидетельства — карточки с акцентной чертой
-      if((a.evidence||[]).length){
-        b += HR + cap('Свидетельства')
-          + a.evidence.map(function(x){
-              return '<div style="border-left:2px solid '+dc+';padding:7px 0 7px 11px;margin-bottom:7px;'
-                + 'background:linear-gradient(90deg,'+dc+'0d,transparent 60%);border-radius:0 6px 6px 0;'
-                + 'font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch">'+esc(x)+'</div>';
-            }).join('');
-      }
-
-      // Инженерная интерпретация — первая строка акцентом
-      if(a.engineering_interpretation){
-        var txt = String(a.engineering_interpretation);
-        var nl  = txt.indexOf('\n');
-        var lead = nl>0 ? txt.slice(0,nl) : txt;
-        var rest = nl>0 ? txt.slice(nl+1).replace(/^\n+/,'') : '';
-        b += HR + cap('Инженерная интерпретация')
-          + '<div style="font-size:13px;color:#e8eaf0;line-height:1.55;font-weight:500;'
-          +   'max-width:70ch;margin-bottom:'+(rest?'10px':'0')+'">'+esc(lead)+'</div>'
-          + (rest ? body(rest) : '');
-      }
-
-      // Каскадная схема — терминальная панель
+      // 4 · Каскад процесса — фирменный элемент
       if(a.cascade){
-        b += HR
-          + '<div style="font-size:9px;color:'+dc+';letter-spacing:.12em;text-transform:uppercase;'
-          +   'margin-bottom:8px;font-weight:600;display:flex;align-items:center;gap:6px">'
-          +   '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">'
-          +     '<circle cx="5" cy="5" r="2.2" fill="'+dc+'"/>'
-          +     '<circle cx="12" cy="12" r="2.2" fill="'+dc+'" opacity=".7"/>'
-          +     '<circle cx="19" cy="19" r="2.2" fill="'+dc+'" opacity=".45"/>'
-          +     '<path d="M6.6 6.6L10.4 10.4M13.6 13.6L17.4 17.4" stroke="'+dc+'" stroke-width="1.6" stroke-linecap="round"/>'
-          +     '<path d="M5 5h6M12 12h7" stroke="'+dc+'" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>'
-          +   '</svg>Каскадная схема</div>'
-          + '<pre style="margin:0;padding:13px;background:rgba(0,0,0,.32);'
-          +   'border:1px solid '+dc+'2e;border-radius:8px;overflow-x:auto;'
+        b += HR + '<div class="ann-sec" id="'+id+'-casc">'
+          + '<div style="font-size:9px;color:'+dc+';letter-spacing:.14em;text-transform:uppercase;'
+          +   'margin-bottom:9px;font-weight:600;display:flex;align-items:center;gap:6px">'
+          +   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">'
+          +     '<path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12L13 2z" fill="'+dc+'" opacity=".85"/></svg>'
+          +   'Каскад процесса</div>'
+          + '<pre class="ann-casc" style="margin:0;padding:15px;background:rgba(4,7,12,.72);'
+          +   'border:1px solid '+dc+'38;border-radius:9px;overflow-x:auto;'
+          +   'box-shadow:0 0 22px '+dc+'14, inset 0 0 30px rgba(0,0,0,.35);'
           +   'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;'
-          +   'line-height:1.75;color:#cbd5e1;white-space:pre">'+esc(a.cascade)+'</pre>';
+          +   'line-height:1.8;color:#cbd5e1;white-space:pre">'+esc(a.cascade)+'</pre></div>';
       }
 
-      // Что это значит — строки с маркером-пином
+      // 5 · Что это значит — географические карточки
       if((a.what_it_means||[]).length){
-        b += HR + cap('Что это значит')
-          + a.what_it_means.map(function(x,n){
-              var parts = String(x).split('—');
-              var lead  = parts.length>1 ? parts[0].trim() : '';
-              var tail  = parts.length>1 ? parts.slice(1).join('—').trim() : String(x);
-              return '<div style="padding:9px 0;border-bottom:1px solid rgba(184,151,58,.08)">'
-                + '<div style="display:flex;gap:8px;align-items:flex-start">'
-                +   '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:3px">'
-                +     '<path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="'+dc+'" stroke-width="1.7"/>'
-                +     '<circle cx="12" cy="10" r="2.4" fill="'+dc+'"/></svg>'
-                +   '<div style="flex:1;min-width:0;max-width:70ch">'
-                +     (lead ? '<div style="font-size:12px;color:#e8eaf0;font-weight:600;margin-bottom:2px">'+esc(lead)+'</div>' : '')
-                +     '<div style="font-size:11.5px;color:#94a3b8;line-height:1.55">'+esc(tail)+'</div>'
-                +   '</div></div></div>';
-            }).join('');
+        b += HR + '<div class="ann-sec" id="'+id+'-mean">'
+          + cap('Что это значит')
+          + a.what_it_means.map(function(x){
+              var s2=String(x), lead='', tail=s2;
+              var m3=s2.split('—');
+              if(m3.length>1){ lead=m3[0].trim(); tail=m3.slice(1).join('—').trim(); }
+              return '<div style="display:flex;gap:9px;align-items:flex-start;padding:10px 0;'
+                + 'border-bottom:1px solid rgba(184,151,58,.08)">'
+                + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:3px">'
+                +   '<path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="'+dc+'" stroke-width="1.7"/>'
+                +   '<circle cx="12" cy="10" r="2.4" fill="'+dc+'"/></svg>'
+                + '<div style="flex:1;min-width:0;max-width:70ch">'
+                +   (lead?'<div style="font-size:12px;color:#e8eaf0;font-weight:600;margin-bottom:3px">'
+                        + esc(lead)+'</div>':'')
+                +   '<div style="font-size:11.5px;color:#94a3b8;line-height:1.6">'+esc(tail)+'</div>'
+                + '</div></div>';
+            }).join('') + '</div>';
       }
 
-      // Что отслеживать — индикаторы со статус-точкой
+      // 6 · Мониторинг — чек-лист
       if((a.monitoring||[]).length){
-        b += HR + cap('Что отслеживать')
+        b += HR + '<div class="ann-sec" id="'+id+'-moni">'
+          + cap('Что отслеживать · '+a.monitoring.length)
           + a.monitoring.map(function(x){
-              return '<div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0">'
-                + '<span style="width:7px;height:7px;border-radius:50%;border:1.5px solid '+dc+';'
-                +   'flex-shrink:0;margin-top:5px;opacity:.7"></span>'
-                + '<span style="font-size:11.5px;color:#94a3b8;line-height:1.55;max-width:70ch">'+esc(x)+'</span></div>';
-            }).join('');
+              return '<div class="ann-mon" style="display:flex;gap:10px;align-items:flex-start;'
+                + 'padding:9px 10px;margin-bottom:3px;border-radius:7px;cursor:pointer;'
+                + 'transition:background .16s">'
+                + '<span class="ann-box" style="width:13px;height:13px;border-radius:4px;'
+                +   'border:1.5px solid '+dc+'80;flex-shrink:0;margin-top:2px;display:flex;'
+                +   'align-items:center;justify-content:center;transition:all .18s">'
+                +   '<svg class="ann-tick" width="9" height="9" viewBox="0 0 24 24" fill="none" '
+                +     'style="opacity:0;transition:opacity .18s">'
+                +     '<path d="M5 12.5l4.5 4.5L19 7" stroke="#5fae7a" stroke-width="3" '
+                +     'stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+                + '<span class="ann-mtx" style="font-size:11.5px;color:#94a3b8;line-height:1.6;'
+                +   'max-width:70ch;transition:color .18s">'+esc(x)+'</span></div>';
+            }).join('') + '</div>';
       }
 
-      // Системный вывод — акцентная карточка, причины нумерованы
+      // 7 · Инженерный вывод — золотая карточка
       if(a.systemic_conclusion){
-        var sc = String(a.systemic_conclusion);
-        // Нумерованные причины оформляем кружками ①②③④
-        var CIRC = ['①','②','③','④','⑤','⑥','⑦'];
-        var scHtml = sc.split('\n').map(function(ln){
-          var m2 = ln.match(/^\s*(\d)[.)]\s*(.+)$/);
-          if(m2){
-            var n2 = parseInt(m2[1],10);
-            return '<div style="display:flex;gap:9px;align-items:flex-start;margin:6px 0">'
-              + '<span style="color:'+rc+';font-size:14px;line-height:1.2;flex-shrink:0">'
-              +   (CIRC[n2-1]||n2)+'</span>'
-              + '<span style="font-size:11.5px;color:#cbd5e1;line-height:1.6;max-width:70ch">'+esc(m2[2])+'</span></div>';
+        var CIRC=['①','②','③','④','⑤','⑥','⑦'];
+        var scHtml=String(a.systemic_conclusion).split('\n').map(function(ln){
+          var mm=ln.match(/^\s*(\d)[.)]\s*(.+)$/);
+          if(mm){
+            var n2=parseInt(mm[1],10);
+            return '<div style="display:flex;gap:11px;align-items:flex-start;margin:9px 0">'
+              + '<span style="color:#d4af5a;font-size:16px;line-height:1.1;flex-shrink:0;'
+              +   'text-shadow:0 0 10px rgba(212,175,90,.3)">'+(CIRC[n2-1]||n2)+'</span>'
+              + '<span style="font-size:11.5px;color:#cbd5e1;line-height:1.65;max-width:70ch">'
+              +   esc(mm[2])+'</span></div>';
           }
           return ln.trim()
-            ? '<div style="font-size:12px;color:#cbd5e1;line-height:1.65;max-width:70ch;margin:6px 0">'+esc(ln)+'</div>'
+            ? '<div style="font-size:12px;color:#cbd5e1;line-height:1.7;max-width:70ch;margin:8px 0">'
+              + esc(ln)+'</div>'
             : '';
         }).join('');
-        b += HR
-          + '<div style="border:1px solid '+rc+'33;border-radius:9px;padding:13px;'
-          +   'background:linear-gradient(180deg,'+rc+'0a,transparent)">'
-          + cap('Инженерный вывод', rc)
-          + scHtml
-          + '</div>';
+        b += HR + '<div class="ann-sec" id="'+id+'-conc">'
+          + '<div style="border:1px solid rgba(212,175,90,.32);border-radius:10px;padding:15px;'
+          +   'background:linear-gradient(180deg,rgba(212,175,90,.07),rgba(212,175,90,.01));'
+          +   'box-shadow:0 0 24px rgba(212,175,90,.06)">'
+          + cap('Инженерный вывод','#d4af5a')
+          + scHtml + '</div></div>';
       }
 
-      // Дисклеймер — минимальный, без рамки
+      // Дисклеймер + подпись Atlas
       if(a.disclaimer){
-        b += '<div style="margin-top:14px;font-size:9.5px;color:#5a6b7d;line-height:1.5;'
+        b += '<div style="margin-top:16px;font-size:9.5px;color:#5a6b7d;line-height:1.55;'
           +   'font-style:italic;max-width:70ch">'+esc(a.disclaimer)+'</div>';
       }
+      b += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(184,151,58,.12);'
+        +   'display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap">'
+        + '<div><div style="font-size:9.5px;color:#b8973a;letter-spacing:.12em;text-transform:uppercase;'
+        +   'font-weight:600">Atlas Intelligence</div>'
+        + '<div style="font-size:9px;color:#5a6b7d;margin-top:2px">Engineering Assessment</div></div>'
+        + '<div style="font-size:8.5px;color:#5a6b7d;text-align:right">Atlas Engine v6</div></div>';
 
-      h += '<div style="margin:0 14px 14px;border:1px solid rgba(184,151,58,.20);border-radius:11px;'
-        +   'background:linear-gradient(180deg,rgba(184,151,58,.05),rgba(184,151,58,.02));overflow:hidden">'
+      h += '<div style="margin:0 14px 14px;border:1px solid rgba(184,151,58,.20);border-radius:12px;'
+        +   'background:linear-gradient(180deg,rgba(184,151,58,.055),rgba(184,151,58,.015));'
+        +   'overflow:hidden">'
         + head
-        + '<div class="ann-body" id="'+id+'" style="display:none;padding:2px 14px 16px">'+b+'</div>'
+        + '<div class="ann-body" id="'+id+'" style="display:none;padding:2px 15px 17px">'+b+'</div>'
         + '</div>';
     });
 
-    box.innerHTML = h;
+    box.innerHTML=h;
 
-    // Плавное появление секций при раскрытии
-    var hs = box.querySelectorAll('.ann-head');
+    /* ── ПОВЕДЕНИЕ ── */
+    var hs=box.querySelectorAll('.ann-head');
     for(var i=0;i<hs.length;i++)(function(n){
-      n.onclick = function(){
-        var bx = document.getElementById(n.getAttribute('data-t'));
+      n.onclick=function(){
+        var bx=document.getElementById(n.getAttribute('data-t'));
         if(!bx) return;
-        var open = bx.style.display !== 'none';
-        if(open){
-          bx.style.display='none';
-        } else {
+        var open=bx.style.display!=='none';
+        if(open){ bx.style.display='none'; }
+        else{
           bx.style.display='block';
-          bx.style.opacity='0';
-          bx.style.transform='translateY(-4px)';
-          bx.style.transition='opacity .22s ease, transform .22s ease';
-          setTimeout(function(){ bx.style.opacity='1'; bx.style.transform='translateY(0)'; }, 10);
+          bx.style.opacity='0'; bx.style.transform='translateY(-5px)';
+          bx.style.transition='opacity .24s ease, transform .24s ease';
+          setTimeout(function(){ bx.style.opacity='1'; bx.style.transform='translateY(0)'; },10);
+          // карточки свидетельств появляются последовательно
+          var evs=bx.querySelectorAll('.ann-ev');
+          for(var q=0;q<evs.length;q++){ evs[q].style.opacity='1'; evs[q].style.transform='translateX(0)'; }
+          // счётчик риска
+          var cn=n.querySelector('.ann-cnt');
+          if(cn && !cn.getAttribute('data-done')){
+            cn.setAttribute('data-done','1');
+            var target=parseInt(cn.getAttribute('data-n'),10)||0, cur=0;
+            var step=Math.max(1,Math.round(target/22));
+            var tm=setInterval(function(){
+              cur+=step;
+              if(cur>=target){ cur=target; clearInterval(tm); }
+              cn.textContent=cur;
+            },26);
+          }
         }
-        var cr = n.querySelector('.ann-car');
-        if(cr) cr.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
-        var lb = n.querySelector('.ann-lbl');
-        if(lb) lb.textContent = open ? 'Открыть анализ' : 'Свернуть';
+        var cr=n.querySelector('.ann-car');
+        if(cr) cr.style.transform=open?'rotate(0deg)':'rotate(90deg)';
+        var lb=n.querySelector('.ann-lbl');
+        if(lb) lb.textContent=open?'Открыть анализ':'Свернуть';
       };
     })(hs[i]);
+
+    // Навигация по разделам
+    var nvs=box.querySelectorAll('.ann-navi');
+    for(var j2=0;j2<nvs.length;j2++)(function(n){
+      n.onclick=function(e){
+        e.preventDefault();
+        var t=document.getElementById(n.getAttribute('data-s'));
+        if(!t) return;
+        t.scrollIntoView({behavior:'smooth',block:'start'});
+        t.style.transition='background .5s'; t.style.background='rgba(184,151,58,.06)';
+        setTimeout(function(){ t.style.background='transparent'; },700);
+      };
+      n.onmouseenter=function(){ n.style.color='#cbd5e1'; n.style.borderColor='rgba(184,151,58,.35)'; };
+      n.onmouseleave=function(){ n.style.color='#6f88ab'; n.style.borderColor='rgba(184,151,58,.14)'; };
+    })(nvs[j2]);
+
+    // Чек-лист мониторинга: отметка выполненного
+    var mns=box.querySelectorAll('.ann-mon');
+    for(var k2=0;k2<mns.length;k2++)(function(n){
+      n.onclick=function(){
+        var done=n.getAttribute('data-done')==='1';
+        n.setAttribute('data-done',done?'0':'1');
+        var bx2=n.querySelector('.ann-box'), tk=n.querySelector('.ann-tick'), tx=n.querySelector('.ann-mtx');
+        if(tk) tk.style.opacity=done?'0':'1';
+        if(bx2) bx2.style.borderColor=done?'':'#5fae7a';
+        if(tx){ tx.style.color=done?'#94a3b8':'#5fae7a'; tx.style.textDecoration=done?'none':'line-through'; }
+      };
+      n.onmouseenter=function(){ n.style.background='rgba(184,151,58,.05)'; };
+      n.onmouseleave=function(){ n.style.background='transparent'; };
+    })(mns[k2]);
   }
   window._ccAnnotations=function(iso){
     var el=document.getElementById('cc-ann-block');
