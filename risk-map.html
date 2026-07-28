@@ -13572,64 +13572,29 @@ function _scenIntel(s){
   // Разметка карточки собирается в строку и вставляется в DOM позже,
   // причём разными функциями. Поэтому не ждём заданное время, а наблюдаем
   // за документом: как только появляется пустой контейнер — заполняем его.
-  // Определяем страну открытой карточки по флагу/названию в шапке.
-  function _annIso(){
-    var m=[['Россия','RU'],['Китай','CN'],['США','US'],['Украина','UA'],['Иран','IR'],
-           ['Индия','IN'],['Турция','TR'],['Израиль','IL'],['Германия','DE'],['Франция','FR'],
-           ['Великобритания','GB'],['Гонконг','HK'],['Макао','MO'],['Беларусь','BY'],
-           ['Казахстан','KZ'],['Япония','JP'],['Италия','IT'],['Испания','ES'],['Польша','PL'],
-           ['Греция','GR'],['Египет','EG'],['Сирия','SY'],['Ирак','IQ'],['Тайвань','TW'],
-           ['Бразилия','BR'],['Канада','CA'],['Мексика','MX'],['Швейцария','CH'],['Швеция','SE'],
-           ['Норвегия','NO'],['Финляндия','FI'],['Чехия','CZ'],['Румыния','RO'],['Кипр','CY'],
-           ['Португалия','PT'],['Сербия','RS'],['Черногория','ME'],['Узбекистан','UZ'],
-           ['Пакистан','PK'],['Эфиопия','ET'],['Судан','SD'],['Нидерланды','NL'],['КНДР','KP']];
-    var sheet=document.getElementById('grdf-country-sheet')
-           || document.querySelector('.grdf-sheet, #cc-sheet, [id*="country-sheet"]');
-    var txt='';
-    try{ txt=(sheet||document.body).textContent.slice(0,400); }catch(e){}
-    for(var i=0;i<m.length;i++) if(txt.indexOf(m[i][0])>=0) return m[i][1];
-    return '';
-  }
-
   function _annScan(){
     // 1) штатный путь — контейнер вставлен разметкой карточки
     var els=document.querySelectorAll('[id="cc-ann-block"]');
-    for(var i=0;i<els.length;i++){
+    // Контейнер может присутствовать в нескольких ветках разметки. Наполняем
+    // только последний (видимый), остальные скрываем — иначе запись двоится.
+    for(var z=0;z<els.length-1;z++){ els[z].style.display='none'; els[z].innerHTML=''; }
+    for(var i=els.length?els.length-1:0;i<els.length;i++){
       var el=els[i];
-      var want=String(el.getAttribute('data-iso')||'').toUpperCase() || _annIso();
+      el.style.display='';
+      // Только data-iso: угадывание страны по тексту шапки давало Porsche
+      // в карточке Турции — блок наполнялся чужой страной.
+      var want=String(el.getAttribute('data-iso')||'').toUpperCase();
       if(!want) continue;
       if(el.getAttribute('data-loaded')!==want){
         el.setAttribute('data-loaded',want);
         try{ window._ccAnnotations(want); }catch(e){}
       }
     }
-    // Продолжаем даже если контейнеры найдены: часть из них может быть
-    // в невидимой ветке разметки. Запасная вставка сработает, только если
-    // ни один контейнер не получил данных.
-    var anyLoaded=false;
-    for(var q=0;q<els.length;q++) if(els[q].getAttribute('data-loaded')) anyLoaded=true;
-    if(anyLoaded) return;
 
-    // 2) запасной путь: контейнера нет — создаём сами внутри открытой карточки,
-    //    перед разделом «Прогноз и траектория». Разметку карточки строят разные
-    //    функции, и не во всех блок присутствует.
-    var iso=_annIso();
-    if(!iso) return;
-    var sheet=document.getElementById('grdf-country-sheet')
-           || document.querySelector('.grdf-sheet, [id*="country-sheet"]');
-    if(!sheet) return;
-    var all=sheet.querySelectorAll('div'), anchor=null;
-    for(var k=0;k<all.length;k++){
-      var t=(all[k].textContent||'').trim();
-      if(t==='Прогноз и траектория' || t.toUpperCase()==='ПРОГНОЗ И ТРАЕКТОРИЯ'){ anchor=all[k]; break; }
-    }
-    var box=document.createElement('div');
-    box.id='cc-ann-block';
-    box.setAttribute('data-iso',iso);
-    box.setAttribute('data-loaded',iso);
-    if(anchor && anchor.parentNode) anchor.parentNode.insertBefore(box,anchor);
-    else sheet.appendChild(box);
-    try{ window._ccAnnotations(iso); }catch(e){}
+
+    // Запасная вставка убрана: она создавала блок в КАЖДОЙ стране и
+    // дублировала запись, определяя страну по тексту шапки ненадёжно.
+    // Штатный контейнер из разметки карточки работает.
   }
   window._annWait=function(iso){
     _annScan();
