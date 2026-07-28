@@ -13572,22 +13572,33 @@ function _scenIntel(s){
       })
       .catch(function(){ el.innerHTML=''; });
   };
-  window._annWait=function(iso,tries){
-    tries=tries||0;
-    var el=document.getElementById('cc-ann-block');
-    if(el){
-      // Метка привязана к СТРАНЕ, а не к факту загрузки: при открытии другой
-      // страны (или повторном открытии той же) блок должен грузиться заново.
-      // Раньше data-done ставился навсегда — второе открытие давало пустоту.
-      var want=String(iso||el.getAttribute('data-iso')||'').toUpperCase();
+  // Разметка карточки собирается в строку и вставляется в DOM позже,
+  // причём разными функциями. Поэтому не ждём заданное время, а наблюдаем
+  // за документом: как только появляется пустой контейнер — заполняем его.
+  function _annScan(){
+    var els=document.querySelectorAll('#cc-ann-block, [id="cc-ann-block"]');
+    for(var i=0;i<els.length;i++){
+      var el=els[i];
+      var want=String(el.getAttribute('data-iso')||'').toUpperCase();
+      if(!want) continue;
       if(el.getAttribute('data-loaded')!==want){
         el.setAttribute('data-loaded',want);
         try{ window._ccAnnotations(want); }catch(e){}
       }
-      return;
     }
-    if(tries<60) setTimeout(function(){ window._annWait(iso,tries+1); },50);
+  }
+  window._annWait=function(iso){
+    _annScan();
+    // подстраховка на случай, если вставка произойдёт чуть позже вызова
+    var n=0, tm=setInterval(function(){ _annScan(); if(++n>40) clearInterval(tm); }, 120);
   };
+  // Постоянный наблюдатель: реагирует на любую перерисовку карточки страны.
+  try{
+    if(window.MutationObserver && !window.__annObs){
+      window.__annObs=new MutationObserver(function(){ _annScan(); });
+      window.__annObs.observe(document.body,{childList:true,subtree:true});
+    }
+  }catch(e){}
 })();
 </script>
 
