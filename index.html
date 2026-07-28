@@ -13523,13 +13523,25 @@ function _scenIntel(s){
       n.onmouseleave=function(){ n.style.background='transparent'; };
     })(mns[k2]);
   }
+  function _ck(n){
+    try{ var m=document.cookie.match(new RegExp('(?:^|;\\s*)'+n+'=([^;]+)'));
+         return m?decodeURIComponent(m[1]):''; }catch(e){ return ''; }
+  }
   window._ccAnnotations=function(iso){
     var el=document.getElementById('cc-ann-block');
     if(!el) return;
     iso=iso||el.getAttribute('data-iso')||'';
     if(!iso) return;
-    var hd={}; var t=tok(); if(t) hd['X-Session-Token']=t;
-    fetch(API+'/api/annotations?country='+iso,{headers:hd})
+    // Признак доступа передаём всеми путями: заголовок, cookie, query.
+    // Иначе владелец на карте выглядел обычным посетителем и не видел записи.
+    var hd={}, t=tok(), ak=_ck('atlas_ck'), ct=_ck('atlas_ct');
+    if(t)  hd['X-Session-Token']=t;
+    else if(ct) hd['X-Session-Token']=ct;
+    if(ak) hd['X-Admin-Key']=ak;
+    var u=API+'/api/annotations?country='+iso;
+    if(ak)      u+='&key='+encodeURIComponent(ak);
+    else if(t||ct) u+='&t='+encodeURIComponent(t||ct);
+    fetch(u,{headers:hd,credentials:'include'})
       .then(function(r){ return r.ok?r.json():{annotations:[]}; })
       .then(function(d){ render((d&&d.annotations)||[], el); })
       .catch(function(){ el.innerHTML=''; });
