@@ -1566,6 +1566,38 @@ html,body{overscroll-behavior-y:contain}
 
 
 </style>
+<script>
+/* ── Мост в консоль (ДО остальных скриптов: pushState ниже затирает hash) ──
+   /#console-auth или ?console=1 → берём токен сессии из localStorage
+   этого домена и уходим на api.a-atlas.com/console?t=… ───────────────────── */
+(function(){
+  var isReq = (location.hash === '#console-auth') || /[?&]console=1/.test(location.search);
+  if (!isReq) return;
+  var t = '';
+  try { t = localStorage.getItem('tg_session_token') || ''; } catch(e) {}
+  if (t) { location.replace('https://api.a-atlas.com/console?t=' + encodeURIComponent(t)); return; }
+  // сессии нет — показываем подсказку поверх страницы, когда DOM готов
+  function show(){
+    var b = document.createElement('div');
+    b.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0a0d12;display:flex;'
+      + 'align-items:center;justify-content:center;font-family:-apple-system,Segoe UI,sans-serif';
+    b.innerHTML = '<div style="width:310px;padding:26px;border:1px solid rgba(94,180,222,.22);'
+      + 'border-radius:14px;text-align:center;background:rgba(15,24,34,.6)">'
+      + '<div style="color:#7ec8ea;font-size:12px;font-weight:600;letter-spacing:.14em;'
+      +   'text-transform:uppercase;line-height:1.5">Atlas System<br>Intelligence</div>'
+      + '<div style="color:#5a7a90;font-size:10px;letter-spacing:.22em;text-transform:uppercase;'
+      +   'margin:6px 0 18px">Console</div>'
+      + '<div style="font-size:11.5px;color:#8fa8bd;line-height:1.6;margin-bottom:16px">'
+      +   'Сессия не найдена. Войдите в Атлас через Telegram, затем откройте консоль снова.</div>'
+      + '<a href="/" style="display:block;padding:10px;background:linear-gradient(180deg,#2aa8e0,#1e8fc4);'
+      +   'color:#fff;border-radius:8px;text-decoration:none;font-size:12.5px;font-weight:600">'
+      +   'Перейти ко входу</a></div>';
+    document.body.appendChild(b);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+  else show();
+})();
+</script>
 </head>
 <body>
 
@@ -13182,33 +13214,6 @@ function _scenIntel(s){
   };
 })();
 </script>
-<script>
-/* ── Мост в консоль: /#console-auth забирает токен сессии из localStorage
-   (он живёт на ЭТОМ домене) и передаёт на api.a-atlas.com/console?t=…
-   Виджет Telegram работает только здесь — на api-домене он не рисуется. ── */
-(function(){
-  if (location.hash !== '#console-auth') return;
-  var t = '';
-  try { t = localStorage.getItem('tg_session_token') || ''; } catch(e) {}
-  var box = document.createElement('div');
-  box.style.cssText='position:fixed;inset:0;z-index:99999;background:#0d0f14;display:flex;'
-    + 'align-items:center;justify-content:center;font-family:-apple-system,Segoe UI,sans-serif';
-  if (t) {
-    box.innerHTML='<div style="color:#6f88ab;font-size:13px">Открываю консоль…</div>';
-    document.body.appendChild(box);
-    location.replace('https://api.a-atlas.com/console?t=' + encodeURIComponent(t));
-    return;
-  }
-  box.innerHTML='<div style="width:300px;padding:24px;border:1px solid rgba(184,151,58,.25);'
-    + 'border-radius:12px;text-align:center;color:#cbd5e1">'
-    + '<div style="color:#D4AF5A;font-size:13px;letter-spacing:.1em;margin-bottom:10px">ATLAS · КОНСОЛЬ</div>'
-    + '<div style="font-size:11.5px;color:#6f88ab;line-height:1.6;margin-bottom:16px">'
-    +   'Сначала войдите в Атлас через Telegram, затем откройте эту ссылку снова.</div>'
-    + '<a href="/" style="display:block;padding:10px;background:#B8973A;color:#0d0f14;'
-    +   'border-radius:7px;text-decoration:none;font-size:12.5px;font-weight:600">Перейти ко входу</a>'
-    + '</div>';
-  document.body.appendChild(box);
-})();
-</script>
+
 </body>
 </html>
