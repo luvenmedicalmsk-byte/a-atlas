@@ -4290,7 +4290,6 @@ function renderCard(c) {
   renderForecast(c.forecast_7d||null,_clientCaps);
   renderOutlook30d(c.forecast_30d||null,_clientCaps);
   renderChangeAttribution(c.delta || 0, c.change_drivers || [], _clientCaps);
-  window._ccIso = (c.country || c.iso2 || '').toUpperCase();
   renderDrivers(c.drivers || [], _clientCaps);
 }
 
@@ -4401,113 +4400,6 @@ function renderDrivers(drivers, caps) {
   if (!caps.drivers_details) html += '<div style="font-size:9px;color:#B8973A;margin-top:6px">🔒 Анализ влияния в Signal PRO</div>';
   html += '</div>';
   block.innerHTML = html;
-}
-
-// ── АРХИВ ДРАЙВЕРОВ (VCS) — помесячные версии из docs/grdf/archive ──────────
-var _ARCH_BASE = 'https://raw.githubusercontent.com/luvenmedicalmsk-byte/secrett-archive/main/docs/grdf/archive/';
-var _ARCH_DOM  = {geopolitics:'Геополитика', economy:'Экономика', climate:'Климат',
-                  technology:'Технологии', social:'Социум'};
-var _ARCH_COL  = {geopolitics:'#ff7a00', climate:'#22c55e', economy:'#38bdf8',
-                  technology:'#a855f7', social:'#ef4444'};
-var _archCache = {};
-
-// Блок собирается в строку и вставляется в DOM вызывающим кодом позже,
-// поэтому ждём появления элемента опросом (до ~3 с), а не setTimeout(0).
-function _archWait(iso, tries){
-  tries = tries || 0;
-  var el = document.getElementById('cc-arch-block');
-  if (el && !el.getAttribute('data-done')) {
-    el.setAttribute('data-done','1');
-    try { _ccArchive(iso || el.getAttribute('data-iso') || ''); } catch(e){}
-    return;
-  }
-  if (tries < 60) setTimeout(function(){ _archWait(iso, tries+1); }, 50);
-}
-
-function _ccArchive(iso){
-  var el = document.getElementById('cc-arch-block');
-  if (!el) return;
-  iso = iso || el.getAttribute('data-iso') || '';
-  if (!iso) return;
-  // Пока доступен один месяц; при накоплении список расширяется автоматически.
-  var months = _archMonths();
-  var h = '<div style="margin-top:10px;border-top:1px solid rgba(184,151,58,.18);padding-top:8px">';
-  months.forEach(function(mk){
-    h += '<div class="cc-arch-m" data-m="'+mk+'" style="cursor:pointer;font-size:11px;color:#B8973A;padding:4px 0">'
-       + '<span class="cc-arch-caret">▶</span> ' + _archLabel(mk) + '</div>'
-       + '<div class="cc-arch-body" id="cc-arch-'+mk+'" style="display:none;padding-left:10px"></div>';
-  });
-  h += '</div>';
-  el.innerHTML = h;
-  el.querySelectorAll('.cc-arch-m').forEach(function(n){
-    n.onclick = function(){
-      var mk = n.getAttribute('data-m');
-      var b  = document.getElementById('cc-arch-'+mk);
-      if (!b) return;
-      var open = b.style.display !== 'none';
-      b.style.display = open ? 'none' : 'block';
-      n.querySelector('.cc-arch-caret').textContent = open ? '▶' : '▼';
-      if (!open) _archLoad(iso, mk, b);
-    };
-  });
-}
-
-function _archMonths(){
-  // Последние 6 месяцев включая текущий: несуществующие просто не откроются.
-  var out = [], d = new Date();
-  for (var i=0;i<6;i++){
-    out.push(d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0'));
-    d.setUTCMonth(d.getUTCMonth()-1);
-  }
-  return out;
-}
-function _archLabel(mk){
-  var M=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-  var p=mk.split('-');
-  return (M[parseInt(p[1],10)-1]||p[1]) + ' ' + p[0];
-}
-
-function _archLoad(iso, mk, box){
-  var key = iso+'/'+mk;
-  if (_archCache[key]) { _archRender(_archCache[key], box); return; }
-  box.innerHTML = '<div style="font-size:10px;color:#6b7280;padding:4px 0">загрузка…</div>';
-  fetch(_ARCH_BASE + iso + '/' + mk + '.json?v=' + Date.now())
-    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
-    .then(function(d){ _archCache[key]=d; _archRender(d, box); })
-    .catch(function(){ box.innerHTML = '<div style="font-size:10px;color:#6b7280;padding:4px 0">нет данных за этот месяц</div>'; });
-}
-
-function _archRender(d, box){
-  var drv = d.drivers || [];
-  if (!drv.length){ box.innerHTML='<div style="font-size:10px;color:#6b7280">драйверов нет</div>'; return; }
-  var by = {};
-  drv.forEach(function(x){ var k=x.domain||'other'; (by[k]=by[k]||[]).push(x); });
-  var h = '';
-  if (d.provisional) h += '<div style="font-size:9px;color:#6b7280;margin-bottom:4px">предварительная версия — месяц не завершён</div>';
-  Object.keys(by).forEach(function(dom){
-    var col = _ARCH_COL[dom] || '#B8973A';
-    h += '<div style="margin-top:6px;font-size:10px;color:'+col+';letter-spacing:.06em">'
-       + (_ARCH_DOM[dom]||dom) + ' <span style="color:#6b7280">· '+by[dom].length+'</span></div>';
-    by[dom].slice(0,12).forEach(function(x){
-      h += '<div class="cc-arch-p" style="cursor:pointer;font-size:11px;color:#cbd5e1;padding:3px 0 3px 8px;border-left:1px solid rgba(184,151,58,.2)">'
-         + _esc(x.title || x.process_id || '')
-         + '<span style="float:right;color:'+col+'">'+(x.severity||'')+'</span>'
-         + '<div class="cc-arch-d" style="display:none;font-size:9px;color:#6b7280;padding-top:3px">'
-         +   'с ' + (x.first_seen||'—') + ' по ' + (x.last_seen||'—')
-         +   ' · событий: ' + (x.timeline_size||0)
-         +   (x.is_macro ? ' · системный процесс' : '')
-         +   '<br>' + _esc(x.process_id||'')
-         + '</div></div>';
-    });
-  });
-  box.innerHTML = h;
-  box.querySelectorAll('.cc-arch-p').forEach(function(n){
-    n.onclick = function(e){
-      e.stopPropagation();
-      var dd = n.querySelector('.cc-arch-d');
-      if (dd) dd.style.display = dd.style.display==='none' ? 'block' : 'none';
-    };
-  });
 }
 
 function clearChart() {
@@ -9038,9 +8930,7 @@ function _grdfContextHtml(c){
       _more='';
     }
   }
-  var _archHtml = '<div id="cc-arch-block" data-iso="'+String(c.country||'').toUpperCase()+'" style="margin-top:10px;border-top:1px solid rgba(184,151,58,.18);padding-top:8px"></div>';
-  H+=card('Главные драйверы риска', (drv? drv+_more : '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>')+_archHtml);
-  _archWait(String(c.country||'').toUpperCase());
+  H+=card('Главные драйверы риска', (drv? drv+_more : '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>'));
   // ── 6. Каскадный риск (CRI) ──
   var _g=parseFloat(c.risk_score)||0, _t=_next(_g), _m=c.gri_delta_7d;
   var _traj=(_t==null)?'<span style="color:#6f88ab">верхний уровень</span>'
@@ -12125,7 +12015,7 @@ window.grdfSetMode=function(mode){
     if(dm.length) P.push('Показатели на текущий момент: '+dm.join(', ')+'; стадия — '+lcStage(s)+'.'); return P.join(' '); }
   // п.9 — OBSERVATION: наблюдения из реальных данных (не событие, не меняет метрики)
   function _procObs(s){ var o=[], stage=(lcStage(s)||'').toLowerCase(), ph=(s.phase||'').toLowerCase();
-    var ec=s.evidence_count||0, tl=(s.timeline_recent||s.timeline||[]).length; /* ADR-D4 */
+    var ec=s.evidence_count||0, tl=(s.timeline||[]).length;
     if(ec>tl && (ec-tl)>0) o.push('Зафиксировано '+(ec-tl)+' '+plSvid(ec-tl)+' сверх ключевых событий — ведётся мониторинг активности.');
     if(/актив|усилен|рост|escalat/.test(stage)||/actie|escalat|active/.test(ph)) o.push('Продолжаются измерения состояния; система отслеживает динамику процесса.');
     else if(/затух|стабил|ослаб|dormant|de-escal/.test(stage)) o.push('Ведётся оценка состояния: выраженной новой активности не зарегистрировано.');
@@ -12435,7 +12325,7 @@ window.grdfSetMode=function(mode){
     window._SCEN_EXP=(window._SCEN_EXP!==false);
     function _ecgRu(e){var M={ecommerce_logistics:'логистика e-commerce',logistics:'логистические объекты',energy:'энергообъекты',refinery:'НПЗ и нефтебазы',infrastructure:'инфраструктурные объекты',military:'военные объекты',financial:'финансовые институты',transport:'транспортные узлы',telecom:'телеком-инфраструктура'};return M[e]||(e?String(e).replace(/_/g,' '):'объекты класса');}
     function _relName(r){if(!r)return '';if(typeof r==='string')return _pvCleanTitle(r);return _pvCleanTitle(r.title||r.target||r.name||r.process_id||'');}
-    function _scenWindow(s){/* ADR-D4: текущая динамика → timeline_recent */var tl=(s.timeline_recent||s.timeline||[]).filter(function(x){return x&&x.t;});if(tl.length<3)return '';var ds=tl.map(function(x){return x.t;}).sort();var last=ds[ds.length-1];var gaps=[];for(var i=1;i<ds.length;i++){var g=Math.round((new Date(ds[i])-new Date(ds[i-1]))/86400000);if(g>0)gaps.push(g);}if(!gaps.length)return '';var avg=Math.round(gaps.reduce(function(a,b){return a+b;},0)/gaps.length);if(avg<1||avg>21)return '';var ld=new Date(last);var w0=new Date(ld.getTime()+Math.max(1,avg-1)*86400000);var w1=new Date(ld.getTime()+(avg+2)*86400000);var mo=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];function f(d){return d.getDate()+' '+mo[d.getMonth()];}return f(w0)+' \u2013 '+f(w1);}
+    function _scenWindow(s){var tl=(s.timeline||[]).filter(function(x){return x&&x.t;});if(tl.length<3)return '';var ds=tl.map(function(x){return x.t;}).sort();var last=ds[ds.length-1];var gaps=[];for(var i=1;i<ds.length;i++){var g=Math.round((new Date(ds[i])-new Date(ds[i-1]))/86400000);if(g>0)gaps.push(g);}if(!gaps.length)return '';var avg=Math.round(gaps.reduce(function(a,b){return a+b;},0)/gaps.length);if(avg<1||avg>21)return '';var ld=new Date(last);var w0=new Date(ld.getTime()+Math.max(1,avg-1)*86400000);var w1=new Date(ld.getTime()+(avg+2)*86400000);var mo=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];function f(d){return d.getDate()+' '+mo[d.getMonth()];}return f(w0)+' \u2013 '+f(w1);}
     function _scenTracks(e){var base=['официальные сообщения','связанные процессы Atlas'];var M={ecommerce_logistics:['логистические объекты','корпоративные статусы','спутниковые данные'],refinery:['телеметрия инфраструктуры','спутниковые данные'],energy:['телеметрия инфраструктуры'],military:['спутниковые данные'],financial:['корпоративные статусы','рыночные индикаторы'],transport:['логистические объекты']};return (M[e]||['профильные объекты класса']).concat(base);}
     function _scenSig(dom,e){var out=[];if(/logistic|ecommerce|transport|infra/.test(e)||dom==='economy'){out=[['Бизнес','потенциальное влияние на цепочки поставок и доступность объектов'],['Логистика','маршруты и складская инфраструктура в затронутых зонах'],['Госструктуры','защищённость инфраструктурных узлов'],['Инвесторы','профиль риска сектора'],['Население','доступность товаров и услуг в регионах']];}else if(dom==='geopolitics'){out=[['Госструктуры','устойчивость затронутых институтов'],['Бизнес','операционные риски в регионе'],['Население','ситуация в затронутых зонах']];}else if(dom==='climate'){out=[['Госструктуры','готовность к явлению в регионе'],['Население','условия в затронутых зонах'],['Бизнес','влияние на профильные отрасли']];}return out;}
     /* Индикаторы сценариев = признаки модели. Статических чекбоксов нет:
@@ -12472,8 +12362,7 @@ function _scenInd(s,keys){ var st=_fSt(s), dl=_fDl(s), has=!!(_fRoot(s).delta);
    Relationship Layer (связность). Никаких утверждений о намерениях сторон,
    никаких «следующих целей» и процентов вероятности. */
 function _rhythm(s){
-  /* ADR-D4: текущая динамика → timeline_recent */
-  var tl=(s.timeline_recent||s.timeline||[]).filter(function(t){return t&&t.t;});
+  var tl=(s.timeline||[]).filter(function(t){return t&&t.t;});
   var by={}; tl.forEach(function(t){ var d=String(t.t).slice(0,10); by[d]=(by[d]||0)+1; });
   var days=Object.keys(by).sort();
   if(days.length<2) return null;
