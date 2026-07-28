@@ -13410,19 +13410,19 @@ function _scenIntel(s){
       /* 5 · ЧТО ЭТО ЗНАЧИТ — карта воздействия */
       if((a.what_it_means||[]).length){
         var ICO5='<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
-          + '<path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="#a855f7" stroke-width="1.6"/>'
-          + '<circle cx="12" cy="10" r="2.3" fill="#a855f7"/></svg>';
+          + '<path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" stroke="#9b7fc4" stroke-width="1.6"/>'
+          + '<circle cx="12" cy="10" r="2.3" fill="#9b7fc4"/></svg>';
         b += '<div class="ann-sec" id="'+id+'-mean">'
-          + secHead(ICO5,'Что это значит','Карта воздействия','#a855f7')
+          + secHead(ICO5,'Что это значит','Карта воздействия','#9b7fc4')
           + '<div style="display:flex;flex-direction:column;gap:7px">'
           + a.what_it_means.map(function(x){
               var s2=String(x), lead='', tail=s2;
               var m3=s2.split('—');
               if(m3.length>1){ lead=m3[0].trim(); tail=m3.slice(1).join('—').trim(); }
-              return '<div style="padding:11px 12px;background:rgba(168,85,247,.045);'
-                + 'border:1px solid rgba(168,85,247,.16);border-radius:8px">'
+              return '<div style="padding:11px 12px;background:rgba(155,127,196,.06);'
+                + 'border:1px solid rgba(155,127,196,.22);border-radius:8px">'
                 + (lead?'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
-                      + '<span style="width:5px;height:5px;border-radius:50%;background:#a855f7;'
+                      + '<span style="width:5px;height:5px;border-radius:50%;background:#9b7fc4;'
                       +   'flex-shrink:0"></span>'
                       + '<span style="font-size:11.5px;color:#e8eaf0;font-weight:600">'+esc(lead)+'</span></div>':'')
                 + '<div style="font-size:11.5px;color:#94a3b8;line-height:1.6;max-width:70ch'
@@ -13433,31 +13433,31 @@ function _scenIntel(s){
       /* 6 · МОНИТОРИНГ — операционный чек-лист индикаторов */
       if((a.monitoring||[]).length){
         var ICO6='<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
-          + '<path d="M3 12h4l2.5-6 4 12 2.5-6H21" stroke="#5fae7a" stroke-width="1.6" '
+          + '<path d="M3 12h4l2.5-6 4 12 2.5-6H21" stroke="#e0a458" stroke-width="1.6" '
           + 'stroke-linecap="round" stroke-linejoin="round"/></svg>';
         b += '<div class="ann-sec" id="'+id+'-moni">'
-          + secHead(ICO6,'Что отслеживать','Операционный чек-лист · '+a.monitoring.length,'#5fae7a')
-          + '<div style="border:1px solid rgba(95,174,122,.16);border-radius:9px;overflow:hidden">'
+          + secHead(ICO6,'Что отслеживать','Операционный чек-лист · '+a.monitoring.length,'#e0a458')
+          + '<div style="border:1px solid rgba(224,164,88,.24);border-radius:9px;overflow:hidden">'
           + a.monitoring.map(function(x,n){
               var s3=String(x), src2='', body2=s3;
               var m4=s3.match(/^([^:]{2,34}):\s*(.+)$/);
               if(m4){ src2=m4[1].trim(); body2=m4[2].trim(); }
               return '<div class="ann-mon" style="display:flex;gap:10px;align-items:flex-start;'
                 + 'padding:11px 12px;cursor:pointer;transition:background .16s;'
-                + (n?'border-top:1px solid rgba(95,174,122,.1)':'')+'">'
+                + (n?'border-top:1px solid rgba(224,164,88,.14)':'')+'">'
                 + '<span class="ann-box" style="width:14px;height:14px;border-radius:4px;'
-                +   'border:1.5px solid rgba(95,174,122,.5);flex-shrink:0;margin-top:1px;display:flex;'
+                +   'border:1.5px solid rgba(224,164,88,.55);flex-shrink:0;margin-top:1px;display:flex;'
                 +   'align-items:center;justify-content:center;transition:all .18s">'
                 +   '<svg class="ann-tick" width="9" height="9" viewBox="0 0 24 24" fill="none" '
                 +     'style="opacity:0;transition:opacity .18s">'
-                +     '<path d="M5 12.5l4.5 4.5L19 7" stroke="#5fae7a" stroke-width="3" '
+                +     '<path d="M5 12.5l4.5 4.5L19 7" stroke="#e0a458" stroke-width="3" '
                 +     'stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
                 + '<div class="ann-mtx" style="flex:1;min-width:0;transition:opacity .18s">'
-                +   (src2?'<div style="font-size:8.5px;color:#5fae7a;letter-spacing:.09em;'
+                +   (src2?'<div style="font-size:8.5px;color:#e0a458;letter-spacing:.09em;'
                         + 'text-transform:uppercase;margin-bottom:3px;opacity:.85">'+esc(src2)+'</div>':'')
                 +   '<div style="font-size:11.5px;color:#94a3b8;line-height:1.55;max-width:70ch">'
                 +   esc(body2)+'</div></div>'
-                + '<span style="width:5px;height:5px;border-radius:50%;background:#5fae7a;'
+                + '<span style="width:5px;height:5px;border-radius:50%;background:#e0a458;'
                 +   'opacity:.35;flex-shrink:0;margin-top:5px"></span></div>';
             }).join('') + '</div></div>' + SP;
       }
@@ -13579,11 +13579,11 @@ function _scenIntel(s){
         n.setAttribute('data-done',done?'0':'1');
         var bx2=n.querySelector('.ann-box'), tk=n.querySelector('.ann-tick'), tx=n.querySelector('.ann-mtx');
         if(tk) tk.style.opacity=done?'0':'1';
-        if(bx2) bx2.style.background=done?'transparent':'rgba(95,174,122,.14)';
-        if(bx2) bx2.style.borderColor=done?'rgba(95,174,122,.5)':'#5fae7a';
+        if(bx2) bx2.style.background=done?'transparent':'rgba(224,164,88,.18)';
+        if(bx2) bx2.style.borderColor=done?'rgba(224,164,88,.55)':'#e0a458';
         if(tx) tx.style.opacity=done?'1':'.5';
       };
-      n.onmouseenter=function(){ n.style.background='rgba(95,174,122,.05)'; };
+      n.onmouseenter=function(){ n.style.background='rgba(224,164,88,.06)'; };
       n.onmouseleave=function(){ n.style.background='transparent'; };
     })(mns[k2]);
   }
