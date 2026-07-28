@@ -13178,22 +13178,68 @@ function _scenIntel(s){
   function tok(){ try{ return localStorage.getItem('tg_session_token')||''; }catch(e){ return ''; } }
   function render(list, box){
     if(!list.length){ box.innerHTML=''; return; }
-    var h='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Atlas фиксирует</div>';
-    list.forEach(function(a){
-      var c=COL[a.domain]||'#B8973A';
-      h+='<div style="margin:0 14px 12px;padding:11px 12px;border:1px solid rgba(184,151,58,.22);border-radius:9px;background:rgba(184,151,58,.04)">'
-        + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">'
-        +   '<span style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'
-        +   '<b style="color:#e8eaf0;font-size:12.5px">'+esc(a.object||'')+'</b>'
-        +   (a.risk_index!=null?'<span style="margin-left:auto;color:'+c+';font-size:13px;font-weight:600">'+a.risk_index+'<span style="font-size:9px;color:#6f88ab">/100</span></span>':'')
+    var h='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;color:#b8973a;'
+      + 'letter-spacing:.1em;text-transform:uppercase;margin:20px 14px 9px;padding-top:12px;'
+      + 'border-top:0.5px solid rgba(184,151,58,.20)">Atlas фиксирует</div>';
+    list.forEach(function(a,ix){
+      var c=COL[a.domain]||'#B8973A', id='ann-'+ix;
+      function block(t,body){ return body ? '<div style="margin-top:11px"><div style="font-size:9px;color:#6f88ab;'
+        + 'letter-spacing:.07em;text-transform:uppercase;margin-bottom:4px">'+t+'</div>'+body+'</div>' : ''; }
+      function items(arr,num){
+        if(!arr||!arr.length) return '';
+        return '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.55">'
+          + arr.map(function(x,n){ return '<div style="display:flex;gap:7px;margin-bottom:5px">'
+              + '<span style="color:'+c+';flex-shrink:0">'+(num?(n+1)+'.':'—')+'</span>'
+              + '<span>'+esc(x)+'</span></div>'; }).join('') + '</div>';
+      }
+      function para(t){ return t ? '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.6;white-space:pre-line">'
+        + esc(t)+'</div>' : ''; }
+
+      h+='<div style="margin:0 14px 12px;border:1px solid rgba(184,151,58,.22);border-radius:9px;'
+        +   'background:rgba(184,151,58,.04);overflow:hidden">'
+        // ── шапка: кликабельная ──
+        + '<div class="ann-head" data-t="'+id+'" style="padding:12px;cursor:pointer">'
+        +   '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px">'
+        +     '<span style="width:7px;height:7px;border-radius:50%;background:'+c+';flex-shrink:0"></span>'
+        +     '<b style="color:#e8eaf0;font-size:12.5px;line-height:1.4">'+esc(a.title||a.object||'')+'</b>'
+        +     (a.risk_index!=null?'<span style="margin-left:auto;color:'+c+';font-size:14px;font-weight:600;'
+        +       'flex-shrink:0">'+a.risk_index+'<span style="font-size:9px;color:#6f88ab">/100</span></span>':'')
+        +   '</div>'
+        +   '<div style="font-size:9.5px;color:#6f88ab">'+esc(a.date||'')
+        +     (a.domain?' · '+(DOMS[a.domain]||a.domain):'')+'</div>'
+        +   '<div style="display:flex;align-items:center;gap:5px;margin-top:7px;font-size:10.5px;color:'+c+'">'
+        +     '<svg class="ann-car" width="9" height="9" viewBox="0 0 24 24" style="transition:transform .15s">'
+        +       '<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" '
+        +       'stroke-linecap="round" stroke-linejoin="round"/></svg>Открыть анализ</div>'
         + '</div>'
-        + (a.location?'<div style="font-size:10.5px;color:#94a3b8;margin-bottom:2px">'+esc(a.location)+'</div>':'')
-        + '<div style="font-size:9.5px;color:#6f88ab;margin-bottom:7px">'+esc(a.date||'')+(a.domain?' · '+(DOMS[a.domain]||a.domain):'')+'</div>'
-        + (a.consequences?'<div style="font-size:9px;color:#6f88ab;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">Что это значит</div><div style="font-size:11.5px;color:#cbd5e1;line-height:1.5;margin-bottom:8px">'+esc(a.consequences)+'</div>':'')
-        + (a.interpretation?'<div style="font-size:9px;color:#6f88ab;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">Инженерная интерпретация</div><div style="font-size:11.5px;color:#cbd5e1;line-height:1.5">'+esc(a.interpretation)+'</div>':'')
-        + '</div>';
+        // ── тело: семь блоков ──
+        + '<div class="ann-body" id="'+id+'" style="display:none;padding:0 12px 13px">'
+        +   block('Объект', para(a.object))
+        +   block('Локация', para(a.location))
+        +   block('Оценка риска', para(a.risk_assessment))
+        +   block('Свидетельства', items(a.evidence,false))
+        +   block('Инженерная интерпретация', para(a.engineering_interpretation))
+        +   block('Что это значит', items(a.what_it_means,true))
+        +   block('Что отслеживать', items(a.monitoring,false))
+        +   block('Системный вывод', para(a.systemic_conclusion))
+        +   (a.disclaimer?'<div style="margin-top:12px;padding-top:9px;border-top:1px solid rgba(184,151,58,.14);'
+        +     'font-size:10px;color:#6f88ab;line-height:1.5;font-style:italic">'+esc(a.disclaimer)+'</div>':'')
+        + '</div></div>';
     });
     box.innerHTML=h;
+    var hs=box.querySelectorAll('.ann-head');
+    for(var i=0;i<hs.length;i++)(function(n){
+      n.onclick=function(){
+        var b=document.getElementById(n.getAttribute('data-t'));
+        if(!b) return;
+        var open=b.style.display!=='none';
+        b.style.display=open?'none':'block';
+        var cr=n.querySelector('.ann-car');
+        if(cr) cr.style.transform=open?'rotate(0deg)':'rotate(90deg)';
+        var lb=n.querySelector('div:last-child');
+        if(lb) lb.lastChild.textContent=open?'Открыть анализ':'Свернуть';
+      };
+    })(hs[i]);
   }
   window._ccAnnotations=function(iso){
     var el=document.getElementById('cc-ann-block');
