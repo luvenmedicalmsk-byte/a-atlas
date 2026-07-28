@@ -13530,8 +13530,10 @@ function _scenIntel(s){
   window._ccAnnotations=function(iso){
     var el=document.getElementById('cc-ann-block');
     if(!el) return;
-    iso=iso||el.getAttribute('data-iso')||'';
+    iso=String(iso||el.getAttribute('data-iso')||'').toUpperCase();
     if(!iso) return;
+    el.setAttribute('data-loaded',iso);
+    el.innerHTML='';   // чистим прошлую страну, чтобы не мигали чужие записи
     // Признак доступа передаём всеми путями: заголовок, cookie, query.
     // Иначе владелец на карте выглядел обычным посетителем и не видел записи.
     var hd={}, t=tok(), ak=_ck('atlas_ck'), ct=_ck('atlas_ct');
@@ -13549,7 +13551,17 @@ function _scenIntel(s){
   window._annWait=function(iso,tries){
     tries=tries||0;
     var el=document.getElementById('cc-ann-block');
-    if(el&&!el.getAttribute('data-done')){ el.setAttribute('data-done','1'); try{ window._ccAnnotations(iso); }catch(e){} return; }
+    if(el){
+      // Метка привязана к СТРАНЕ, а не к факту загрузки: при открытии другой
+      // страны (или повторном открытии той же) блок должен грузиться заново.
+      // Раньше data-done ставился навсегда — второе открытие давало пустоту.
+      var want=String(iso||el.getAttribute('data-iso')||'').toUpperCase();
+      if(el.getAttribute('data-loaded')!==want){
+        el.setAttribute('data-loaded',want);
+        try{ window._ccAnnotations(want); }catch(e){}
+      }
+      return;
+    }
     if(tries<60) setTimeout(function(){ window._annWait(iso,tries+1); },50);
   };
 })();
