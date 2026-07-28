@@ -13544,8 +13544,27 @@ function _scenIntel(s){
     if(ak)      u+='&key='+encodeURIComponent(ak);
     else if(t||ct) u+='&t='+encodeURIComponent(t||ct);
     fetch(u,{headers:hd,credentials:'include'})
-      .then(function(r){ return r.ok?r.json():{annotations:[]}; })
-      .then(function(d){ render((d&&d.annotations)||[], el); })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok,s:r.status,d:d}; })
+                          .catch(function(){ return {ok:false,s:r.status,d:null}; }); })
+      .then(function(x){
+        var list=(x.d&&x.d.annotations)||[];
+        if(list.length){ render(list, el); return; }
+        // Диагностика для владельца: почему блок пуст. Обычный посетитель
+        // видит пустоту — для него это не ошибка, слой платный.
+        var dg=x.d&&x.d.debug;
+        var own=dg&&dg.is_owner;
+        if(!own && !ak && !t && !ct){ el.innerHTML=''; return; }
+        el.innerHTML='<div style="margin:16px 14px;padding:11px 12px;border:1px dashed rgba(184,151,58,.28);'
+          + 'border-radius:8px;font-size:10px;color:#caa45a;line-height:1.6">'
+          + 'Atlas фиксирует · нет записей для '+esc(iso)
+          + (dg ? ('<br>в хранилище: '+dg.in_kv
+                  +(dg.hidden_draft?(' · скрыто черновиков: '+dg.hidden_draft):'')
+                  +(dg.hidden_visibility?(' · скрыто по доступу: '+dg.hidden_visibility):'')
+                  +' · владелец: '+(dg.is_owner?'да':'НЕТ')
+                  +' · тир: '+(x.d.tier||'?'))
+                : ('<br>HTTP '+x.s))
+          + '</div>';
+      })
       .catch(function(){ el.innerHTML=''; });
   };
   window._annWait=function(iso,tries){
