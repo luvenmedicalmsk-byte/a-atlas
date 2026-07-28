@@ -4411,6 +4411,19 @@ var _ARCH_COL  = {geopolitics:'#ff7a00', climate:'#22c55e', economy:'#38bdf8',
                   technology:'#a855f7', social:'#ef4444'};
 var _archCache = {};
 
+// Блок собирается в строку и вставляется в DOM вызывающим кодом позже,
+// поэтому ждём появления элемента опросом (до ~3 с), а не setTimeout(0).
+function _archWait(iso, tries){
+  tries = tries || 0;
+  var el = document.getElementById('cc-arch-block');
+  if (el && !el.getAttribute('data-done')) {
+    el.setAttribute('data-done','1');
+    try { _ccArchive(iso || el.getAttribute('data-iso') || ''); } catch(e){}
+    return;
+  }
+  if (tries < 60) setTimeout(function(){ _archWait(iso, tries+1); }, 50);
+}
+
 function _ccArchive(iso){
   var el = document.getElementById('cc-arch-block');
   if (!el) return;
@@ -9027,7 +9040,7 @@ function _grdfContextHtml(c){
   }
   var _archHtml = '<div id="cc-arch-block" data-iso="'+String(c.country||'').toUpperCase()+'" style="margin-top:10px;border-top:1px solid rgba(184,151,58,.18);padding-top:8px"></div>';
   H+=card('Главные драйверы риска', (drv? drv+_more : '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>')+_archHtml);
-  setTimeout(function(){ try{ _ccArchive(String(c.country||'').toUpperCase()); }catch(e){} }, 0);
+  _archWait(String(c.country||'').toUpperCase());
   // ── 6. Каскадный риск (CRI) ──
   var _g=parseFloat(c.risk_score)||0, _t=_next(_g), _m=c.gri_delta_7d;
   var _traj=(_t==null)?'<span style="color:#6f88ab">верхний уровень</span>'
