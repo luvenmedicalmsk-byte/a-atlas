@@ -13433,31 +13433,31 @@ function _scenIntel(s){
       /* 6 · МОНИТОРИНГ — операционный чек-лист индикаторов */
       if((a.monitoring||[]).length){
         var ICO6='<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
-          + '<path d="M3 12h4l2.5-6 4 12 2.5-6H21" stroke="#f5a524" stroke-width="1.6" '
+          + '<path d="M3 12h4l2.5-6 4 12 2.5-6H21" stroke="#7f9bc7" stroke-width="1.6" '
           + 'stroke-linecap="round" stroke-linejoin="round"/></svg>';
         b += '<div class="ann-sec" id="'+id+'-moni">'
-          + secHead(ICO6,'Что отслеживать','Операционный чек-лист · '+a.monitoring.length,'#f5a524')
-          + '<div style="border:1px solid rgba(245,165,36,.3);border-radius:9px;overflow:hidden">'
+          + secHead(ICO6,'Что отслеживать','Операционный чек-лист · '+a.monitoring.length,'#7f9bc7')
+          + '<div style="border:1px solid rgba(127,155,199,.28);border-radius:9px;overflow:hidden">'
           + a.monitoring.map(function(x,n){
               var s3=String(x), src2='', body2=s3;
               var m4=s3.match(/^([^:]{2,34}):\s*(.+)$/);
               if(m4){ src2=m4[1].trim(); body2=m4[2].trim(); }
               return '<div class="ann-mon" style="display:flex;gap:10px;align-items:flex-start;'
                 + 'padding:11px 12px;cursor:pointer;transition:background .16s;'
-                + (n?'border-top:1px solid rgba(245,165,36,.16)':'')+'">'
+                + (n?'border-top:1px solid rgba(127,155,199,.15)':'')+'">'
                 + '<span class="ann-box" style="width:14px;height:14px;border-radius:4px;'
-                +   'border:1.5px solid rgba(245,165,36,.6);flex-shrink:0;margin-top:1px;display:flex;'
+                +   'border:1.5px solid rgba(127,155,199,.6);flex-shrink:0;margin-top:1px;display:flex;'
                 +   'align-items:center;justify-content:center;transition:all .18s">'
                 +   '<svg class="ann-tick" width="9" height="9" viewBox="0 0 24 24" fill="none" '
                 +     'style="opacity:0;transition:opacity .18s">'
-                +     '<path d="M5 12.5l4.5 4.5L19 7" stroke="#f5a524" stroke-width="3" '
+                +     '<path d="M5 12.5l4.5 4.5L19 7" stroke="#7f9bc7" stroke-width="3" '
                 +     'stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
                 + '<div class="ann-mtx" style="flex:1;min-width:0;transition:opacity .18s">'
-                +   (src2?'<div style="font-size:9.5px;color:#ffc247;letter-spacing:.09em;'
+                +   (src2?'<div style="font-size:9.5px;color:#a8c0e0;letter-spacing:.09em;'
                         + 'text-transform:uppercase;margin-bottom:4px;font-weight:600">'+esc(src2)+'</div>':'')
                 +   '<div style="font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch">'
                 +   esc(body2)+'</div></div>'
-                + '<span style="width:5px;height:5px;border-radius:50%;background:#f5a524;'
+                + '<span style="width:5px;height:5px;border-radius:50%;background:#7f9bc7;'
                 +   'opacity:.35;flex-shrink:0;margin-top:5px"></span></div>';
             }).join('') + '</div></div>' + SP;
       }
@@ -13585,11 +13585,11 @@ function _scenIntel(s){
         n.setAttribute('data-done',done?'0':'1');
         var bx2=n.querySelector('.ann-box'), tk=n.querySelector('.ann-tick'), tx=n.querySelector('.ann-mtx');
         if(tk) tk.style.opacity=done?'0':'1';
-        if(bx2) bx2.style.background=done?'transparent':'rgba(245,165,36,.22)';
-        if(bx2) bx2.style.borderColor=done?'rgba(245,165,36,.6)':'#f5a524';
+        if(bx2) bx2.style.background=done?'transparent':'rgba(127,155,199,.22)';
+        if(bx2) bx2.style.borderColor=done?'rgba(127,155,199,.6)':'#7f9bc7';
         if(tx) tx.style.opacity=done?'1':'.5';
       };
-      n.onmouseenter=function(){ n.style.background='rgba(245,165,36,.07)'; };
+      n.onmouseenter=function(){ n.style.background='rgba(127,155,199,.07)'; };
       n.onmouseleave=function(){ n.style.background='transparent'; };
     })(mns[k2]);
   }
