@@ -4290,6 +4290,7 @@ function renderCard(c) {
   renderForecast(c.forecast_7d||null,_clientCaps);
   renderOutlook30d(c.forecast_30d||null,_clientCaps);
   renderChangeAttribution(c.delta || 0, c.change_drivers || [], _clientCaps);
+  window._ccIso = (c.country || c.iso2 || '').toUpperCase();
   renderDrivers(c.drivers || [], _clientCaps);
 }
 
@@ -4398,8 +4399,102 @@ function renderDrivers(drivers, caps) {
     html += '</div><div class="cc-driver-sev">' + (d.severity || '') + '</div></div>';
   });
   if (!caps.drivers_details) html += '<div style="font-size:9px;color:#B8973A;margin-top:6px">🔒 Анализ влияния в Signal PRO</div>';
+  html += '<div id="cc-arch-block"></div>';
   html += '</div>';
   block.innerHTML = html;
+  _ccArchive(window._ccIso || '');
+}
+
+// ── АРХИВ ДРАЙВЕРОВ (VCS) — помесячные версии из docs/grdf/archive ──────────
+var _ARCH_BASE = 'https://raw.githubusercontent.com/luvenmedicalmsk-byte/secrett-archive/main/docs/grdf/archive/';
+var _ARCH_DOM  = {geopolitics:'Геополитика', economy:'Экономика', climate:'Климат',
+                  technology:'Технологии', social:'Социум'};
+var _ARCH_COL  = {geopolitics:'#ff7a00', climate:'#22c55e', economy:'#38bdf8',
+                  technology:'#a855f7', social:'#ef4444'};
+var _archCache = {};
+
+function _ccArchive(iso){
+  var el = document.getElementById('cc-arch-block');
+  if (!el || !iso) return;
+  // Пока доступен один месяц; при накоплении список расширяется автоматически.
+  var months = _archMonths();
+  var h = '<div style="margin-top:10px;border-top:1px solid rgba(184,151,58,.18);padding-top:8px">';
+  months.forEach(function(mk){
+    h += '<div class="cc-arch-m" data-m="'+mk+'" style="cursor:pointer;font-size:11px;color:#B8973A;padding:4px 0">'
+       + '<span class="cc-arch-caret">▶</span> ' + _archLabel(mk) + '</div>'
+       + '<div class="cc-arch-body" id="cc-arch-'+mk+'" style="display:none;padding-left:10px"></div>';
+  });
+  h += '</div>';
+  el.innerHTML = h;
+  el.querySelectorAll('.cc-arch-m').forEach(function(n){
+    n.onclick = function(){
+      var mk = n.getAttribute('data-m');
+      var b  = document.getElementById('cc-arch-'+mk);
+      if (!b) return;
+      var open = b.style.display !== 'none';
+      b.style.display = open ? 'none' : 'block';
+      n.querySelector('.cc-arch-caret').textContent = open ? '▶' : '▼';
+      if (!open) _archLoad(iso, mk, b);
+    };
+  });
+}
+
+function _archMonths(){
+  // Последние 6 месяцев включая текущий: несуществующие просто не откроются.
+  var out = [], d = new Date();
+  for (var i=0;i<6;i++){
+    out.push(d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0'));
+    d.setUTCMonth(d.getUTCMonth()-1);
+  }
+  return out;
+}
+function _archLabel(mk){
+  var M=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var p=mk.split('-');
+  return (M[parseInt(p[1],10)-1]||p[1]) + ' ' + p[0];
+}
+
+function _archLoad(iso, mk, box){
+  var key = iso+'/'+mk;
+  if (_archCache[key]) { _archRender(_archCache[key], box); return; }
+  box.innerHTML = '<div style="font-size:10px;color:#6b7280;padding:4px 0">загрузка…</div>';
+  fetch(_ARCH_BASE + iso + '/' + mk + '.json?v=' + Date.now())
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(d){ _archCache[key]=d; _archRender(d, box); })
+    .catch(function(){ box.innerHTML = '<div style="font-size:10px;color:#6b7280;padding:4px 0">нет данных за этот месяц</div>'; });
+}
+
+function _archRender(d, box){
+  var drv = d.drivers || [];
+  if (!drv.length){ box.innerHTML='<div style="font-size:10px;color:#6b7280">драйверов нет</div>'; return; }
+  var by = {};
+  drv.forEach(function(x){ var k=x.domain||'other'; (by[k]=by[k]||[]).push(x); });
+  var h = '';
+  if (d.provisional) h += '<div style="font-size:9px;color:#6b7280;margin-bottom:4px">предварительная версия — месяц не завершён</div>';
+  Object.keys(by).forEach(function(dom){
+    var col = _ARCH_COL[dom] || '#B8973A';
+    h += '<div style="margin-top:6px;font-size:10px;color:'+col+';letter-spacing:.06em">'
+       + (_ARCH_DOM[dom]||dom) + ' <span style="color:#6b7280">· '+by[dom].length+'</span></div>';
+    by[dom].slice(0,12).forEach(function(x){
+      h += '<div class="cc-arch-p" style="cursor:pointer;font-size:11px;color:#cbd5e1;padding:3px 0 3px 8px;border-left:1px solid rgba(184,151,58,.2)">'
+         + _esc(x.title || x.process_id || '')
+         + '<span style="float:right;color:'+col+'">'+(x.severity||'')+'</span>'
+         + '<div class="cc-arch-d" style="display:none;font-size:9px;color:#6b7280;padding-top:3px">'
+         +   'с ' + (x.first_seen||'—') + ' по ' + (x.last_seen||'—')
+         +   ' · событий: ' + (x.timeline_size||0)
+         +   (x.is_macro ? ' · системный процесс' : '')
+         +   '<br>' + _esc(x.process_id||'')
+         + '</div></div>';
+    });
+  });
+  box.innerHTML = h;
+  box.querySelectorAll('.cc-arch-p').forEach(function(n){
+    n.onclick = function(e){
+      e.stopPropagation();
+      var dd = n.querySelector('.cc-arch-d');
+      if (dd) dd.style.display = dd.style.display==='none' ? 'block' : 'none';
+    };
+  });
 }
 
 function clearChart() {
