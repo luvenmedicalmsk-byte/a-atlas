@@ -8930,7 +8930,9 @@ function _grdfContextHtml(c){
       _more='';
     }
   }
-  H+=card('Главные драйверы риска', (drv? drv+_more : '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>'));
+  var _archHtml='<div id="cc-arch-block" data-iso="'+String(c.country||'').toUpperCase()+'" style="margin-top:10px;border-top:1px solid rgba(184,151,58,.18);padding-top:8px"></div>';
+  H+=card('Главные драйверы риска', (drv? drv+_more : '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>')+_archHtml);
+  try{ if(window._archWait) window._archWait(String(c.country||'').toUpperCase()); }catch(e){}
   // ── 6. Каскадный риск (CRI) ──
   var _g=parseFloat(c.risk_score)||0, _t=_next(_g), _m=c.gri_delta_7d;
   var _traj=(_t==null)?'<span style="color:#6f88ab">верхний уровень</span>'
@@ -13031,5 +13033,77 @@ function _scenIntel(s){
 </script>
 <!-- ═══ /ATLAS Phase 2 ═══ -->
 
+<script>
+/* ── АРХИВ ДРАЙВЕРОВ (VCS) ─ глобальные функции: вызываются из другого <script>,
+   поэтому объявлены на window, а не внутри IIFE. ───────────────────────────── */
+(function(){
+  var BASE='https://raw.githubusercontent.com/luvenmedicalmsk-byte/secrett-archive/main/docs/grdf/archive/';
+  var DOM={geopolitics:'Геополитика',economy:'Экономика',climate:'Климат',technology:'Технологии',social:'Социум'};
+  var COL={geopolitics:'#ff7a00',climate:'#22c55e',economy:'#38bdf8',technology:'#a855f7',social:'#ef4444'};
+  var cache={};
+  function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function months(){var o=[],d=new Date();for(var i=0;i<6;i++){o.push(d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0'));d.setUTCMonth(d.getUTCMonth()-1);}return o;}
+  function label(mk){var M=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];var p=mk.split('-');return (M[parseInt(p[1],10)-1]||p[1])+' '+p[0];}
+  function render(d,box){
+    var drv=d.drivers||[];
+    if(!drv.length){box.innerHTML='<div style="font-size:10px;color:#6f88ab">драйверов нет</div>';return;}
+    var by={};drv.forEach(function(x){var k=x.domain||'other';(by[k]=by[k]||[]).push(x);});
+    var h='';
+    if(d.provisional) h+='<div style="font-size:9px;color:#6f88ab;margin-bottom:4px">предварительная версия — месяц не завершён</div>';
+    Object.keys(by).forEach(function(dm){
+      var c=COL[dm]||'#B8973A';
+      h+='<div style="margin-top:6px;font-size:10px;color:'+c+';letter-spacing:.06em">'+(DOM[dm]||dm)+' <span style="color:#6f88ab">· '+by[dm].length+'</span></div>';
+      by[dm].slice(0,12).forEach(function(x){
+        h+='<div class="cc-arch-p" style="cursor:pointer;font-size:11px;color:#94a3b8;padding:3px 0 3px 8px;border-left:1px solid rgba(184,151,58,.2)">'
+          + esc(x.title||x.process_id||'')
+          + '<span style="float:right;color:'+c+'">'+(x.severity||'')+'</span>'
+          + '<div class="cc-arch-d" style="display:none;font-size:9px;color:#6f88ab;padding-top:3px">'
+          +   'с '+(x.first_seen||'—')+' по '+(x.last_seen||'—')+' · событий: '+(x.timeline_size||0)
+          +   (x.is_macro?' · системный процесс':'')+'</div></div>';
+      });
+    });
+    box.innerHTML=h;
+    var ns=box.querySelectorAll('.cc-arch-p');
+    for(var i=0;i<ns.length;i++)(function(n){n.onclick=function(e){e.stopPropagation();var dd=n.querySelector('.cc-arch-d');if(dd)dd.style.display=dd.style.display==='none'?'block':'none';};})(ns[i]);
+  }
+  function load(iso,mk,box){
+    var k=iso+'/'+mk;
+    if(cache[k]){render(cache[k],box);return;}
+    box.innerHTML='<div style="font-size:10px;color:#6f88ab">загрузка…</div>';
+    fetch(BASE+iso+'/'+mk+'.json?v='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json();})
+      .then(function(d){cache[k]=d;render(d,box);})
+      .catch(function(){box.innerHTML='<div style="font-size:10px;color:#6f88ab">нет данных за этот месяц</div>';});
+  }
+  window._ccArchive=function(iso){
+    var el=document.getElementById('cc-arch-block');
+    if(!el)return;
+    iso=iso||el.getAttribute('data-iso')||'';
+    if(!iso)return;
+    var h='';
+    months().forEach(function(mk){
+      h+='<div class="cc-arch-m" data-m="'+mk+'" style="cursor:pointer;font-size:11px;color:#B8973A;padding:4px 0"><span class="cc-arch-caret">▶</span> '+label(mk)+'</div>'
+        +'<div class="cc-arch-body" id="cc-arch-'+mk+'" style="display:none;padding-left:10px"></div>';
+    });
+    el.innerHTML=h;
+    var ns=el.querySelectorAll('.cc-arch-m');
+    for(var i=0;i<ns.length;i++)(function(n){
+      n.onclick=function(){
+        var mk=n.getAttribute('data-m'),b=document.getElementById('cc-arch-'+mk);
+        if(!b)return;
+        var open=b.style.display!=='none';
+        b.style.display=open?'none':'block';
+        n.querySelector('.cc-arch-caret').textContent=open?'▶':'▼';
+        if(!open) load(iso,mk,b);
+      };
+    })(ns[i]);
+  };
+  window._archWait=function(iso,tries){
+    tries=tries||0;
+    var el=document.getElementById('cc-arch-block');
+    if(el&&!el.getAttribute('data-done')){el.setAttribute('data-done','1');try{window._ccArchive(iso);}catch(e){}return;}
+    if(tries<60) setTimeout(function(){window._archWait(iso,tries+1);},50);
+  };
+})();
+</script>
 </body>
 </html>
