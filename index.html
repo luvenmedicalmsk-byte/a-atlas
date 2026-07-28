@@ -13220,7 +13220,15 @@ function _scenIntel(s){
         +   block('Свидетельства', items(a.evidence,false))
         +   block('Инженерная интерпретация', para(a.engineering_interpretation))
       +   (a.cascade ? '<div style="margin-top:11px"><div style="font-size:9px;color:#6f88ab;'
-          + 'letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">🔗 Каскадная схема</div>'
+          + 'letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;display:flex;'
+          + 'align-items:center;gap:5px">'
+          + '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="flex-shrink:0">'
+          +   '<circle cx="5" cy="5" r="2.2" fill="'+c+'"/>'
+          +   '<circle cx="12" cy="12" r="2.2" fill="'+c+'" opacity=".7"/>'
+          +   '<circle cx="19" cy="19" r="2.2" fill="'+c+'" opacity=".45"/>'
+          +   '<path d="M6.6 6.6L10.4 10.4M13.6 13.6L17.4 17.4" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round"/>'
+          +   '<path d="M5 5h6M12 12h7" stroke="'+c+'" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>'
+          + '</svg>Каскадная схема</div>'
           // pre: пробелы и переносы сохраняются как есть — схема значима форматированием
           + '<pre style="margin:0;padding:10px 11px;background:rgba(0,0,0,.28);'
           + 'border:1px solid rgba(184,151,58,.16);border-radius:7px;overflow-x:auto;'
