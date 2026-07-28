@@ -13219,6 +13219,13 @@ function _scenIntel(s){
         +   block('Оценка риска', para(a.risk_assessment))
         +   block('Свидетельства', items(a.evidence,false))
         +   block('Инженерная интерпретация', para(a.engineering_interpretation))
+      +   (a.cascade ? '<div style="margin-top:11px"><div style="font-size:9px;color:#6f88ab;'
+          + 'letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px">🔗 Каскадная схема</div>'
+          // pre: пробелы и переносы сохраняются как есть — схема значима форматированием
+          + '<pre style="margin:0;padding:10px 11px;background:rgba(0,0,0,.28);'
+          + 'border:1px solid rgba(184,151,58,.16);border-radius:7px;overflow-x:auto;'
+          + 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;'
+          + 'line-height:1.65;color:#cbd5e1;white-space:pre">'+esc(a.cascade)+'</pre></div>' : '')
         +   block('Что это значит', items(a.what_it_means,true))
         +   block('Что отслеживать', items(a.monitoring,false))
         +   block('Системный вывод', para(a.systemic_conclusion))
