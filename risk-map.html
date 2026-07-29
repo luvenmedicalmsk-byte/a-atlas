@@ -13360,48 +13360,23 @@ function _scenIntel(s){
                 +   '<div style="font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch">'
                 +   esc(body)+'</div></div></div>';
             }).join('')
-          // ПРОВЕРКА СВИДЕТЕЛЬСТВ — как «Проверка сценария» в карточке процесса.
-          // Свидетельство считается подтверждённым, если содержит источник
-          // в скобках: «(Bild)», «(РБК)». Без источника — заявление без ссылки.
+          // Переход к сценариям процесса — та же кнопка, что в карточке
+          // наблюдения. Показывается, если у записи указан process_id
+          // и такой процесс есть в загруженных данных.
           + (function(){
-              var _it=a.evidence.map(function(x){
-                var s5=String(x);
-                var m6=s5.match(/\(([^()]{2,40})\)\s*$/);
-                return {label:(m6?s5.slice(0,m6.index).trim():s5).slice(0,90),
-                        src:(m6?m6[1]:''), ok:!!m6};
-              });
-              var _ok=_it.filter(function(x){return x.ok;});
-              var _no=_it.filter(function(x){return !x.ok;});
-              function _r(x,c2){
-                var _mk=c2?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7fb069" '
-                        +'stroke-width="3" stroke-linecap="round" stroke-linejoin="round" '
-                        +'style="flex-shrink:0;margin-top:2px"><polyline points="20 6 9 17 4 12"/></svg>'
-                       :'<svg width="12" height="12" viewBox="0 0 12 12" style="flex-shrink:0;margin-top:2px">'
-                        +'<rect x="1.5" y="1.5" width="9" height="9" rx="2.5" fill="none" '
-                        +'stroke="rgba(148,163,184,0.45)" stroke-width="1.4"/></svg>';
-                return '<div style="display:flex;align-items:flex-start;gap:7px;font-size:11.5px;'
-                  + 'color:'+(c2?'#c8d0da':'rgba(148,163,184,0.65)')+';margin-top:4px;max-width:70ch">'
-                  + _mk + '<span style="overflow-wrap:anywhere">'+esc(x.label)
-                  + (x.src?' <span style="font-size:10px;color:rgba(127,176,105,0.8)">— '+esc(x.src)+'</span>'
-                          :' <span style="font-size:10px;color:rgba(148,163,184,0.5)">— источник не указан</span>')
-                  + '</span></div>';
-              }
-              var _h2='<div style="margin-top:11px;padding-top:10px;'
-                + 'border-top:1px solid rgba(184,151,58,.12)">'
-                + '<div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;'
-                +   'color:'+ac+';margin-bottom:4px;font-weight:600">Проверка свидетельств</div>';
-              if(_ok.length){
-                _h2+='<div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;'
-                   + 'color:rgba(127,176,105,0.85);margin-top:2px">Подтверждено источником · '+_ok.length+'</div>'
-                   + _ok.map(function(x){return _r(x,true);}).join('');
-              }
-              if(_no.length){
-                _h2+='<div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;'
-                   + 'color:rgba(148,163,184,0.6);margin-top:'+(_ok.length?'9px':'2px')+'">'
-                   + 'Требует подтверждения · '+_no.length+'</div>'
-                   + _no.map(function(x){return _r(x,false);}).join('');
-              }
-              return _h2+'</div>';
+              var _pid=a.process_id||'';
+              if(!_pid) return '';
+              try{ if(!(window._byIdProc && window._byIdProc[_pid])) return ''; }catch(_e){ return ''; }
+              return '<div class="ann-scen" data-pid="'+esc(_pid)+'" '
+                + 'style="cursor:pointer;margin-top:9px;padding:9px 11px;'
+                + 'background:rgba(155,127,196,0.08);border:0.5px solid rgba(155,127,196,0.32);'
+                + 'border-radius:8px;display:flex;justify-content:space-between;'
+                + 'align-items:center;gap:8px">'
+                + '<span style="font-size:12.5px;color:#c8d0da">Сценарии развития процесса</span>'
+                + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9b7fc4" '
+                +   'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" '
+                +   'style="flex-shrink:0"><line x1="5" y1="12" x2="19" y2="12"/>'
+                +   '<polyline points="13 6 19 12 13 18"/></svg></div>';
             })()
           + '</div>' + SP;
       }
@@ -13670,6 +13645,22 @@ function _scenIntel(s){
       n.onmouseenter=function(){ n.style.color='#cbd5e1'; n.style.borderColor='rgba(184,151,58,.35)'; };
       n.onmouseleave=function(){ n.style.color='#6f88ab'; n.style.borderColor='rgba(184,151,58,.14)'; };
     })(nvs[j2]);
+
+    // Переход к сценариям: открываем карточку процесса и прокручиваем
+    // к блоку сценариев — как gd-conn с data-anchor="exp".
+    var scs=box.querySelectorAll('.ann-scen');
+    for(var s2=0;s2<scs.length;s2++)(function(n){
+      n.onclick=function(){
+        var _p=n.getAttribute('data-pid');
+        try{ if(window.openDetail) window.openDetail(_p); }catch(_e){}
+        setTimeout(function(){
+          try{ var _t=document.getElementById('gd-exp');
+               if(_t&&_t.scrollIntoView) _t.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){}
+        },160);
+      };
+      n.onmouseenter=function(){ n.style.background='rgba(155,127,196,0.14)'; };
+      n.onmouseleave=function(){ n.style.background='rgba(155,127,196,0.08)'; };
+    })(scs[s2]);
 
     var mns=box.querySelectorAll('.ann-mon');
     for(var k2=0;k2<mns.length;k2++)(function(n){
