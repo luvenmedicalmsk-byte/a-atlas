@@ -13185,6 +13185,25 @@ function _scenIntel(s){
   function render(list, box){
     if(!list.length){ box.innerHTML=''; return; }
 
+    /* Кнопка перехода внутри карточки свидетельства.
+       n=0 → процесс, n=1 → сценарии. Прочие без кнопки. */
+    function _annJump(pid, n){
+      if(!pid || n>1) return '';
+      try{ if(!(window._byIdProc && window._byIdProc[pid])) return ''; }catch(_e){ return ''; }
+      var _lab = n===0 ? 'Открыть процесс' : 'Сценарии развития процесса';
+      var _col = n===0 ? '#7f9bc7' : '#9b7fc4';
+      var _anc = n===0 ? '' : 'exp';
+      return '<div class="ann-jump" data-pid="'+esc(pid)+'" data-anchor="'+_anc+'" '
+        + 'style="cursor:pointer;margin-top:9px;padding:7px 10px;'
+        + 'background:'+_col+'14;border:0.5px solid '+_col+'52;border-radius:7px;'
+        + 'display:flex;justify-content:space-between;align-items:center;gap:8px">'
+        + '<span style="font-size:11.5px;color:#c8d0da">'+_lab+'</span>'
+        + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="'+_col+'" '
+        +   'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" '
+        +   'style="flex-shrink:0"><line x1="5" y1="12" x2="19" y2="12"/>'
+        +   '<polyline points="13 6 19 12 13 18"/></svg></div>';
+    }
+
     function riskColor(n){
       n = n==null ? 0 : n;
       if(n >= 80) return '#e0574f';
@@ -13358,27 +13377,13 @@ function _scenIntel(s){
                 +   (src?'<div style="font-size:8px;color:'+ac+';letter-spacing:.1em;text-transform:uppercase;'
                        + 'margin-bottom:4px;opacity:.9">'+esc(src)+'</div>':'')
                 +   '<div style="font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch">'
-                +   esc(body)+'</div></div></div>';
-            }).join('')
-          // Переход к сценариям процесса — та же кнопка, что в карточке
-          // наблюдения. Показывается, если у записи указан process_id
-          // и такой процесс есть в загруженных данных.
-          + (function(){
-              var _pid=a.process_id||'';
-              if(!_pid) return '';
-              try{ if(!(window._byIdProc && window._byIdProc[_pid])) return ''; }catch(_e){ return ''; }
-              return '<div class="ann-scen" data-pid="'+esc(_pid)+'" '
-                + 'style="cursor:pointer;margin-top:9px;padding:9px 11px;'
-                + 'background:rgba(155,127,196,0.08);border:0.5px solid rgba(155,127,196,0.32);'
-                + 'border-radius:8px;display:flex;justify-content:space-between;'
-                + 'align-items:center;gap:8px">'
-                + '<span style="font-size:12.5px;color:#c8d0da">Сценарии развития процесса</span>'
-                + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9b7fc4" '
-                +   'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" '
-                +   'style="flex-shrink:0"><line x1="5" y1="12" x2="19" y2="12"/>'
-                +   '<polyline points="13 6 19 12 13 18"/></svg></div>';
-            })()
-          + '</div>' + SP;
+                +   esc(body)+'</div>'
+                // Переход к карточке процесса: первое свидетельство ведёт
+                // к самому процессу, второе — к его сценариям. Кнопка
+                // появляется, только если процесс загружен.
+                +   _annJump(a.process_id, n)
+                + '</div></div>';
+            }).join('') + '</div>' + SP;
       }
 
       /* 3 · ИНТЕРПРЕТАЦИЯ — тезис инженера */
@@ -13648,18 +13653,19 @@ function _scenIntel(s){
 
     // Переход к сценариям: открываем карточку процесса и прокручиваем
     // к блоку сценариев — как gd-conn с data-anchor="exp".
-    var scs=box.querySelectorAll('.ann-scen');
+    var scs=box.querySelectorAll('.ann-jump');
     for(var s2=0;s2<scs.length;s2++)(function(n){
-      n.onclick=function(){
-        var _p=n.getAttribute('data-pid');
+      n.onclick=function(e){
+        e.stopPropagation();          // не сворачивать карточку аннотации
+        var _p=n.getAttribute('data-pid'), _a=n.getAttribute('data-anchor');
         try{ if(window.openDetail) window.openDetail(_p); }catch(_e){}
-        setTimeout(function(){
-          try{ var _t=document.getElementById('gd-exp');
-               if(_t&&_t.scrollIntoView) _t.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){}
-        },160);
+        if(_a==='exp'){
+          setTimeout(function(){
+            try{ var _t=document.getElementById('gd-exp');
+                 if(_t&&_t.scrollIntoView) _t.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){}
+          },160);
+        }
       };
-      n.onmouseenter=function(){ n.style.background='rgba(155,127,196,0.14)'; };
-      n.onmouseleave=function(){ n.style.background='rgba(155,127,196,0.08)'; };
     })(scs[s2]);
 
     var mns=box.querySelectorAll('.ann-mon');
