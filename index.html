@@ -13448,7 +13448,8 @@ function _scenIntel(s){
           + 'stroke-linecap="round" stroke-linejoin="round"/></svg>';
         b += '<div class="ann-sec" id="'+id+'-moni">'
           + secHead(ICO6,'Что отслеживать','Операционный чек-лист · '+a.monitoring.length,'#7f9bc7')
-          + '<div style="border:1px solid rgba(127,155,199,.28);border-radius:9px;overflow:hidden">'
+          + '<div style="border:1px solid rgba(127,155,199,.28);border-radius:9px;'
+          +   'overflow-x:hidden;overflow-y:visible">'
           + a.monitoring.map(function(x,n){
               var s3=String(x), src2='', body2=s3;
               var m4=s3.match(/^([^:]{2,34}):\s*(.+)$/);
@@ -13465,8 +13466,10 @@ function _scenIntel(s){
                 +     'stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
                 + '<div class="ann-mtx" style="flex:1;min-width:0;transition:opacity .18s">'
                 +   (src2?'<div style="font-size:9.5px;color:#a8c0e0;letter-spacing:.09em;'
-                        + 'text-transform:uppercase;margin-bottom:4px;font-weight:600">'+esc(src2)+'</div>':'')
-                +   '<div style="font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch">'
+                        + 'text-transform:uppercase;margin-bottom:4px;font-weight:600;'
+                        + 'overflow-wrap:anywhere;line-height:1.45">'+esc(src2)+'</div>':'')
+                +   '<div style="font-size:12px;color:#cbd5e1;line-height:1.55;max-width:70ch;'
+                +     'overflow-wrap:anywhere">'
                 +   esc(body2)+'</div></div>'
                 + '<span style="width:5px;height:5px;border-radius:50%;background:#7f9bc7;'
                 +   'opacity:.35;flex-shrink:0;margin-top:5px"></span></div>';
