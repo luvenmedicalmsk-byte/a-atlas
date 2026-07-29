@@ -13189,7 +13189,10 @@ function _scenIntel(s){
        n=0 → процесс, n=1 → сценарии. Прочие без кнопки. */
     function _annJump(pid, n){
       if(!pid || n>1) return '';
-      try{ if(!(window._byIdProc && window._byIdProc[pid])) return ''; }catch(_e){ return ''; }
+      // Реестр процессов заполняется при загрузке вкладки «Процессы».
+      // Если пользователь открыл страну сразу, он пуст — кнопку всё равно
+      // показываем: openDetail сам подгрузит данные, а проверка наличия
+      // делается в обработчике клика.
       var _lab = n===0 ? 'Открыть процесс' : 'Сценарии развития процесса';
       var _col = n===0 ? '#7f9bc7' : '#9b7fc4';
       var _anc = n===0 ? '' : 'exp';
@@ -13658,13 +13661,28 @@ function _scenIntel(s){
       n.onclick=function(e){
         e.stopPropagation();          // не сворачивать карточку аннотации
         var _p=n.getAttribute('data-pid'), _a=n.getAttribute('data-anchor');
-        try{ if(window.openDetail) window.openDetail(_p); }catch(_e){}
-        if(_a==='exp'){
-          setTimeout(function(){
-            try{ var _t=document.getElementById('gd-exp');
-                 if(_t&&_t.scrollIntoView) _t.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){}
-          },160);
+        function _go(){
+          try{ if(window.openDetail) window.openDetail(_p); }catch(_e){}
+          if(_a==='exp'){
+            setTimeout(function(){
+              try{ var _t=document.getElementById('gd-exp');
+                   if(_t&&_t.scrollIntoView) _t.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_e){}
+            },160);
+          }
         }
+        // Процессы могли не загрузиться: пользователь открыл страну,
+        // минуя вкладку «Процессы». Подгружаем и только потом открываем.
+        var _ready=false;
+        try{ _ready=!!(window._byIdProc && window._byIdProc[_p]); }catch(_e){}
+        if(_ready){ _go(); return; }
+        n.style.opacity='.5';
+        var _tries=0, _t2=setInterval(function(){
+          var _ok=false;
+          try{ _ok=!!(window._byIdProc && window._byIdProc[_p]); }catch(_e){}
+          if(_ok){ clearInterval(_t2); n.style.opacity='1'; _go(); }
+          else if(++_tries>25){ clearInterval(_t2); n.style.opacity='1'; }
+        },160);
+        try{ if(window._atlasLoadProc) window._atlasLoadProc(); }catch(_e){}
       };
     })(scs[s2]);
 
