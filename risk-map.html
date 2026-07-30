@@ -10193,7 +10193,13 @@ window._classifyEvents = function(arr){
     // CANON-ДОМЕН АВТОРИТЕТНЕЕ raw ingestion-домена: сектор карточки/фильтр/цвет/карта
     // берут канонический домен (санкции→geopolitics, VPN/кибер→technology и т.д.).
     // Только при заданном canon_domain; иначе raw-домен + title-эвристики ниже.
-    try{ if(e && e.canon_domain && e.canon_domain !== e.domain) e.domain = e.canon_domain; }catch(_){}
+    // UI-ИНВАРИАНТ (TD-002): canon_domain применяется ТОЛЬКО при наличии канонического
+    // типа. При canon_type='unknown' поле canon_domain не несёт новой семантики — оно
+    // копия domain на момент канонизации, и при расхождении (7/194 в замере 30.07)
+    // показывало ложный контекст: «Альфа-Банк признали банком мирового уровня» → Климат.
+    // Правило отображения, модель данных и pipeline не затрагивает.
+    try{ if(e && e.canon_domain && e.canon_domain !== e.domain
+            && e.canon_type && e.canon_type !== 'unknown') e.domain = e.canon_domain; }catch(_){}
     var src=String(e&&e.source||'').trim().toLowerCase();
     var t = (e&&(e.model_derived===true||String(e.signal_type||'').toLowerCase()==='model')) ? 'MODEL' : ((REPORT_SRC_BLOCK.indexOf(src)>=0)?'REPORT':'LIVE');
     try{ if(e.lifecycle_type!=='ARCHIVE') e.lifecycle_type=t; // ARCHIVE — first-class, явный тег не перетирается
