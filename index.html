@@ -11099,7 +11099,11 @@ function grdfPopulateCountriesList(countries) {
     var gri = fr(c.risk_score);
     var sc  = STATUS_COLORS[getStatus(gri)]||'#888';
     var delta = parseFloat(c.gri_delta_7d); if(isNaN(delta)) delta=0;  // изменение GRI за 7д — как в карточке (было c.delta, расходилось)
-    var h = '<div class="grdf-country-row" style="'+(dev?'opacity:.6;':'')+'" data-grdf-cc="'+esc(c.country)+'" onclick="grdfOpenCountrySheet(this.dataset.grdfCc)">';
+    // Строки «в разработке» показываются той же яркостью, что готовые: приглушение
+    // всей строки (было opacity:.6) делало нечитаемыми название, индексы и статус.
+    // Признак статуса несут бейдж «в разработке» и подпись «модельная оценка» —
+    // они информативнее, чем прозрачность, и не мешают чтению данных.
+    var h = '<div class="grdf-country-row" data-grdf-cc="'+esc(c.country)+'" onclick="grdfOpenCountrySheet(this.dataset.grdfCc)">';
     h += '<div class="grdf-country-avatar" style="background:'+sc+'18;border:1.5px solid '+sc+'30;font-size:20px">'+_flag(c.country)+'</div>';
     h += '<div style="flex:1"><div style="font-size:12px;font-weight:500;color:#e2e8f0">'+esc(c.country_name||c.country)
        + (dev?' <span style="font-size:7.5px;letter-spacing:.05em;text-transform:uppercase;color:#a78bfa;border:1px solid rgba(167,139,250,.4);border-radius:4px;padding:1px 5px;vertical-align:middle">в разработке</span>':'')
