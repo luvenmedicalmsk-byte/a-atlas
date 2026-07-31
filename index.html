@@ -13277,7 +13277,13 @@ function _scenIntel(s){
       /* ── КАРТОЧКА СОБЫТИЯ: оценка рассчитана движком ── */
       var head = '<div class="ann-head" data-t="'+id+'" style="padding:15px;cursor:pointer">'
         + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">'
-        +   chip(esc(DOMS[a.domain]||a.domain||''), dc)
+        +   (function(){   // чипы по всем доменам: основной первым, дополнительные следом
+              var _dl = Array.isArray(a.domains) && a.domains.length ? a.domains : (a.domain ? [a.domain] : []);
+              return _dl.map(function(k,ix){
+                var c = COL[k] || dc;
+                return chip(esc(DOMS[k]||k), ix===0 ? dc : c);
+              }).join('');
+            })()
         +   chip('Atlas Intelligence', '#5eb4de')   // фирменный голубой Atlas
         +   ((a.evidence||[]).length>=4 ? chip('Высокая уверенность','#5fae7a') : '')
         + '</div>'
@@ -13350,6 +13356,26 @@ function _scenIntel(s){
           +   'border-radius:9px;padding:3px 13px 5px">'
           + pf('Объект', a.object)
           + pf('Локация', a.location)
+          // Домены: показываем строку только когда их больше одного — событие
+          // затрагивает несколько областей. При единственном домене строка не нужна:
+          // он уже виден чипом в шапке карточки.
+          + (function(){
+              var _dl = Array.isArray(a.domains) ? a.domains : (a.domain ? [a.domain] : []);
+              if(_dl.length < 2) return '';
+              return '<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(126,200,234,.08)">'
+                + '<div style="width:64px;flex-shrink:0;font-size:8.5px;color:#5a7a90;letter-spacing:.1em;'
+                +   'text-transform:uppercase;padding-top:3px">Домены</div>'
+                + '<div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:5px">'
+                + _dl.map(function(k,ix){
+                    var c = COL[k] || '#7ec8ea';
+                    return '<span style="font-size:9px;letter-spacing:.06em;text-transform:uppercase;'
+                      + 'padding:3px 8px;border-radius:11px;white-space:nowrap;'
+                      + 'background:'+c+(ix===0?'1e':'12')+';border:1px solid '+c+(ix===0?'55':'2e')+';'
+                      + 'color:'+c+';font-weight:'+(ix===0?'600':'400')+'">'
+                      + esc(DOMS[k]||k) + (ix===0?'':'') + '</span>';
+                  }).join('')
+                + '</div></div>';
+            })()
           + pf('Дата', ruDate(a.date))
           + (a.risk_assessment
               ? '<div style="display:flex;gap:10px;padding:11px 0 5px">'
