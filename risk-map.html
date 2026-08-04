@@ -12151,13 +12151,26 @@ window.grdfSetMode=function(mode){
       : mi('Типы объектов',st.entity_count||0);
     return mi('Подтверждений',_ev)+mi(_rc?'Регионов':'География',_rc||'—')+_third;
   }
+  // Склонение по числу: 1 территория, 2 территории, 5 территорий.
+  // Раньше выводилось «1 региональных проявлений» — форма не согласовывалась.
+  function _plur(n,one,few,many){
+    n=Math.abs(n)%100; var n1=n%10;
+    if(n>10&&n<20) return many;
+    if(n1>1&&n1<5) return few;
+    if(n1===1) return one;
+    return many;
+  }
   function typeCard(b){
     var s=b.rep, pe=s.pressure||0, sv=s.severity||0;
     var ps=lcStage(s), pcol=lcColor(ps);
     var dom=DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—';
     var scale=[]; scale.push(b.ev+' подтв.');
-    if(b.terr>1) scale.push(b.terr+' территорий');
-    if(b.count>1) scale.push(b.count+' проявлений');
+    if(b.terr>1) scale.push(b.terr+' '+_plur(b.terr,'территория','территории','территорий'));
+    // «Процессов» вместо «проявлений»: b.count — число ПРОЦЕССОВ одного типа,
+    // а строка раскрытия ниже показывает b.kids.length — те же процессы БЕЗ
+    // представителя. Одно слово для двух разных величин давало на карточке
+    // «2 проявлений» и «1 региональных проявлений» одновременно.
+    if(b.count>1) scale.push(b.count+' '+_plur(b.count,'процесс','процесса','процессов'));
     var kidsHtml='';
     var _pvInner=((s.is_preview||s.is_production)&&s._preview)?_previewFields(s._preview):'';
     if(b.kids.length || _pvInner){
@@ -12173,7 +12186,7 @@ window.grdfSetMode=function(mode){
       +(isPro()?'<div class="gpc-m">'+_hypMetrics(s,sv,pe)+'</div>':'')
       +'<div class="gpc-chips"><span class="gpc-ch" style="color:'+pcol+';border-color:'+pcol+'44">'+ps+'</span>'
         +'<span class="gpc-ch">'+esc(scale.join(' · '))+'</span></div>'
-      +((b.kids.length||s.is_preview)?'<div class="gpc-exp" onclick="grdfToggleKids(event,\''+esc(s.signal_id)+'\')" style="margin-top:7px;font-size:11px;color:#B8973A;cursor:pointer;user-select:none;-webkit-user-select:none">&#9656; '+(b.kids.length?(b.kids.length+' региональных проявлений'):'подробности процесса')+'</div>':'')
+      +((b.kids.length||s.is_preview)?'<div class="gpc-exp" onclick="grdfToggleKids(event,\''+esc(s.signal_id)+'\')" style="margin-top:7px;font-size:11px;color:#B8973A;cursor:pointer;user-select:none;-webkit-user-select:none">&#9656; '+(b.kids.length?(b.kids.length+' '+_plur(b.kids.length,'смежный процесс','смежных процесса','смежных процессов')):'подробности процесса')+'</div>':'')
       +kidsHtml
     +'</div>';
   }
