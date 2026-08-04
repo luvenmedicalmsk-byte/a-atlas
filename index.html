@@ -13477,16 +13477,19 @@ function _scenIntel(s){
           // к тому же событию, и разный цвет разрывал бы связь между цифрой
           // и указанием к действию. Индикатор прижат к правому краю колонки —
           // ближе к тексту, который он отмечает.
+          // Индикатор стоит В НАЧАЛЕ СТРОКИ текста, а не в отдельной колонке:
+          // строка занимает всю ширину блока, колонка подписи ей не нужна.
+          // vertical-align выравнивает точку по первой строке текста.
           + (a.operational_assessment
-              ? '<div style="display:flex;gap:10px;padding:11px 0 4px;border-top:1px solid rgba(126,200,234,.08)">'
-              +   '<div style="width:64px;flex-shrink:0;padding-top:2px;display:flex;justify-content:flex-end">'
-              +     '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" '
-              +       'style="animation:grdfPulse 1.9s ease-in-out infinite">'
-              +       '<circle cx="12" cy="12" r="9.5" stroke="'+rc+'" stroke-width="1.5" opacity=".55"/>'
-              +       '<circle cx="12" cy="12" r="4" fill="'+rc+'"/>'
-              +     '</svg></div>'
-              +   '<div style="flex:1;min-width:0;font-size:11.5px;color:'+rc+';line-height:1.55;'
-              +     'max-width:70ch;white-space:pre-line">'+esc(a.operational_assessment)+'</div></div>'
+              ? '<div style="padding:11px 0 4px;border-top:1px solid rgba(126,200,234,.08);'
+              +   'font-size:11.5px;color:'+rc+';line-height:1.55;max-width:70ch;white-space:pre-line">'
+              +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" '
+              +     'style="animation:grdfPulse 1.9s ease-in-out infinite;'
+              +     'vertical-align:-2px;margin-right:7px;flex-shrink:0">'
+              +     '<circle cx="12" cy="12" r="9.5" stroke="'+rc+'" stroke-width="1.6" opacity=".55"/>'
+              +     '<circle cx="12" cy="12" r="4" fill="'+rc+'"/>'
+              +   '</svg>'
+              +   esc(a.operational_assessment)+'</div>'
               : '')
           + '</div></div>' + SP;
       }
