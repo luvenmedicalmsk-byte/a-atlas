@@ -13443,18 +13443,27 @@ function _scenIntel(s){
                 + '</div></div>';
             })()
           + pf('Дата', ruDate(a.date))
-          + (a.risk_assessment
+          // Блок «Риск» показывается при наличии ИНДЕКСА, а не пояснения.
+          // Раньше условием было a.risk_assessment: при пустом пояснении
+          // исчезала и цифра 60/100 с меткой уровня — то есть обязательное
+          // поле пропадало из-за отсутствия необязательного.
+          // Пояснение выводится отдельной строкой, только когда заполнено.
+          + (a.risk_index != null
               ? '<div style="display:flex;gap:10px;padding:11px 0 5px">'
               +   '<div style="width:64px;flex-shrink:0;font-size:8.5px;color:#5a7a90;letter-spacing:.1em;'
               +     'text-transform:uppercase;padding-top:4px">Риск</div>'
               +   '<div style="flex:1;min-width:0">'
-              +     '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:5px">'
+              +     '<div style="display:flex;align-items:baseline;gap:8px'
+              +       (a.risk_assessment?';margin-bottom:5px':'')+'">'
               +       '<span style="font-size:21px;font-weight:700;color:'+rc+';line-height:1">'
-              +         (a.risk_index==null?'—':a.risk_index)
+              +         a.risk_index
               +         '<span style="font-size:10px;color:#6f88ab;font-weight:400">/100</span></span>'
               +       '<span style="font-size:10px;color:'+rc+'">'+riskLabel(a.risk_index)+'</span></div>'
-              +     '<div style="font-size:11.5px;color:#94a3b8;line-height:1.55;max-width:70ch">'
-              +       esc(a.risk_assessment)+'</div></div></div>'
+              +     (a.risk_assessment
+                       ? '<div style="font-size:11.5px;color:#94a3b8;line-height:1.55;max-width:70ch">'
+                         + esc(a.risk_assessment)+'</div>'
+                       : '')
+              +   '</div></div>'
               : '')
           // ОПЕРАТИВНАЯ ОЦЕНКА — что делать сейчас, в отличие от оценки риска,
           // которая объясняет, почему индекс такой. Отдельная строка паспорта
