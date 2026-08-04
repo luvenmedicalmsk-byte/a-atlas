@@ -8154,7 +8154,44 @@ function grdfUpdateStatusBar(totalEvents, criticalN) {
 setInterval(function(){ grdfUpdateStatusBar(); }, 60000);
 
 // Hook into existing data load — called from main script when countries load
-function _grdfCountriesFromEvents(events){var by={};(events||[]).forEach(function(e){var r=((e.region||'')+'').trim();if(!r||r==='Глобально')return;var sev=(+e.severity)||0;if(!by[r])by[r]={country:r,country_name:r,count:0,_max:0};by[r].count++;if(sev>by[r]._max)by[r]._max=sev;});return Object.keys(by).map(function(k){var o=by[k];var rs=Math.min(100,Math.round(o._max+Math.min(15,(o.count-1)*2)));return {country:o.country,country_name:o.country_name,risk_score:rs,count:o.count,delta:0};}).sort(function(a,b){return b.risk_score-a.risk_score||b.count-a.count;});}
+// Страна попадает в список, если она — место события (region) ЛИБО упомянута
+// как затронутая (impact_countries / mentioned_countries / primary_country).
+// Раньше учитывался только region, и страна выпадала из списка, когда событие
+// приписано наднациональному региону: «Европу охватила масштабная засуха»
+// имеет region='ЕС', а Венгрия — лишь в mentioned_countries. Карточки страны
+// не возникало, хотя данные о ней были.
+//
+// УПОМИНАНИЕ ВЕСИТ МЕНЬШЕ МЕСТА СОБЫТИЯ: страна, где событие произошло,
+// и страна, которую оно затрагивает, — разные вещи. Упоминание даёт половину
+// веса и не поднимает счётчик до уровня прямых событий.
+function _grdfCountriesFromEvents(events){
+  var by={}, RU=(typeof _CNRU!=='undefined')?_CNRU:{};
+  function _put(name, sev, direct){
+    if(!name || name==='Глобально') return;
+    if(!by[name]) by[name]={country:name,country_name:name,count:0,_max:0,_ment:0};
+    if(direct){ by[name].count++; if(sev>by[name]._max) by[name]._max=sev; }
+    else { by[name]._ment++; if(sev*0.5>by[name]._max) by[name]._max=Math.round(sev*0.5); }
+  }
+  (events||[]).forEach(function(e){
+    var sev=(+e.severity)||0;
+    _put(((e.region||'')+'').trim(), sev, true);
+    var seen={};
+    ['impact_countries','mentioned_countries'].forEach(function(f){
+      (e[f]||[]).forEach(function(c){
+        if(!c||seen[c]) return; seen[c]=1;
+        var nm=RU[c]; if(!nm) return;          // без названия страну не показываем
+        if(((e.region||'')+'').trim()===nm) return;  // уже учтена как место
+        _put(nm, sev, false);
+      });
+    });
+    var pc=e.primary_country; if(pc&&RU[pc]&&((e.region||'')+'').trim()!==RU[pc]) _put(RU[pc], sev, false);
+  });
+  return Object.keys(by).map(function(k){
+    var o=by[k], n=o.count+o._ment;
+    var rs=Math.min(100,Math.round(o._max+Math.min(15,(n-1)*2)));
+    return {country:o.country,country_name:o.country_name,risk_score:rs,count:n,delta:0};
+  }).sort(function(a,b){return b.risk_score-a.risk_score||b.count-a.count;});
+}
 window.grdfOnDataLoad = function(data) {
   try{ var _ct=(window.CC&&CC.tier&&CC.tier())||''; if(_ct&&_ct!=='free') _grdfTier='SIGNAL_PRO'; }catch(e){}
   _grdfData = data;
