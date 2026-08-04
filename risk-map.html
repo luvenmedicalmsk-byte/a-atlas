@@ -13480,16 +13480,21 @@ function _scenIntel(s){
           // Индикатор стоит В НАЧАЛЕ СТРОКИ текста, а не в отдельной колонке:
           // строка занимает всю ширину блока, колонка подписи ей не нужна.
           // vertical-align выравнивает точку по первой строке текста.
+          // Двухколоночная разметка как у остальных полей: текст начинается
+          // на той же вертикали, что «Тропический циклон», «4 августа», «60/100».
+          // Индикатор занимает колонку подписи и прижат ВЛЕВО — на месте, где
+          // у других полей стоит слово «Объект», «Дата», «Риск».
           + (a.operational_assessment
-              ? '<div style="padding:11px 0 4px;border-top:1px solid rgba(126,200,234,.08);'
-              +   'font-size:11.5px;color:'+rc+';line-height:1.55;max-width:70ch;white-space:pre-line">'
-              +   '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" '
-              +     'style="animation:grdfPulse 1.9s ease-in-out infinite;'
-              +     'vertical-align:-2px;margin-right:12px;flex-shrink:0">'
-              +     '<circle cx="12" cy="12" r="9.5" stroke="'+rc+'" stroke-width="1.6" opacity=".55"/>'
-              +     '<circle cx="12" cy="12" r="4" fill="'+rc+'"/>'
-              +   '</svg>'
-              +   esc(a.operational_assessment)+'</div>'
+              ? '<div style="display:flex;gap:10px;padding:11px 0 4px;'
+              +   'border-top:1px solid rgba(126,200,234,.08)">'
+              +   '<div style="width:64px;flex-shrink:0;padding-top:3px">'
+              +     '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" '
+              +       'style="animation:grdfPulse 1.9s ease-in-out infinite;display:block">'
+              +       '<circle cx="12" cy="12" r="9.5" stroke="'+rc+'" stroke-width="1.6" opacity=".55"/>'
+              +       '<circle cx="12" cy="12" r="4" fill="'+rc+'"/>'
+              +     '</svg></div>'
+              +   '<div style="flex:1;min-width:0;font-size:11.5px;color:'+rc+';line-height:1.55;'
+              +     'max-width:70ch;white-space:pre-line">'+esc(a.operational_assessment)+'</div></div>'
               : '')
           + '</div></div>' + SP;
       }
