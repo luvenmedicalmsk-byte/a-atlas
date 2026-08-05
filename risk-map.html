@@ -11573,7 +11573,30 @@ window.onTelegramAuth=function(user){
      })
      .then(function(res){
         if(res.ok && res.d && res.d.token){ CC.setToken(res.d.token); setm('#22c55e','Вход выполнен · тариф: '+(res.d.tier||'?')); setTimeout(function(){location.reload();},1800); }
-        else if(res.s===403){ setm('#f59e0b',(res.d&&res.d.error)||'Доступ не оформлен'); if(typeof openAccess==='function') setTimeout(openAccess,500); }
+        else if(res.s===403){
+          // При отказе показываем Telegram ID: без него человек не может
+          // сообщить менеджеру, кого подключать. Виджет отдаёт id в объекте
+          // user, сервер его при 403 не возвращает.
+          var _uid=(user&&user.id)?String(user.id):'';
+          if(msg){
+            msg.style.color='#f59e0b';
+            msg.innerHTML=esc((res.d&&res.d.error)||'Доступ не оформлен')
+              + (_uid ? '<div style="margin-top:9px;font-size:12px;color:#c8d0da;line-height:1.5">'
+                      + 'Ваш ID для подключения:'
+                      + '<div style="margin-top:5px;display:flex;align-items:center;gap:8px">'
+                      +   '<code style="font-size:15px;color:#e7d9ad;font-weight:600;'
+                      +     'letter-spacing:.04em;user-select:all">'+esc(_uid)+'</code>'
+                      +   '<button onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+esc(_uid)+'\');'
+                      +     'this.textContent=\'скопировано\'" '
+                      +     'style="font-size:10px;padding:3px 9px;border-radius:5px;cursor:pointer;'
+                      +     'background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);'
+                      +     'color:#c9a227">копировать</button>'
+                      + '</div>'
+                      + '<div style="margin-top:7px;color:#8a9bb0">Отправьте его менеджеру для активации доступа.</div>'
+                      + '</div>' : '');
+          }
+          if(typeof openAccess==='function') setTimeout(openAccess,900);
+        }
         else { setm('#ef4444','Ошибка '+res.s+': '+((res.d&&(res.d.error||res.d._raw))||'')); }
      })
      .catch(function(e){ clearTimeout(to); setm('#ef4444','Сбой: '+(e&&e.name?e.name+' ':'')+(e&&e.message?e.message:'')); });
