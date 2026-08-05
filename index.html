@@ -3999,7 +3999,14 @@ window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atl
 // Никогда не понижаем тариф из ответов отдельных эндпоинтов — только повышаем.
 function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _clientCaps=_getClientCaps(t); try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} } try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }
 // Авторитетный тариф из сессии — не зависит от того, какой эндпоинт ответил первым.
-async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} if(d&&d.customer_type){localStorage.setItem('cc_ctype',String(d.customer_type));}else{localStorage.removeItem('cc_ctype');} }catch(_s){} } }catch(e){} }
+async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} if(d&&d.customer_type){localStorage.setItem('cc_ctype',String(d.customer_type));}else{localStorage.removeItem('cc_ctype');}
+        // Срок и продукт для кабинета: сервер считает days_left и expired,
+        // фронт их только показывает — иначе часовые пояса клиента дали бы
+        // расхождение с фактическим закрытием доступа.
+        if(d&&d.days_left!=null){localStorage.setItem('cc_days_left',String(d.days_left));}else{localStorage.removeItem('cc_days_left');}
+        if(d&&d.expired){localStorage.setItem('cc_expired','1');}else{localStorage.removeItem('cc_expired');}
+        if(d&&d.product){localStorage.setItem('cc_product',String(d.product));}else{localStorage.removeItem('cc_product');}
+      }catch(_s){} } }catch(e){} }
 window._ccRefreshTier=_ccEstablishTier;
 // единый source of truth для видимости SIC-переключателя (устраняет гонку тира: показываем ТОЛЬКО в Хронологии+events+Pro)
 window._grdfSyncSicSwitch=function(){ /* switch управляется в grdfSetMode как домен-фильтры — здесь ничего не трогаем (устранены скачки) */ };
@@ -11452,6 +11459,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
       var _dw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'дней';if(k>=2&&k<=4)return 'дня';if(k===1)return 'день';return 'дней';};
       var _mw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'материалов';if(k===1)return 'материал';if(k>=2&&k<=4)return 'материала';return 'материалов';};
       var _sw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'стран';if(k===1)return 'страна';if(k>=2&&k<=4)return 'страны';return 'стран';};
+      var _dw=function(n){n=Math.abs(n)%100;var k=n%10;if(n>10&&n<20)return 'дней';if(k===1)return 'день';if(k>=2&&k<=4)return 'дня';return 'дней';};
       var _spDate=_spx?_fd(_spx):'';
       var _act=null; try{_act=localStorage.getItem('cc_activated'); if(!_act){_act=new Date().toISOString(); localStorage.setItem('cc_activated',_act);}}catch(_e){}
       var _since=_act?_fmy(_act):'';
@@ -11481,8 +11489,28 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
           +'</div>';
       }
       h+='<div class="cab-seclabel">Статус доступа</div><div class="cab-list">';
-      h+=row('archive','Архив','<span style="color:#D4AF5A">Постоянный доступ</span>');
-      h+=row('signal','Сигнал Про',_spDate?('до '+_spDate):'Активен');
+      // Архив показывается постоянным только если он действительно выдан.
+      // Для тарифов Signal Pro без Архива строка иная.
+      var _archLife=(function(){try{return localStorage.getItem('cc_arch_life')==='1';}catch(_){return true;}})();
+      h+=row('archive','Архив', _archLife
+              ? '<span style="color:#D4AF5A">Постоянный доступ</span>'
+              : '<span style="color:rgba(203,213,225,.35)">Не подключён</span>');
+      // Остаток срока: 61 день · до 5 октября. Число даёт сервер — фронт не
+      // считает разницу дат сам, чтобы не разойтись с моментом закрытия.
+      var _dLeft=(function(){try{var v=localStorage.getItem('cc_days_left');return v===null?null:parseInt(v,10);}catch(_){return null;}})();
+      var _exp=(function(){try{return localStorage.getItem('cc_expired')==='1';}catch(_){return false;}})();
+      var _spVal;
+      if(_exp){ _spVal='<span style="color:#e0574f">Срок истёк</span>'; }
+      else if(_dLeft!=null && _dLeft<=30){
+        _spVal='<span style="color:#e08a3c">осталось '+_dLeft+' '+_dw(_dLeft)+'</span>'
+             + (_spDate?'<span style="color:rgba(203,213,225,.4)"> · до '+_spDate+'</span>':'');
+      }
+      else if(_dLeft!=null){
+        _spVal='осталось '+_dLeft+' '+_dw(_dLeft)
+             + (_spDate?'<span style="color:rgba(203,213,225,.4)"> · до '+_spDate+'</span>':'');
+      }
+      else { _spVal=_spDate?('до '+_spDate):'Активен'; }
+      h+=row('signal','Сигнал Про',_spVal);
       h+=row('history','Дата активации',_act?_fd(_act):'—');
       h+=row('access','Управление кодом доступа','', "cabAccess()");
       h+='</div>';
@@ -11573,7 +11601,33 @@ window.onTelegramAuth=function(user){
      })
      .then(function(res){
         if(res.ok && res.d && res.d.token){ CC.setToken(res.d.token); setm('#22c55e','Вход выполнен · тариф: '+(res.d.tier||'?')); setTimeout(function(){location.reload();},1800); }
-        else if(res.s===403){ setm('#f59e0b',(res.d&&res.d.error)||'Доступ не оформлен'); if(typeof openAccess==='function') setTimeout(openAccess,500); }
+        else if(res.s===403){
+          // Истёкший срок отличается от отсутствия доступа: клиент платил,
+          // и ему нужно знать, что именно закончилось и когда. Сервер отдаёт
+          // expired и expires_at даже при 403 — специально для этого экрана.
+          var _d=res.d||{};
+          if(_d.expired){
+            var _pn={SIGNAL_2M:'Сигнал Про · 2 месяца',SIGNAL_6M:'Сигнал Про · 6 месяцев',
+                     BUNDLE_2026:'Архив + Сигнал Про'}[String(_d.product||'')]||'Сигнал Про';
+            // Свой массив месяцев: _MM объявлена внутри блока info.member
+            // и в этой области видимости недоступна.
+            var _M2=['января','февраля','марта','апреля','мая','июня','июля',
+                     'августа','сентября','октября','ноября','декабря'];
+            var _dt='';
+            try{ var _x=new Date(_d.expires_at);
+                 if(!isNaN(_x.getTime())) _dt=_x.getDate()+' '+_M2[_x.getMonth()]+' '+_x.getFullYear(); }catch(_e){}
+            setm('#e08a3c','Срок доступа истёк');
+            if(msg) msg.innerHTML='<div style="font-size:13px;color:#e08a3c;font-weight:600">Срок доступа истёк</div>'
+              +'<div style="margin-top:7px;font-size:12px;color:#c8d0da;line-height:1.55">'
+              +  esc(_pn)+(_dt?' · закончился '+esc(_dt):'')
+              +'</div>'
+              +'<div style="margin-top:9px;font-size:11.5px;color:#8a9bb0;line-height:1.5">'
+              +  'Для продления напишите в поддержку.</div>';
+          } else {
+            setm('#f59e0b',(_d.error)||'Доступ не оформлен');
+          }
+          if(typeof openAccess==='function') setTimeout(openAccess, _d.expired?1600:500);
+        }
         else { setm('#ef4444','Ошибка '+res.s+': '+((res.d&&(res.d.error||res.d._raw))||'')); }
      })
      .catch(function(e){ clearTimeout(to); setm('#ef4444','Сбой: '+(e&&e.name?e.name+' ':'')+(e&&e.message?e.message:'')); });
