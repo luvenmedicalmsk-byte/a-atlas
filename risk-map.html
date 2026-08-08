@@ -13152,21 +13152,38 @@ function _scenIntel(s){
       H+='<div class="gd-sec"><div class="gd-sh">Возможный каскад влияния</div>'+_casH+'</div>';
     }
     // Динамика
-    H+='<div class="gd-sec"><div class="gd-sh">Динамика</div><div class="gd-dm">'
+    H+=/* СТАДИЯ ВЫНЕСЕНА В ОТДЕЛЬНУЮ СЕКЦИЮ, выше динамики.
+         Lifecycle считается из trend, sev_delta, count_7d, base_phase
+         и evidence_count; Dynamics — из pressure_history. Источники
+         не пересекаются, и соседство в одной сетке читалось как одна
+         группа показателей. */
+      '<div class="gd-sec"><div class="gd-sh">Стадия процесса</div><div class="gd-dm">'
+      +'<div class="c"><div class="k">Текущая стадия</div><div class="v" style="font-size:14px;color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div></div>'
+      +'</div></div>'
+      /* ДИНАМИКА ДАВЛЕНИЯ · заголовок называет предмет измерения:
+         без уточнения «динамика» читалась как динамика риска.
+
+         СНЯТЫ «Скорость» и «Ускорение» — обе относятся к отключённой
+         модели MACRO_VELOCITY и показывали «без изменений» не как
+         результат расчёта, а как значение по умолчанию. Рядом
+         с ACTIVITY они создавали прямой конфликт: поле сообщало
+         «без изменений» там, где давление проходило сотни пунктов. */
+      +'<div class="gd-sec"><div class="gd-sh">Динамика давления</div><div class="gd-dm">'
       +'<div class="c"><div class="k">Давление</div><div class="v" style="color:'+scol(s.pressure)+'">'+(s.pressure||0)+'</div></div>'
       +'<div class="c"><div class="k">Приоритет</div><div class="v" style="color:'+scol(s.priority)+'">'+(s.priority||0)+'</div></div>'
       +'<div class="c"><div class="k">Тяжесть</div><div class="v" style="color:'+scol(s.severity)+'">'+(s.severity||0)+'</div></div>'
-      +'<div class="c"><div class="k">Скорость</div><div class="v" style="font-size:13px;color:rgba(148,163,184,0.85)">'+(((v.severity_per_h||0)>0.05)?'развивается':'без изменений')+'</div></div>'
-      +'<div class="c"><div class="k">Ускорение</div><div class="v" style="font-size:13px;color:rgba(148,163,184,0.85)">'+(s.acceleration>0.02?'ускоряется':(s.acceleration<-0.02?'замедляется':'без изменений'))+'</div></div>'
-      +'<div class="c"><div class="k">Стадия</div><div class="v" style="font-size:14px;color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div></div>'
         /* Прочерк при отсутствии истории отличается от значения «низкая»
-           приглушённым цветом и подписью: по корпусу это 40% процессов,
-           и читать пустое поле как нулевую активность нельзя. */
+           приглушённым цветом и явной подписью: по корпусу это 40%
+           процессов, и читать пустое поле как нулевую активность нельзя. */
         +(function(){var a=activityOf(s);
           return '<div class="c"><div class="k">Активность</div>'
             +(a?('<div class="v" style="font-size:13px;color:rgba(232,224,208,0.9)" title="Интенсивность движения давления: '+a.pph.toFixed(2)+' пункта в час">'+a.cls+'</div>')
-               :('<div class="v" style="font-size:13px;color:rgba(148,163,184,0.45)" title="Недостаточно истории наблюдений для расчёта">—</div>'))
+               :('<div class="v" style="font-size:13px;color:rgba(148,163,184,0.45)" title="Недостаточно истории наблюдений для расчёта динамики">—<span style="display:block;font-size:8.5px;letter-spacing:.03em;color:rgba(148,163,184,0.4);margin-top:3px;text-transform:none">недостаточно истории</span></div>'))
             +'</div>';})()
+        /* МЕСТО ДЛЯ TREND — направление на hold до Direction re-canary.
+           Модель зафиксирована в ADR-047 и прошла шесть критериев
+           из семи; седьмой — чтение «Falling» при высоком давлении —
+           проверяется человеком на реальном интерфейсе, не расчётом. */
         +'</div>'
       +(((fc.escalation||0)+(fc.stabilization||0)+(fc.decay||0)>0)?('<div class="gd-cl">Прогноз следующего шага</div>'
       +[['Усиление',fc.escalation,'#FFD700'],['Стабилизация',fc.stabilization,'#1faacc'],['Распад',fc.decay,'#6b7280']].map(function(f){ return '<div class="gd-fb"><span class="l">'+f[0]+'</span><span class="t"><i style="width:'+Math.round((f[1]||0)*100)+'%;background:'+f[2]+'"></i></span><span class="v">'+Math.round((f[1]||0)*100)+'%</span></div>'; }).join('')):'')
