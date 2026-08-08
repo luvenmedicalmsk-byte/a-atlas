@@ -11887,6 +11887,33 @@ function _fGeoPending(s){ var f=_fSt(s); return f.geo_resolution==='pending'||_f
     return src.charAt(0).toUpperCase()+src.slice(1); }
   function scol(v){ try{ if(window._sevColor) return window._sevColor(v); }catch(e){} v=+v||0; return v>=90?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8'; }
   function lcColor(x){ return {'Обнаружение':'#6b9bb3','Наблюдение':'#e0a458','Развитие':'#FFA07A','Пик':'#E24A3B','Стабилизация':'#D4AF5A','Ослабление':'#A89150','Завершён':'#6b7280'}[x]||'#A89150'; }
+  /* ACTIVITY · интенсивность движения давления, п/ч.
+     ADR-047: окно N=10 последних наблюдений не старше MAXAGE=72ч,
+     пороги p33=0.63 и p67=1.81 зафиксированы и не пересчитываются
+     по текущему корпусу — иначе категория менялась бы у процесса
+     без изменения его поведения.
+
+     Измеряет ПУТЬ, а не итог: процесс, прошедший 110 пунктов
+     и вернувшийся почти туда же, активен, хотя net change нулевой.
+     Именно это одномерная velocity показывала как «без изменений». */
+  var ACT_N=10, ACT_MAXAGE=72, ACT_P33=0.63, ACT_P67=1.81;
+  function activityOf(s){
+    var h=s&&s.pressure_history;
+    if(!h||!h.length) return null;
+    var cut=Date.now()-ACT_MAXAGE*3600*1000, pts=[];
+    for(var i=0;i<h.length;i++){
+      var t=Date.parse(String(h[i].t||'').replace(' ','T'));
+      if(isFinite(t)&&t>=cut) pts.push([t, +h[i].v||0]);
+    }
+    if(pts.length>ACT_N) pts=pts.slice(-ACT_N);
+    if(pts.length<2) return null;
+    var span=(pts[pts.length-1][0]-pts[0][0])/3600000;
+    if(!(span>0)) return null;
+    var path=0;
+    for(var j=1;j<pts.length;j++) path+=Math.abs(pts[j][1]-pts[j-1][1]);
+    var pph=path/span;
+    return {pph:pph, cls:(pph<=ACT_P33?'низкая':(pph>ACT_P67?'высокая':'умеренная'))};
+  }
   function lcStage(s){ var _st=s.lifecycle_stage||s.lifecycle||s.phase||'—';
     var _M={active:'Развитие',emerging:'Обнаружение',detection:'Обнаружение',observation:'Наблюдение',escalation:'Пик',peak:'Пик',
       stabilization:'Стабилизация',stable:'Стабилизация',weakening:'Ослабление',decay:'Ослабление',
@@ -13131,7 +13158,16 @@ function _scenIntel(s){
       +'<div class="c"><div class="k">Тяжесть</div><div class="v" style="color:'+scol(s.severity)+'">'+(s.severity||0)+'</div></div>'
       +'<div class="c"><div class="k">Скорость</div><div class="v" style="font-size:13px;color:rgba(148,163,184,0.85)">'+(((v.severity_per_h||0)>0.05)?'развивается':'без изменений')+'</div></div>'
       +'<div class="c"><div class="k">Ускорение</div><div class="v" style="font-size:13px;color:rgba(148,163,184,0.85)">'+(s.acceleration>0.02?'ускоряется':(s.acceleration<-0.02?'замедляется':'без изменений'))+'</div></div>'
-      +'<div class="c"><div class="k">Стадия</div><div class="v" style="font-size:14px;color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div></div></div>'
+      +'<div class="c"><div class="k">Стадия</div><div class="v" style="font-size:14px;color:'+lcColor(lcStage(s))+'">'+esc(lcStage(s))+'</div></div>'
+        /* Прочерк при отсутствии истории отличается от значения «низкая»
+           приглушённым цветом и подписью: по корпусу это 40% процессов,
+           и читать пустое поле как нулевую активность нельзя. */
+        +(function(){var a=activityOf(s);
+          return '<div class="c"><div class="k">Активность</div>'
+            +(a?('<div class="v" style="font-size:13px;color:rgba(232,224,208,0.9)" title="Интенсивность движения давления: '+a.pph.toFixed(2)+' пункта в час">'+a.cls+'</div>')
+               :('<div class="v" style="font-size:13px;color:rgba(148,163,184,0.45)" title="Недостаточно истории наблюдений для расчёта">—</div>'))
+            +'</div>';})()
+        +'</div>'
       +(((fc.escalation||0)+(fc.stabilization||0)+(fc.decay||0)>0)?('<div class="gd-cl">Прогноз следующего шага</div>'
       +[['Усиление',fc.escalation,'#FFD700'],['Стабилизация',fc.stabilization,'#1faacc'],['Распад',fc.decay,'#6b7280']].map(function(f){ return '<div class="gd-fb"><span class="l">'+f[0]+'</span><span class="t"><i style="width:'+Math.round((f[1]||0)*100)+'%;background:'+f[2]+'"></i></span><span class="v">'+Math.round((f[1]||0)*100)+'%</span></div>'; }).join('')):'')
       +(s.critical_transition?'<p style="color:#FFD700;font-size:11px;margin-top:8px">⚠ Признаки критического перехода</p>':'')+'</div>';
