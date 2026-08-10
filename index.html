@@ -2043,6 +2043,25 @@ function _evPopup(ev){
     + '<div style="font-size:9px;color:rgba(148,163,184,0.7);margin-top:4px">'+e((window._displayRegion?window._displayRegion(ev):ev.region)||ev.region||'')+(dd?' · '+dd:'')+'</div>';
   if(ev.severity!=null && ev.severity!==''){ var scl='#D4AF5A'; try{ scl=sc(ev.severity); }catch(_){}; html += '<div style="font-size:9px;color:'+scl+';margin-top:5px;letter-spacing:.06em">ИНДЕКС РИСКА '+ev.severity+'/100</div>'; }
   if(sum) html += '<div style="font-size:10px;color:#A8A090;line-height:1.45;margin-top:5px">'+e(sum)+'</div>';
+  // Уточнения USGS. Источник публикует предварительное решение и в течение
+  // часов уточняет магнитуду, глубину и координаты. Показываем обе версии:
+  // текущая — в заголовке и описании, история — здесь.
+  var _qr = ev.quake_revisions;
+  if(_qr && _qr.length){
+    html += '<div style="margin-top:6px;padding-top:5px;border-top:1px solid rgba(184,151,58,0.18)">'
+         +  '<div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(184,151,58,0.75);margin-bottom:3px">Параметры очага</div>';
+    for(var _i=0;_i<_qr.length;_i++){
+      var _r = _qr[_i] || {};
+      var _isLast = (_i === _qr.length - 1);
+      var _lbl = (_r.rev === 'initial') ? 'первичное решение' : 'уточнение';
+      html += '<div style="font-size:9px;line-height:1.4;margin-top:2px;color:'
+           + (_isLast ? '#A8A090' : 'rgba(148,163,184,0.5)') + '">'
+           + '<span style="color:rgba(184,151,58,' + (_isLast ? '0.85' : '0.45') + ')">' + e(_lbl) + '</span> · '
+           + e(_r.origin || '') + '</div>';
+    }
+    if(_qr.length > 1) html += '<div style="font-size:8px;color:rgba(148,163,184,0.45);margin-top:3px">Источник уточнил параметры после первой публикации.</div>';
+    html += '</div>';
+  }
   if(ev.source) html += '<div style="font-size:8px;color:rgba(148,163,184,0.55);margin-top:5px">Источник: '+e(ev.source)+'</div>';
   if(window._isSatDetect && window._isSatDetect(ev)) html += '<div style="font-size:8px;color:rgba(148,163,184,0.55);margin-top:2px">Детекция: спутниковая</div>';
   return html + '</div>';
