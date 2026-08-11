@@ -12605,7 +12605,23 @@ function _rhythm(s){
   }
   var first=gaps[0], last=gaps[gaps.length-1], trend='stable';
   if(gaps.length>=2){ if(last<first) trend='faster'; else if(last>first) trend='slower'; }
-  return {rows:rows.slice(-8),gaps:gaps,trend:trend,first:first,last:last,days:days.length};
+  // Сравнение только первого и последнего интервала теряет форму ряда:
+  // 4→2→1→2→2→1→1→2→1→1→1→1→1→4 давало «устойчив», потому что края равны.
+  // Считаем средние по половинам — так видно фазу уплотнения.
+  var half=Math.floor(gaps.length/2), phase=null;
+  if(gaps.length>=6){
+    var a=0,b=0,i2;
+    for(i2=0;i2<half;i2++) a+=gaps[i2];
+    for(i2=gaps.length-half;i2<gaps.length;i2++) b+=gaps[i2];
+    a=a/half; b=b/half;
+    var mn=Math.min.apply(null,gaps), mx=Math.max.apply(null,gaps);
+    phase={early:Math.round(a*10)/10, late:Math.round(b*10)/10, min:mn, max:mx,
+           dense:gaps.filter(function(g){return g<=1;}).length};
+    if(b<a-0.4) trend='faster'; else if(b>a+0.4) trend='slower';
+  }
+  // Полный ряд: обрезка до 8 строк скрывала начало процесса.
+  return {rows:rows.slice(-16),gaps:gaps,trend:trend,first:first,last:last,
+          days:days.length,phase:phase,truncated:(rows.length>16)};
 }
 function _dRU(d){
   var M=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -12617,8 +12633,21 @@ function _confLevels(s,R){
   var nr=(dl.new_regions||[]).length, nt=(dl.new_object_types||[]).length, md=dl.member_delta||0;
   var l1=(R&&R.trend==='faster')?((R.gaps&&R.gaps.length>=3)?'высокая':'средне-высокая')
         :((R&&R.trend==='stable')?'средняя':'низкая');
-  out.push(['Сокращение интервалов',l1,(R?((R.trend==='faster')?('интервал сократился с '+R.first+' до '+R.last+' '+_pluRu(R.last,'дня','дней','дней')+', наблюдений '+(R.gaps?R.gaps.length:0))
-        :(R.trend==='slower'?'интервалы увеличиваются':'ритм устойчив')):'ритм не определён')]);
+  // Формулировка по форме ряда, а не по краям: при равных крайних
+  // интервалах ряд всё равно может иметь выраженную фазу уплотнения.
+  var _rt='ритм не определён';
+  if(R && R.phase){
+    var _ph=R.phase;
+    var _base='интервалы '+_ph.early+' → '+_ph.late+' '+_pluRu(Math.round(_ph.late),'день','дня','дней')
+             +', наблюдений '+R.gaps.length;
+    if(_ph.dense>=4) _base+=', ежедневная фиксация в '+_ph.dense+' '+_pluRu(_ph.dense,'интервале','интервалах','интервалах');
+    if(_ph.max>=_ph.min*3) _base+='; разброс '+_ph.min+'–'+_ph.max;
+    _rt=_base;
+  } else if(R){
+    _rt=(R.trend==='faster')?('интервал сократился с '+R.first+' до '+R.last+' '+_pluRu(R.last,'дня','дней','дней')+', наблюдений '+(R.gaps?R.gaps.length:0))
+        :(R.trend==='slower'?'интервалы увеличиваются':'ритм устойчив');
+  }
+  out.push(['Сокращение интервалов',l1,_rt]);
   var l2=(nr>=3)?'высокая':(nr>=1?'средне-высокая':(st.regions_count>1?'средняя':'низкая'));
   out.push(['Расширение географии',l2,(nr?('+'+nr+' '+_pluRu(nr,'регион','региона','регионов')+' с момента создания гипотезы'):((st.regions_count||0)+' '+_pluRu(st.regions_count||0,'регион','региона','регионов')+' без изменений'))]);
   var l3=(nt>=2)?'средне-высокая':(nt===1?'средняя':((st.entity_count||0)>1?'средняя':'низкая'));
