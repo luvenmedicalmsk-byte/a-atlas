@@ -2885,6 +2885,7 @@ function renderQuakeList(){
           'Координаты: '+q.lat.toFixed(2)+', '+q.lng.toFixed(2)+'<br>'+
           'Глубина: '+dep+'<br>Время: '+tf+'<br>Воздействие: '+imp.label.replace(' воздействие','')+' — '+imp.basis+(q.felt?('<br>Подтвердили (DYFI): '+q.felt+' сообщ.'):'')+(q.mmi!=null?('<br>Макс. интенсивность: MMI '+q.mmi.toFixed(1)):'')+(q.tsunami?'<br><span style="color:#FF7A1A">'+SVG_WARN+'Предупреждение о цунами</span>':'')+
           
+          qkRevisions(q)+
           '<div class="qk-exposure" data-detail="'+qkEsc(q.detail||'')+'"></div>'+'<div class="qk-cities" data-detail="'+qkEsc(q.detail||'')+'" data-lat="'+q.lat+'" data-lng="'+q.lng+'"></div>'+
         '</div>'+
       '</div>'+
@@ -2999,6 +3000,41 @@ function refreshQuakeUI(){
   if(window.grdfRenderRiskPulse) window.grdfRenderRiskPulse();
   const tab=document.querySelector('#grdf-alerts-tabs .ga-tab[data-tab="quakes"]');
   if(tab) tab.textContent='Землетрясения ('+n+(_qkSigN?(', важных '+_qkSigN):'')+')';
+}
+
+// История уточнений USGS. Живой фид отдаёт только текущее решение;
+// предыдущие версии копит парсер в quake_history.json по event id.
+window._qkHistory = {};
+async function loadQuakeHistory(){
+  try{
+    const r = await fetch('https://luvenmedicalmsk-byte.github.io/secrett-archive/quake_history.json', {cache:'no-store'});
+    if(!r.ok) return;
+    const j = await r.json();
+    window._qkHistory = (j && j.events) || {};
+    console.info('[QuakeHist]', Object.keys(window._qkHistory).length, 'событий');
+    if(typeof refreshQuakeUI === 'function') refreshQuakeUI();
+  }catch(e){ /* история необязательна */ }
+}
+
+// Блок версий. Выводится только при наличии уточнения — у события
+// с одним решением дублировать текущие параметры незачем.
+function qkRevisions(q){
+  try{
+    var m = String(q.url||q.detail||'').match(/([a-z]{2}\d{7}[a-z0-9]*)/i);
+    if(!m || !window._qkHistory) return '';
+    var rec = window._qkHistory[m[1]];
+    if(!rec || !rec.versions || rec.versions.length < 2) return '';
+    var out = '<div style="margin-top:6px;padding-top:5px;border-top:1px solid rgba(184,151,58,0.18)">'
+            + '<div style="font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(184,151,58,0.75);margin-bottom:3px">Уточнения USGS</div>';
+    for(var i=0;i<rec.versions.length;i++){
+      var v = rec.versions[i], last = (i === rec.versions.length-1);
+      out += '<div style="font-size:9px;line-height:1.4;margin-top:2px;color:'+(last?'#A8A090':'rgba(148,163,184,0.5)')+'">'
+           + '<span style="color:rgba(184,151,58,'+(last?'0.85':'0.45')+')">'
+           + (v.rev === 'initial' ? 'первичное' : 'уточнение') + '</span> · M' + v.mag
+           + ' · ' + v.depth + ' км · ' + v.lat + ', ' + v.lng + '</div>';
+    }
+    return out + '<div style="font-size:8px;color:rgba(148,163,184,0.45);margin-top:3px">Источник пересчитал параметры очага после первой публикации.</div></div>';
+  }catch(e){ return ''; }
 }
 
 async function loadQuakes(){
@@ -3138,7 +3174,7 @@ window._setOverlaySource = function(key, on){ try{ if(!(key in window._overlayVi
 window._setOverlay = function(on){ try{ Object.keys(window._overlayVis).forEach(function(k){ window._overlayVis[k]=!!on; }); window._applyOverlay(); }catch(e){} };
 window._toggleOverlay = function(){ window._setOverlay(!window._overlayOn); };
 window._grdfQuakesEnsure=function(){
-  if(!quakesInterval){ loadQuakes(); quakesInterval=setInterval(loadQuakes,25000); }
+  if(!quakesInterval){ loadQuakes(); loadQuakeHistory(); quakesInterval=setInterval(loadQuakes,25000); }
   else { refreshQuakeUI(); }
 };
 
