@@ -10426,6 +10426,10 @@ window._geoStatus = function(ev){
     return 'CONFIRMED';
   }catch(e){ return 'CONFIRMED'; }
 };
+// Кап 110 символов. При 90 обрезалось 35% заголовков, часто на середине
+// смысловой части: «…добавляет неопределенности в глобальную…» теряло
+// «цепочку поставок». Медиана длины — 78, так что большинство карточек
+// не затронуто; расширение бьёт только по длинным.
 window._headline = function(ev){
   try{
     var raw = (typeof window._cleanSignalText==='function') ? window._cleanSignalText(ev.title, ev) : String((ev&&ev.title)||'');
@@ -10437,7 +10441,7 @@ window._headline = function(ev){
     t=t.replace(/\s*\([^)]*$/,'');
     var dot=t.search(/[.!?]\s+[А-ЯA-Z]/); if(dot>40) t=t.slice(0,dot+1);
     t=t.replace(/[\s:;,.…—–-]+$/,'');
-    if(t.length>90){ var win=t.slice(0,90); var cb=Math.max(win.lastIndexOf(', '),win.lastIndexOf('; '),win.lastIndexOf(' — '),win.lastIndexOf(' – ')); if(cb>=55){ t=win.slice(0,cb).replace(/[\s,;:—–-]+$/,'')+'…'; } else { var sp=win.lastIndexOf(' '); if(sp>55) win=win.slice(0,sp); t=win.replace(/[\s,;:—–-]+$/,'')+'…'; } }
+    if(t.length>110){ var win=t.slice(0,110); var cb=Math.max(win.lastIndexOf(', '),win.lastIndexOf('; '),win.lastIndexOf(' — '),win.lastIndexOf(' – ')); if(cb>=55){ t=win.slice(0,cb).replace(/[\s,;:—–-]+$/,'')+'…'; } else { var sp=win.lastIndexOf(' '); if(sp>55) win=win.slice(0,sp); t=win.replace(/[\s,;:—–-]+$/,'')+'…'; } }
     if(!t || t.length<6) return raw;
     return t.charAt(0).toUpperCase()+t.slice(1);
   }catch(e){ return String((ev&&ev.title)||''); }
