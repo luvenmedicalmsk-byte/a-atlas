@@ -12336,13 +12336,25 @@ window.grdfSetMode=function(mode){
     var s=b.rep, pe=s.pressure||0, sv=s.severity||0;
     var ps=lcStage(s), pcol=lcColor(ps);
     var dom=DOM_RU[s.primary_domain]||((s.domains||[])[0]&&DOM_RU[(s.domains||[])[0]])||(s.domains||[])[0]||'—';
-    var scale=[]; scale.push(b.ev+' подтв.');
-    if(b.terr>1) scale.push(b.terr+' '+_plur(b.terr,'территория','территории','территорий'));
+    // Счётчики берутся из ПРЕДСТАВИТЕЛЯ, а не из суммы по группе.
+    // Раньше строка показывала b.ev, b.terr и b.count — агрегаты всех
+    // процессов типа, тогда как «Приоритет», «Тяжесть» и «Давление»
+    // рядом брались из b.rep, то есть из одного процесса. На карточке
+    // «Геополитический процесс — Ближний Восток» стояло 175 подтв.
+    // и 66 территорий при 23 и 5 в самих данных: пользователь читал
+    // сумму группы как характеристику одного процесса.
+    var _repEv=s.evidence_count||0;
+    var _repTerr=(typeof s.geo_spread_count==='number')?s.geo_spread_count:((s.geo_spread||[]).length);
+    var scale=[]; scale.push(_repEv+' подтв.');
+    if(_repTerr>1) scale.push(_repTerr+' '+_plur(_repTerr,'территория','территории','территорий'));
     // «Процессов» вместо «проявлений»: b.count — число ПРОЦЕССОВ одного типа,
     // а строка раскрытия ниже показывает b.kids.length — те же процессы БЕЗ
     // представителя. Одно слово для двух разных величин давало на карточке
     // «2 проявлений» и «1 региональных проявлений» одновременно.
-    if(b.count>1) scale.push(b.count+' '+_plur(b.count,'процесс','процесса','процессов'));
+    // Число процессов — это состав самого системного процесса
+    // (included_processes), а не количество карточек в группе типа.
+    var _repProc=((s.included_processes||[]).length)||0;
+    if(_repProc>1) scale.push(_repProc+' '+_plur(_repProc,'процесс','процесса','процессов'));
     var kidsHtml='';
     var _pvInner=((s.is_preview||s.is_production)&&s._preview)?_previewFields(s._preview):'';
     if(b.kids.length || _pvInner){
