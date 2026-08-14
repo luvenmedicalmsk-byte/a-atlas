@@ -12174,10 +12174,38 @@ window.grdfSetMode=function(mode){
       return true;
     });
     // ── ГРУППИРОВКА: тип процесса (главная сущность) → экземпляры (региональные проявления) ──
+    // Группа = тип + МЕСТО СИСТЕМНОГО ПРОЦЕССА. Раньше ключом был только тип,
+    // и все «Военные удары» сходились в одну карточку: представителем
+    // становился российско-украинский процесс с давлением 95, а
+    // ближневосточный (91), европейский и остальные уходили в дочерние
+    // и открывались лишь по клику «смежные процессы».
+    //
+    // Под-процесс привязывается к месту СВОЕГО системного процесса через
+    // included_processes, а не к собственному: «Военные удары — Украина»
+    // и «— Иран» принадлежат разным театрам, но оба входят в один макро.
+    // Так число карточек растёт на количество макро, а под-процессы
+    // остаются дочерними у своего родителя.
+    var _macList=list.filter(function(m){return m.is_macro||/системный/.test(m.title||'');});
+    var _ownerOf={};
+    _macList.forEach(function(m){
+      (m.included_processes||[]).forEach(function(pid){
+        _ownerOf[pid]=(m.process_place||'');
+      });
+    });
     var groups={};
-    list.forEach(function(s){ var t=s.process_type||s.title||'—'; (groups[t]=groups[t]||[]).push(s); });
-    var blocks=Object.keys(groups).map(function(t){
-      var mem=groups[t].slice().sort(function(a,b){return (b.pressure||b.priority||0)-(a.pressure||a.priority||0);});
+    list.forEach(function(s){
+      var t=s.process_type||s.title||'—';
+      var _isMac=s.is_macro||/системный/.test(s.title||'');
+      // Под-процесс без родителя (не входит ни в один макро) остаётся
+      // в общей группе типа: своё место ему ключом не даём, иначе
+      // одиночные экземпляры расползутся по карточкам без представителя.
+      var _pl=_isMac ? (s.process_place||'') : (_ownerOf[s.signal_id]||'');
+      var k=_pl ? (t+' \u00b7 '+_pl) : t;
+      (groups[k]=groups[k]||[]).push(s);
+    });
+    var blocks=Object.keys(groups).map(function(gk){
+      var t=gk.split(' \u00b7 ')[0];
+      var mem=groups[gk].slice().sort(function(a,b){return (b.pressure||b.priority||0)-(a.pressure||a.priority||0);});
       var macro=mem.filter(function(m){return m.is_macro||/системный/.test(m.title||'');});
       var rep=macro.length?macro[0]:mem[0];
       var kids=mem.filter(function(m){return m!==rep;});
