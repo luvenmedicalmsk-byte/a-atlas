@@ -9531,6 +9531,36 @@ function _zTable(head, rows, w1){
 /* Заголовок секции в стиле карточки «Atlas фиксирует»: золотой,
    разреженный, с маркером справа. */
 /* Иконки секций из карточки события: тот же набор, те же цвета. */
+/* Стрелки и маркеры как svg: типографские знаки зависят от шрифта
+   и на части устройств отрисовываются иначе. */
+function _zArrow(dir, col){
+  var c = col || '#8a9bb0';
+  var p = dir === 'up'   ? 'M4 13.5L9 8l3.5 3L17 6.5M13.5 6.5H17V10'
+        : dir === 'down' ? 'M4 7.5L9 13l3.5-3L17 14.5M13.5 14.5H17V11'
+        : dir === 'right'? 'M4 10.5h11M11.5 7l3.5 3.5-3.5 3.5'
+        :                  'M5 10.5h10';
+  return '<svg width="12" height="12" viewBox="0 0 21 21" fill="none" '
+    + 'style="vertical-align:-2px"><path d="' + p + '" stroke="' + c
+    + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+/* Треугольник раскрытия: заменяет знаки ▸ и ▾. */
+function _zCaret(open, col){
+  var c = col || '#6f88ab';
+  var p = open ? 'M3 5l4 4 4-4' : 'M5 3l4 4-4 4';
+  return '<svg width="10" height="10" viewBox="0 0 14 14" fill="none" '
+    + 'style="vertical-align:-1px"><path d="' + p + '" stroke="' + c
+    + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+/* Стрелка вниз для узлов каскада. */
+function _zChainArrow(){
+  return '<svg width="11" height="14" viewBox="0 0 11 14" fill="none" '
+    + 'style="display:block;margin:2px auto"><path d="M5.5 1v11M2 8.5l3.5 3.5L9 8.5" '
+    + 'stroke="#e0b84a" stroke-width="1.5" stroke-linecap="round" '
+    + 'stroke-linejoin="round" opacity=".55"/></svg>';
+}
+
 var _ZI = {
   pass:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
        + '<rect x="3" y="5" width="18" height="14" rx="2.5" stroke="#7ec8ea" stroke-width="1.6"/>'
@@ -9675,7 +9705,7 @@ function _zoneCard(z, i){
   // индекс справа. Дополнена дельтой индекса и уверенностью — они
   // вычисляются из history и sources, новых данных не требуют.
   var _tr = _zTrend(z), _cf = _zConfidence(z);
-  var _arr = _tr ? (_tr.delta > 0 ? '↗' : _tr.delta < 0 ? '↘' : '→') : '';
+  // Направление динамики рисуется svg-стрелкой, знак в переменной не нужен.
   var _trc = _tr ? (_tr.delta > 0 ? '#f97316' : _tr.delta < 0 ? '#5fae7a' : '#8a9bb0') : '#8a9bb0';
 
   h += '<div class="zone-head" data-zi="' + i + '" style="padding:15px;cursor:pointer">'
@@ -9693,8 +9723,8 @@ function _zoneCard(z, i){
     +   '<div style="flex:1;min-width:0">'
     +     '<div style="color:#e8eaf0;font-size:13.5px;font-weight:600;line-height:1.4;'
     +     'letter-spacing:.01em">'
-    +       '<span class="zone-caret" data-zi="' + i + '" style="color:#6f88ab;'
-    +       'font-size:10px;margin-right:6px">▸</span>'
+    +       '<span class="zone-caret" data-zi="' + i + '" style="margin-right:6px">'
+    +       _zCaret(false) + '</span>'
     +       _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
     +     '<div style="font-size:10px;color:#6f88ab;margin-top:7px;padding-left:16px">'
     +     _zEsc(_zRuDate(z.date)) + '</div>'
@@ -9813,28 +9843,72 @@ function _zoneCard(z, i){
 
   // ── 5 · КАСКАД ────────────────────────────────────────────────────
   if((z.cascade||[]).length){
+    // Вертикальная схема: узлы различимы, связи показаны стрелками.
+    // Строки, начинающиеся с «+», трактуются как усилители того же узла,
+    // с «=» — как результат. Формат задаётся аналитиком в консоли.
     h += _zSec('Каскад процесса', 'Инженерная схема', _ZI.casc, '#e0b84a')
-      + '<div style="background:rgba(224,184,74,.05);border:1px solid rgba(224,184,74,.18);'
-      + 'border-radius:9px;padding:12px 14px;font-family:Montserrat,sans-serif;'
-      + 'font-size:12px;color:#e8eaf0;line-height:1.85">'
-      + (z.cascade||[]).map(function(l){ return _zEsc(l); }).join('<br>') + '</div>';
+      + '<div style="background:rgba(224,184,74,.04);border:1px solid rgba(224,184,74,.16);'
+      + 'border-radius:9px;padding:13px 14px">'
+      + (z.cascade||[]).map(function(l, ix){
+          var s = String(l || '').trim();
+          var kind = /^\+/.test(s) ? 'plus' : /^[=→]/.test(s) ? 'res' : 'node';
+          var txt = s.replace(/^[+=→]\s*/, '');
+          var lead = ix === 0 ? '' : (kind === 'res' ? _zChainArrow() : '');
+          var col = kind === 'res' ? '#e8eaf0' : kind === 'plus' ? '#cbd5e1' : '#e8eaf0';
+          var wgt = kind === 'res' ? '500' : '400';
+          var mark = kind === 'plus'
+            ? '<span style="color:#e0b84a;font-size:13px;line-height:1;flex:0 0 12px">+</span>'
+            : '<span style="flex:0 0 12px;color:#e0b84a;font-family:Montserrat,sans-serif;'
+              + 'font-size:9px;font-weight:700;letter-spacing:.04em;padding-top:2px">'
+              + (kind === 'res' ? '' : (ix + 1)) + '</span>';
+          return lead
+            + '<div style="display:flex;gap:9px;align-items:flex-start;'
+            + (kind === 'res' ? 'padding:7px 9px;background:rgba(224,184,74,.06);'
+                              + 'border-radius:7px;margin:1px 0;' : 'padding:4px 0;')
+            + '">' + mark
+            + '<div style="flex:1;font-family:Montserrat,sans-serif;font-size:12px;color:'
+            + col + ';font-weight:' + wgt + ';line-height:1.5">' + _zEsc(txt) + '</div></div>';
+        }).join('')
+      + '</div>';
     if(z.cascade_note) h += _zText(z.cascade_note);
   }
 
   // ── 6 · ЧТО ЭТО ЗНАЧИТ ────────────────────────────────────────────
   if((z.manifest||[]).length){
+    // Карточки воздействия: зону влияния видно при беглом просмотре,
+    // сплошной список этого не давал. Первая часть до двоеточия
+    // становится заголовком сегмента, если она короткая.
     h += _zSec('Что это значит', 'Карта воздействия · ' + z.manifest.length,
                _ZI.imp, '#9b7fc4')
-      + _zList(z.manifest);
+      + z.manifest.map(function(m, ix){
+          var s = String(m || '').trim();
+          var cut = s.indexOf(':');
+          var hasHead = cut > 3 && cut < 60;
+          var head = hasHead ? s.slice(0, cut) : '';
+          var body = hasHead ? s.slice(cut + 1).trim() : s;
+          return '<div style="display:flex;gap:11px;margin:8px 0;padding:11px 13px;'
+            + 'background:rgba(155,127,196,.04);border:1px solid rgba(155,127,196,.15);'
+            + 'border-radius:9px">'
+            + '<div style="flex:0 0 18px;font-family:Montserrat,sans-serif;font-size:13px;'
+            + 'font-weight:700;color:#9b7fc4;line-height:1.2;'
+            + 'font-variant-numeric:tabular-nums">' + (ix + 1) + '</div>'
+            + '<div style="flex:1;min-width:0">'
+            + (hasHead ? '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;'
+                + 'color:#9b7fc4;letter-spacing:.1em;text-transform:uppercase;'
+                + 'margin-bottom:5px">' + _zEsc(head) + '</div>' : '')
+            + '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#e8eaf0;'
+            + 'line-height:1.55">' + _zEsc(body) + '</div></div></div>';
+        }).join('');
   }
 
   // ── 7 · ДАННЫЕ: динамика, диапазоны, градиент ─────────────────────
   if((z.history||[]).length){
-    h += _zSec('Динамика индекса', _tr ? (_tr.from + ' → ' + _tr.to) : 'История',
+    h += _zSec('Динамика индекса', _tr ? (_tr.from + ' \u00b7 ' + _tr.to) : 'История',
                _ZI.dyn, '#7f9bc7');
     if(_tr){
       h += '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#cbd5e1;'
-        + 'margin:0 0 8px">' + _arr + ' <span style="color:' + _trc + ';font-weight:600">'
+        + 'margin:0 0 8px">' + _zArrow(_tr.delta > 0 ? 'up' : _tr.delta < 0 ? 'down' : 'flat', _trc)
+        + ' <span style="color:' + _trc + ';font-weight:600">'
         + (_tr.delta > 0 ? '+' : '') + _tr.delta + '</span> за ' + _tr.points
         + ' контрольных точки</div>';
     }
@@ -9973,7 +10047,7 @@ window.grdfRenderZones = function(cc){
         if(!bd) return;
         var open = bd.style.display !== 'none';
         bd.style.display = open ? 'none' : 'block';
-        if(cr) cr.textContent = open ? '▸' : '▾';
+        if(cr) cr.innerHTML = _zCaret(!open);
       };
     });
   };
