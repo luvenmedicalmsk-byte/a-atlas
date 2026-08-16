@@ -9054,6 +9054,10 @@ function _grdfContextHtml(c){
 
   // ── Atlas фиксирует — экспертный слой поверх процессов (после Картины давления) ──
   H+='<div id="cc-ann-block" data-iso="'+String(c.country||'').toUpperCase()+'"></div>';
+  // Мини-разборы зон риска идут сразу за экспертным слоем «Atlas фиксирует»:
+  // оба относятся к аналитике поверх расчётных метрик и читаются подряд.
+  H+='<div id="grdf-zones-'+String(c.country||'').toUpperCase()+'"></div>';
+  try{ grdfRenderZones(String(c.country||'').toUpperCase()); }catch(_e){}
   try{ if(window._annWait) window._annWait(String(c.country||'').toUpperCase()); }catch(e){}
 
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
@@ -9793,9 +9797,6 @@ function grdfRenderCountryPanel(cc) {
   if(_GRDF_SHOW_MATRIX_RELOC){
     html += grdfRiskMatrixHTML(parseFloat(c.risk_score ?? 50), parseFloat(c.delta ?? 0), isSig);
     html += grdfRelocPanelHTML(c, isSig);
-    // Мини-разборы зон идут после матрицы риска и траектории: сначала
-    // читается расчётная картина по стране, затем аналитический разбор.
-    html += '<div id="grdf-zones-' + cc + '" style="padding:0 14px"></div>';
   }
   // Drivers (paid) / single Архив + Signal Pro zone (free)
   if(!isSig){}
@@ -9812,7 +9813,8 @@ function grdfRenderCountryPanel(cc) {
   if(_csEl) {
     _csEl.scrollTop = 0;       // reset BEFORE setting content
     _csEl.innerHTML = html;
-    try{ grdfRenderZones(cc); }catch(_e){}
+    // grdfRenderZones вызывается из _renderCountryLocal, рядом с контейнером:
+    // тот вставляется позже, и вызов отсюда не находил бы элемент.
     try{ window._renderCountryLocal(c); }catch(_e){}
     if(isSig){ try{ _grdfLoadHistory(c.country); }catch(e){} }
     _csEl.scrollTop = 0;       // reset AFTER setting content (point 5)
