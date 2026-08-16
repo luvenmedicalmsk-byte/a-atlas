@@ -9468,8 +9468,10 @@ window._renderCountryLocal = function(c){
    ссылку с атрибутом download.
 ════════════════════════════════════════════════════════════════════════ */
 var _ZONES_CACHE = {};
-var ZONE_PDF_BASE = 'https://raw.githubusercontent.com/'
-  + 'luvenmedicalmsk-byte/secrett-archive/main/docs/reports/';
+// Документ отдаётся Worker по /api/country-zones/{id}/pdf и только
+// администратору. Прямой ссылки на хранилище наружу нет: прежний вариант
+// с raw.githubusercontent открывался любому, кто узнал адрес.
+var _ZONE_EXPORT = false;
 // API_BASE объявлен через const в другом инлайн-скрипте и в эту область
 // не попадает: typeof возвращал undefined, запрос уходил на относительный
 // путь и молча не находил зоны. Адрес задаётся здесь явно.
@@ -10076,10 +10078,14 @@ function _zoneCard(z, i){
       + 'font-size:11px;color:#8a9bb0;line-height:1.6">' + _zEsc(z.atlas_note) + '</div>';
   }
 
-  h += '<button type="button" class="zone-pdf" data-zi="' + i + '" '
-    + 'style="width:100%;margin-top:14px;padding:9px;background:#1faacc;border:0;'
-    + 'border-radius:7px;color:#06050A;font-size:12px;font-weight:600;cursor:pointer">'
-    + 'Скачать разбор PDF</button>';
+  // Кнопка выгрузки — только при праве, полученном от сервера. Платный
+  // тир читает разбор целиком, документ выгружает администратор.
+  if(_ZONE_EXPORT){
+    h += '<button type="button" class="zone-pdf" data-zi="' + i + '" '
+      + 'style="width:100%;margin-top:14px;padding:9px;background:#1faacc;border:0;'
+      + 'border-radius:7px;color:#06050A;font-size:12px;font-weight:600;cursor:pointer">'
+      + 'Скачать разбор PDF</button>';
+  }
   h += '</div>';      // конец zone-body
   h += '</div>';      // конец карточки
   return h;
@@ -10088,10 +10094,24 @@ function _zoneCard(z, i){
 /* Скачивание без показа ссылки: файл берётся как blob и отдаётся
    через невидимый элемент с атрибутом download. */
 function _zoneDownload(z, btn){
-  var name = z.id + '-' + z.date + '.pdf';
   var t0 = btn ? btn.textContent : '';
   if(btn){ btn.textContent = 'Загрузка…'; btn.disabled = true; }
-  fetch(ZONE_PDF_BASE + name)
+  // Признак доступа передаётся так же, как при чтении списка.
+  var hd = {}, _t = '', _ak = '', _ct = '';
+  try { _t = localStorage.getItem('tg_session_token') || ''; } catch(e) {}
+  try {
+    var _m1 = document.cookie.match(/(?:^|;\s*)atlas_ck=([^;]+)/);
+    var _m2 = document.cookie.match(/(?:^|;\s*)atlas_ct=([^;]+)/);
+    _ak = _m1 ? decodeURIComponent(_m1[1]) : '';
+    _ct = _m2 ? decodeURIComponent(_m2[1]) : '';
+  } catch(e) {}
+  if(_t) hd['X-Session-Token'] = _t; else if(_ct) hd['X-Session-Token'] = _ct;
+  if(_ak) hd['X-Admin-Key'] = _ak;
+  var u = ZONE_API + '/api/country-zones/' + encodeURIComponent(z.id)
+        + '/pdf?country=' + encodeURIComponent(z.cc);
+  if(_ak) u += '&key=' + encodeURIComponent(_ak);
+  else if(_t || _ct) u += '&t=' + encodeURIComponent(_t || _ct);
+  fetch(u, { headers: hd, credentials: 'include' })
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
     .then(function(b){
       var u = URL.createObjectURL(b);
@@ -10212,7 +10232,10 @@ window.grdfRenderZones = function(cc){
   else if(_t || _ct) u += '&t=' + encodeURIComponent(_t || _ct);
   fetch(u, { headers: hd, credentials: 'include' })
     .then(function(r){ return r.json(); })
-    .then(function(d){ done((d && d.zones) || []); })
+    .then(function(d){
+      _ZONE_EXPORT = !!(d && d.can_export);
+      done((d && d.zones) || []);
+    })
     .catch(function(){ host.innerHTML = ''; });
 };
 
