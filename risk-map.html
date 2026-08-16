@@ -9528,11 +9528,40 @@ function _zTable(head, rows, w1){
 
 /* Заголовок секции в стиле карточки «Atlas фиксирует»: золотой,
    разреженный, с маркером справа. */
-function _zSec(title, kind){
-  // Ромб-маркер вместо иконок: у карточки события перед каждым разделом
-  // стоит svg, здесь достаточно единого знака — секций восемнадцать.
+/* Иконки секций из карточки события: тот же набор, те же цвета. */
+var _ZI = {
+  pass:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
+       + '<rect x="3" y="5" width="18" height="14" rx="2.5" stroke="#7ec8ea" stroke-width="1.6"/>'
+       + '<path d="M3 9.5h18M8 13h8M8 16h5" stroke="#7ec8ea" stroke-width="1.4" '
+       + 'stroke-linecap="round"/></svg>',
+  evid:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
+       + '<path d="M9 3h9a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V8l5-5z" '
+       + 'stroke="#9ec5a8" stroke-width="1.6" stroke-linejoin="round"/>'
+       + '<path d="M8 13h8M8 16.5h5" stroke="#9ec5a8" stroke-width="1.4" '
+       + 'stroke-linecap="round"/></svg>',
+  dyn:   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
+       + '<path d="M3 17l5-5 4 3 8-8" stroke="#7f9bc7" stroke-width="1.8" '
+       + 'stroke-linecap="round" stroke-linejoin="round"/>'
+       + '<path d="M16 7h4v4" stroke="#7f9bc7" stroke-width="1.8" '
+       + 'stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  casc:  '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
+       + '<path d="M13 2L4.5 13.5H11L10 22l8.5-11.5H12L13 2z" fill="#e0b84a"/></svg>',
+  imp:   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
+       + '<circle cx="12" cy="12" r="3" stroke="#d59ea0" stroke-width="1.6"/>'
+       + '<circle cx="12" cy="12" r="8.2" stroke="#d59ea0" stroke-width="1.2" '
+       + 'stroke-dasharray="2.4 3"/></svg>',
+  mon:   '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
+       + '<path d="M3 12h4l2.5-6 4 12 2.5-6H21" stroke="#7f9bc7" stroke-width="1.6" '
+       + 'stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  concl: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none">'
+       + '<path d="M5 12.5l4.5 4.5L19 7" stroke="#d4af5a" stroke-width="2.2" '
+       + 'stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+
+function _zSec(title, kind, ico){
+  // Иконка секции как в карточке события. При отсутствии — ромб.
   return '<div style="display:flex;align-items:center;gap:7px;margin:20px 0 11px">'
-    + '<span style="color:#c9a227;font-size:7px;line-height:1">\u25C6</span>'
+    + (ico ? ico : '<span style="color:#c9a227;font-size:7px;line-height:1">\u25C6</span>')
     + '<span style="font-family:Montserrat,sans-serif;font-size:9.5px;color:#b8973a;'
     + 'letter-spacing:.14em;text-transform:uppercase;font-weight:600">'
     + _zEsc(title) + '</span>'
@@ -9674,9 +9703,9 @@ function _zoneCard(z, i){
       + 'font-family:Montserrat,sans-serif;font-size:12.5px;color:#e8eaf0;'
       + 'line-height:1.5;font-weight:500">' + _zEsc(_dom) + '</div>';
   }
-  if(z.index_note){ h += _zSec('Оценка индекса') + _zText(z.index_note); }
-  if(z.dependency){ h += _zSec('Тип зависимости') + _zText(z.dependency); }
-  if(z.trigger){ h += _zSec('Текущее событие') + _zText(z.trigger); }
+  if(z.index_note){ h += _zSec('Оценка индекса', 'Метрика', _ZI.pass) + _zText(z.index_note); }
+  if(z.dependency){ h += _zSec('Тип зависимости', 'Паспорт зоны', _ZI.pass) + _zText(z.dependency); }
+  if(z.trigger){ h += _zSec('Текущее событие', 'Доказательная база', _ZI.evid) + _zText(z.trigger); }
   if(z.sources) h += '<div style="font-family:Montserrat,sans-serif;font-size:10.5px;'
     + 'color:#8a9bb0;line-height:1.55;margin-top:8px">'
     + '<span style="color:#b8973a">Источников ' + _cf.src + '</span> · '
@@ -9684,7 +9713,7 @@ function _zoneCard(z, i){
   if(z.index_link) h += _zText('Связь с индексом: ' + z.index_link);
 
   if((z.history||[]).length){
-    h += _zSec('Динамика индекса', _tr ? (_tr.from + ' → ' + _tr.to) : '');
+    h += _zSec('Динамика индекса', _tr ? (_tr.from + ' → ' + _tr.to) : 'История', _ZI.dyn);
     if(_tr){
       h += '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#cbd5e1;'
         + 'margin:0 0 8px">' + _arr + ' <span style="color:' + _trc + ';font-weight:600">'
@@ -9694,7 +9723,7 @@ function _zoneCard(z, i){
     h += _zTable(['Дата','Индекс','Событие'], z.history, 72);
   }
   if((z.crossings||[]).length){
-    h += _zSec('Пересечения доменов')
+    h += _zSec('Пересечения доменов', 'Механизм', _ZI.imp)
       + (z.crossings||[]).map(function(p){
           return '<div style="font-family:Montserrat,sans-serif;font-size:12px;'
             + 'line-height:1.6;margin:8px 0">'
@@ -9705,30 +9734,30 @@ function _zoneCard(z, i){
     if(z.crossings_note) h += _zText(z.crossings_note);
   }
   if((z.cascade||[]).length){
-    h += _zSec('Цепочка')
+    h += _zSec('Цепочка', 'Инженерная схема', _ZI.casc)
       + '<div style="background:rgba(201,162,39,.03);border:1px solid rgba(201,162,39,.14);'
       + 'border-radius:9px;padding:11px 13px;font-family:Montserrat,sans-serif;'
       + 'font-size:12px;color:#cbd5e1;line-height:1.75">'
       + (z.cascade||[]).map(function(l){ return _zEsc(l); }).join('<br>') + '</div>';
     if(z.cascade_note) h += _zText(z.cascade_note);
   }
-  if((z.manifest||[]).length){ h += _zSec('Как проявляется') + _zList(z.manifest); }
-  if(z.decode){ h += _zSec('Расшифровка индекса') + _zText(z.decode); }
+  if((z.manifest||[]).length){ h += _zSec('Как проявляется', 'Карта воздействия', _ZI.imp) + _zList(z.manifest); }
+  if(z.decode){ h += _zSec('Расшифровка индекса', 'Тезис', _ZI.concl) + _zText(z.decode); }
   if((z.table_rows||[]).length){
-    h += _zSec(z.table_title || 'Диапазоны')
+    h += _zSec(z.table_title || 'Диапазоны', 'Шкала', _ZI.pass)
       + _zTable(z.table_head, z.table_rows, 96);
     if(z.table_note) h += '<div style="font-family:Montserrat,sans-serif;'
       + 'font-size:10.5px;color:#8a9bb0;line-height:1.5">'
       + _zEsc(z.table_note) + '</div>';
   }
-  if((z.options||[]).length){ h += _zSec(z.options_title || 'Варианты') + _zList(z.options); }
-  if(z.filter){ h += _zSec(z.filter_title || 'Фильтр') + _zText(z.filter); }
-  if((z.anchors||[]).length){ h += _zSec(z.anchors_title || 'Ориентиры') + _zList(z.anchors); }
+  if((z.options||[]).length){ h += _zSec(z.options_title || 'Варианты', 'Приоритет', _ZI.evid) + _zList(z.options); }
+  if(z.filter){ h += _zSec(z.filter_title || 'Фильтр', 'Инструмент', _ZI.pass) + _zText(z.filter); }
+  if((z.anchors||[]).length){ h += _zSec(z.anchors_title || 'Ориентиры', 'Данные', _ZI.evid) + _zList(z.anchors); }
   if((z.requirements||[]).length){
-    h += _zSec(z.requirements_title || 'Требования') + _zList(z.requirements);
+    h += _zSec(z.requirements_title || 'Требования', 'Условия входа', _ZI.evid) + _zList(z.requirements);
   }
   if((z.comment_low||[]).length || (z.comment_high||[]).length || (z.comment_under||[]).length){
-    h += _zSec('Инженерный комментарий');
+    h += _zSec('Инженерный комментарий', 'Заключение', _ZI.concl);
     [['comment_low_title','comment_low'],
      ['comment_high_title','comment_high'],
      ['comment_under_title','comment_under']].forEach(function(p){
@@ -9738,15 +9767,15 @@ function _zoneCard(z, i){
         + _zList(z[p[1]]);
     });
   }
-  if(z.user_note){ h += _zSec('Что это значит') + _zText(z.user_note); }
+  if(z.user_note){ h += _zSec('Что это значит', 'Практический выход', _ZI.imp) + _zText(z.user_note); }
   if(z.user_indicator) h += _zText(z.user_indicator);
   if((z.gradient||[]).length){
-    h += _zSec(z.gradient_title || 'Градиент по группам')
+    h += _zSec(z.gradient_title || 'Градиент по группам', 'Шкала риска', _ZI.imp)
       + _zTable(z.gradient_head, z.gradient, 120);
   }
-  if(z.mini){ h += _zSec('Мини-информация') + _zText(z.mini); }
-  if((z.watch||[]).length){ h += _zSec(z.watch_title || 'Что отслеживать') + _zList(z.watch); }
-  if(z.atlas_note){ h += _zSec('Atlas показывает') + _zText(z.atlas_note); }
+  if(z.mini){ h += _zSec('Мини-информация', 'Контекст', _ZI.pass) + _zText(z.mini); }
+  if((z.watch||[]).length){ h += _zSec(z.watch_title || 'Что отслеживать', 'Операционный чек-лист', _ZI.mon) + _zList(z.watch); }
+  if(z.atlas_note){ h += _zSec('Atlas показывает', 'Заключение', _ZI.concl) + _zText(z.atlas_note); }
 
   h += '<button type="button" class="zone-pdf" data-zi="' + i + '" '
     + 'style="width:100%;margin-top:14px;padding:9px;background:#1faacc;border:0;'
