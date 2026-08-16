@@ -9804,6 +9804,8 @@ function _zoneCard(z, i){
   if((z.history||[]).length || (z.table_rows||[]).length || (z.gradient||[]).length)
                                       _navIt.push(['Данные',        'zd' + i]);
   if((z.options||[]).length || z.filter) _navIt.push(['Возможности', 'zo' + i]);
+  if((z.for_people||[]).length || (z.for_business||[]).length)
+                                      _navIt.push(['Что делать',    'zf' + i]);
   if((z.watch||[]).length)            _navIt.push(['Мониторинг',    'zw' + i]);
   if(z.user_note || (z.comment_low||[]).length) _navIt.push(['Вывод', 'zv' + i]);
 
@@ -10023,6 +10025,20 @@ function _zoneCard(z, i){
   if((z.requirements||[]).length){
     h += _zSec(z.requirements_title || 'Требования', 'Условия входа', _ZI.evid, '#9ec5a8')
       + _zList(z.requirements);
+  }
+
+  // ── ПРАКТИЧЕСКИЙ ВЫХОД ────────────────────────────────────────
+  // Два адресата разведены: рекомендации человеку и бизнесу решают
+  // разные задачи и в одном списке терялись бы.
+  if((z.for_people||[]).length){
+    h += _zSec(z.for_people_title || 'Для людей',
+               'Практический выход · ' + z.for_people.length, _ZI.imp, '#e0a458', 'zf' + i)
+      + _zList(z.for_people);
+  }
+  if((z.for_business||[]).length){
+    h += _zSec(z.for_business_title || 'Для бизнеса',
+               'Практический выход · ' + z.for_business.length, _ZI.imp, '#e0a458')
+      + _zList(z.for_business);
   }
 
   // ── 9 · МОНИТОРИНГ ────────────────────────────────────────────────
