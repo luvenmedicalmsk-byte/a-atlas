@@ -9531,6 +9531,32 @@ function _zTable(head, rows, w1){
 /* Заголовок секции в стиле карточки «Atlas фиксирует»: золотой,
    разреженный, с маркером справа. */
 /* Иконки секций из карточки события: тот же набор, те же цвета. */
+/* Чекбокс операционного списка. Пустой квадрат и квадрат с галочкой —
+   svg, а не символы: размер и толщина линии не зависят от шрифта. */
+function _zBox(on){
+  return on
+    ? '<svg width="15" height="15" viewBox="0 0 18 18" fill="none">'
+      + '<rect x="1.6" y="1.6" width="14.8" height="14.8" rx="3.4" '
+      + 'fill="rgba(127,155,199,.16)" stroke="#7f9bc7" stroke-width="1.5"/>'
+      + '<path d="M5.2 9.2l2.6 2.6 5-5.2" stroke="#7f9bc7" stroke-width="1.9" '
+      + 'stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    : '<svg width="15" height="15" viewBox="0 0 18 18" fill="none">'
+      + '<rect x="1.6" y="1.6" width="14.8" height="14.8" rx="3.4" '
+      + 'stroke="#4a5a6b" stroke-width="1.5"/></svg>';
+}
+
+/* Отметки чек-листа держатся в localStorage: консоль и схема данных
+   не меняются, состояние переживает перезагрузку. Ключ включает id
+   зоны, поэтому отметки разных зон не смешиваются. */
+function _zWatchKey(z){ return 'atlas_zw_' + (z.id || (z.cc + '_' + z.zone)); }
+function _zWatchGet(z){
+  try{ return JSON.parse(localStorage.getItem(_zWatchKey(z)) || '[]') || []; }
+  catch(e){ return []; }
+}
+function _zWatchSet(z, arr){
+  try{ localStorage.setItem(_zWatchKey(z), JSON.stringify(arr)); }catch(e){}
+}
+
 /* Стрелки и маркеры как svg: типографские знаки зависят от шрифта
    и на части устройств отрисовываются иначе. */
 function _zArrow(dir, col){
@@ -9927,8 +9953,24 @@ function _zoneCard(z, i){
 
   // ── 8 · ВОЗМОЖНОСТИ ───────────────────────────────────────────────
   if((z.options||[]).length){
-    h += _zSec(z.options_title || 'Варианты', 'Приоритет', _ZI.evid, '#9ec5a8')
-      + _zList(z.options);
+    // Ранжирование: порядок в данных задаёт приоритет, номер его
+    // показывает. Первые три выделены цветом.
+    h += _zSec(z.options_title || 'Варианты', 'Приоритет · ' + z.options.length,
+               _ZI.evid, '#9ec5a8')
+      + z.options.map(function(o, oi){
+          var top = oi < 3;
+          return '<div style="display:flex;gap:11px;align-items:flex-start;'
+            + 'padding:9px 12px;margin:5px 0;'
+            + 'background:rgba(158,197,168,' + (top ? '.05' : '.025') + ');'
+            + 'border:1px solid rgba(158,197,168,' + (top ? '.18' : '.10') + ');'
+            + 'border-radius:8px">'
+            + '<span style="flex:0 0 20px;font-family:Montserrat,sans-serif;font-size:11px;'
+            + 'font-weight:700;color:' + (top ? '#9ec5a8' : '#5a6b7d') + ';'
+            + 'font-variant-numeric:tabular-nums;padding-top:1px">'
+            + (oi < 9 ? '0' : '') + (oi + 1) + '</span>'
+            + '<span style="flex:1;font-family:Montserrat,sans-serif;font-size:12px;'
+            + 'color:#e8eaf0;line-height:1.5">' + _zEsc(o) + '</span></div>';
+        }).join('');
   }
   if(z.filter){
     h += _zSec(z.filter_title || 'Фильтр', 'Инструмент', _ZI.pass, '#7ec8ea')
@@ -9943,9 +9985,27 @@ function _zoneCard(z, i){
 
   // ── 9 · МОНИТОРИНГ ────────────────────────────────────────────────
   if((z.watch||[]).length){
+    // Операционный чек-лист: отметки сохраняются, список работает
+    // как инструмент мониторинга, а не как перечисление.
+    var _wm = _zWatchGet(z);
     h += _zSec(z.watch_title || 'Что отслеживать',
                'Операционный чек-лист · ' + z.watch.length, _ZI.mon, '#7f9bc7')
-      + _zList(z.watch);
+      + '<div class="zone-watch" data-zi="' + i + '">'
+      + z.watch.map(function(w, wi){
+          var on = _wm.indexOf(wi) >= 0;
+          return '<div class="zw-item" data-zi="' + i + '" data-wi="' + wi + '" '
+            + 'style="display:flex;gap:10px;align-items:flex-start;padding:9px 11px;'
+            + 'margin:5px 0;background:rgba(127,155,199,' + (on ? '.07' : '.03') + ');'
+            + 'border:1px solid rgba(127,155,199,' + (on ? '.22' : '.12') + ');'
+            + 'border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent">'
+            + '<span class="zw-box" style="flex:0 0 15px;padding-top:1px">'
+            + _zBox(on) + '</span>'
+            + '<span class="zw-txt" style="flex:1;font-family:Montserrat,sans-serif;'
+            + 'font-size:12px;line-height:1.5;color:' + (on ? '#8a9bb0' : '#e8eaf0') + ';'
+            + (on ? 'text-decoration:line-through;text-decoration-color:rgba(138,155,176,.5)' : '')
+            + '">' + _zEsc(w) + '</span></div>';
+        }).join('')
+      + '</div>';
   }
 
   // ── 10 · ИНЖЕНЕРНЫЙ ВЫВОД ─────────────────────────────────────────
@@ -10037,6 +10097,30 @@ window.grdfRenderZones = function(cc){
     host.querySelectorAll('.zone-pdf').forEach(function(b){
       b.onclick = function(){ _zoneDownload(list[+b.getAttribute('data-zi')], b); };
     });
+    // Отметки чек-листа. Клик по строке переключает состояние
+    // и сразу пишет его в localStorage: список работает как инструмент,
+    // а не как перечисление.
+    host.querySelectorAll('.zw-item').forEach(function(it){
+      it.onclick = function(ev){
+        ev.stopPropagation();
+        var zi = +it.getAttribute('data-zi'), wi = +it.getAttribute('data-wi');
+        var z = list[zi]; if(!z) return;
+        var cur = _zWatchGet(z), pos = cur.indexOf(wi), on;
+        if(pos >= 0){ cur.splice(pos, 1); on = false; }
+        else { cur.push(wi); on = true; }
+        _zWatchSet(z, cur);
+        var bx = it.querySelector('.zw-box'), tx = it.querySelector('.zw-txt');
+        if(bx) bx.innerHTML = _zBox(on);
+        if(tx){
+          tx.style.color = on ? '#8a9bb0' : '#e8eaf0';
+          tx.style.textDecoration = on ? 'line-through' : 'none';
+          tx.style.textDecorationColor = on ? 'rgba(138,155,176,.5)' : '';
+        }
+        it.style.background = 'rgba(127,155,199,' + (on ? '.07' : '.03') + ')';
+        it.style.borderColor = 'rgba(127,155,199,' + (on ? '.22' : '.12') + ')';
+      };
+    });
+
     // Разворачивание разбора. Кнопка скачивания внутри тела, поэтому
     // её клик до шапки не доходит и лишнего сворачивания не вызывает.
     host.querySelectorAll('.zone-head').forEach(function(hd){
