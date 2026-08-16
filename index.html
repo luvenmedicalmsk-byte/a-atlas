@@ -9597,69 +9597,6 @@ function _zDominant(z){
   return (m ? m[0] : s.slice(0, 150)).trim();
 }
 
-/* HERO: главный объект экрана. Индекс, уровень, домены, статус сигнала
-   и уверенность. Пользователь понимает ситуацию, не читая карточку. */
-function _zHero(z, col, lbl){
-  var tr = _zTrend(z), cf = _zConfidence(z), dom = _zDominant(z);
-  var arrow = tr ? (tr.delta > 0 ? '↗' : tr.delta < 0 ? '↘' : '→') : '';
-  var trCol = tr ? (tr.delta > 0 ? '#f97316' : tr.delta < 0 ? '#5fae7a' : '#8a9bb0') : '#8a9bb0';
-
-  var h = '<div style="padding:18px 15px 15px">';
-
-  h += '<div style="font-family:Montserrat,sans-serif;font-size:9px;color:#8a9bb0;'
-    + 'letter-spacing:.18em;text-transform:uppercase;margin-bottom:9px">'
-    + _zEsc((z.domains || []).join(' × ')) + '</div>';
-
-  h += '<div style="font-family:Montserrat,sans-serif;font-size:15px;color:#e8eaf0;'
-    + 'font-weight:600;letter-spacing:.02em;line-height:1.3">'
-    + _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>';
-
-  h += '<div style="display:flex;align-items:flex-end;gap:14px;margin-top:12px">'
-    + '<div style="font-family:Montserrat,sans-serif;font-size:52px;font-weight:700;'
-    +   'color:' + col + ';line-height:.9;font-variant-numeric:tabular-nums;'
-    +   'letter-spacing:-.02em">' + (z.index || 0)
-    +   '<span style="font-size:15px;color:#6f88ab;font-weight:400">/100</span></div>'
-    + '<div style="padding-bottom:5px">'
-    +   '<div style="font-family:Montserrat,sans-serif;font-size:11px;color:' + col + ';'
-    +   'letter-spacing:.09em;text-transform:uppercase;font-weight:600">'
-    +   _zEsc(lbl || z.index_label || '') + '</div>'
-    +   (tr ? '<div style="font-family:Montserrat,sans-serif;font-size:11px;color:' + trCol
-        + ';margin-top:4px">' + arrow + ' '
-        + (tr.delta > 0 ? '+' : '') + tr.delta + ' пункт'
-        + (Math.abs(tr.delta) === 1 ? '' : (Math.abs(tr.delta) < 5 ? 'а' : 'ов'))
-        + '</div>' : '')
-    + '</div></div>';
-
-  if(dom){
-    h += '<div style="margin-top:14px;padding:11px 13px;background:rgba(31,170,204,.06);'
-      + 'border-left:2px solid #1faacc;border-radius:0 7px 7px 0;'
-      + 'font-family:Montserrat,sans-serif;font-size:12.5px;color:#e8eaf0;'
-      + 'line-height:1.5;font-weight:500">' + _zEsc(dom) + '</div>';
-  }
-
-  // Статус сигнала: три строки, каждая отвечает на свой вопрос.
-  h += '<div style="margin-top:13px;display:flex;flex-wrap:wrap;gap:7px">'
-    + _zChip('Сигнал: '
-        + (tr && Math.abs(tr.delta) >= 3 ? 'движется'
-                                         : 'стабильный'),
-        tr && Math.abs(tr.delta) >= 3 ? '#f97316' : '#5fae7a')
-    + _zChip('Уверенность: ' + cf.ru, cf.col)
-    + _zChip(_zEsc(z.date), '#8a9bb0')
-    + '</div>';
-
-  h += '<div style="margin-top:8px;font-family:Montserrat,sans-serif;font-size:10px;'
-    + 'color:#6f88ab;line-height:1.5">'
-    + 'Источников: ' + cf.src
-    + ' · точек истории: ' + cf.pts
-    + (z.index_adj && z.index_adj !== z.index
-        ? ' · с поправкой до '
-          + z.index_adj : '')
-    + '</div>';
-
-  h += '</div>';
-  return h;
-}
-
 /* Полная карточка разбора: те же восемнадцать секций, что в PDF. */
 function _zoneCard(z, i){
   var col = (typeof window._sevColor === 'function') ? window._sevColor(z.index) : '#1faacc';
@@ -9670,39 +9607,73 @@ function _zoneCard(z, i){
   // Шапка кликабельна: карточка из восемнадцати секций разворачивалась
   // на всю панель, и до хроники событий приходилось листать. Свёрнута
   // до заголовка с индексом, разбор открывается по клику.
-  // LEVEL 1: hero. Индекс, уровень, доминанта, статус сигнала.
-  // Пользователь понимает ситуацию, не раскрывая разбор.
-  h += _zHero(z, col, lbl);
+  // Шапка как в карточке «Atlas фиксирует»: чипы, заголовок слева,
+  // индекс справа. Дополнена дельтой индекса и уверенностью — они
+  // вычисляются из history и sources, новых данных не требуют.
+  var _tr = _zTrend(z), _cf = _zConfidence(z);
+  var _arr = _tr ? (_tr.delta > 0 ? '↗' : _tr.delta < 0 ? '↘' : '→') : '';
+  var _trc = _tr ? (_tr.delta > 0 ? '#f97316' : _tr.delta < 0 ? '#5fae7a' : '#8a9bb0') : '#8a9bb0';
 
-  // Кнопка раскрытия отделена от hero: клик по заголовку больше не нужен,
-  // разбор открывается явным действием.
-  h += '<div class="zone-head" data-zi="' + i + '" style="padding:11px 15px;cursor:pointer;'
-    + 'border-top:1px solid rgba(184,151,58,.10);display:flex;align-items:center;gap:8px">'
-    + '<span class="zone-caret" data-zi="' + i + '" style="color:#b8973a;font-size:9px">'
-    + '▸</span>'
-    + '<span style="font-family:Montserrat,sans-serif;font-size:10px;color:#b8973a;'
-    + 'letter-spacing:.12em;text-transform:uppercase;font-weight:600">'
-    + 'Развёрнуть '
-    + 'разбор</span>'
-    + '<span style="margin-left:auto;font-family:Montserrat,sans-serif;font-size:9px;'
-    + 'color:#5a6b7d;letter-spacing:.08em">'
-    + ((z.crossings||[]).length + (z.manifest||[]).length + (z.watch||[]).length)
-    + ' пунктов</span>'
-    + '</div>';
+  h += '<div class="zone-head" data-zi="' + i + '" style="padding:15px;cursor:pointer">'
+    + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">'
+    +   (z.domains||[]).map(function(dm, ix){
+          return _zChip(dm, ix===0 ? '#b8973a' : '#5eb4de');
+        }).join('')
+    +   _zChip('Atlas Intelligence', '#5eb4de')
+    +   (_cf.lvl === 'HIGH' ? _zChip('Высокая уверенность', '#5fae7a')
+        : _cf.lvl === 'MEDIUM' ? _zChip('Средняя уверенность', '#c9a227') : '')
+    + '</div>'
+    + '<div style="display:flex;gap:12px;align-items:flex-start">'
+    +   '<div style="flex:1;min-width:0">'
+    +     '<div style="color:#e8eaf0;font-size:13.5px;font-weight:600;line-height:1.4;'
+    +     'letter-spacing:.01em">'
+    +       '<span class="zone-caret" data-zi="' + i + '" style="color:#6f88ab;'
+    +       'font-size:10px;margin-right:6px">▸</span>'
+    +       _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
+    +     '<div style="font-size:10px;color:#6f88ab;margin-top:7px;padding-left:16px">'
+    +     _zEsc(z.date)
+    +     (_tr ? ' · <span style="color:' + _trc + '">' + _arr + ' '
+        + (_tr.delta > 0 ? '+' : '') + _tr.delta + '</span>' : '')
+    +     '</div>'
+    +   '</div>'
+    +   '<div style="text-align:right;flex-shrink:0;padding-left:6px">'
+    +     '<div style="font-size:31px;font-weight:700;color:' + col + ';line-height:1;'
+    +     'font-variant-numeric:tabular-nums">' + (z.index||0)
+    +     '<span style="font-size:11px;color:#6f88ab;font-weight:400">/100</span></div>'
+    +     '<div style="font-size:8.5px;color:' + col + ';letter-spacing:.06em;'
+    +     'margin-top:5px;text-transform:uppercase">' + _zEsc(lbl) + '</div>'
+    +   '</div>'
+    + '</div></div>';
 
   h += '<div class="zone-body" data-zi="' + i + '" style="display:none;'
     + 'padding:14px 15px 15px;border-top:1px solid rgba(184,151,58,.10)">';
+  // Доминанта первой строкой разбора: главный вывод не должен теряться
+  // среди восемнадцати секций.
+  var _dom = _zDominant(z);
+  if(_dom){
+    h += '<div style="margin:2px 0 4px;padding:11px 13px;background:rgba(31,170,204,.06);'
+      + 'border-left:2px solid #1faacc;border-radius:0 7px 7px 0;'
+      + 'font-family:Montserrat,sans-serif;font-size:12.5px;color:#e8eaf0;'
+      + 'line-height:1.5;font-weight:500">' + _zEsc(_dom) + '</div>';
+  }
   if(z.index_note){ h += _zSec('Оценка индекса') + _zText(z.index_note); }
   if(z.dependency){ h += _zSec('Тип зависимости') + _zText(z.dependency); }
   if(z.trigger){ h += _zSec('Текущее событие') + _zText(z.trigger); }
   if(z.sources) h += '<div style="font-family:Montserrat,sans-serif;font-size:10.5px;'
-    + 'color:#8a9bb0;line-height:1.55;margin-top:8px">Источники: '
+    + 'color:#8a9bb0;line-height:1.55;margin-top:8px">'
+    + '<span style="color:#b8973a">Источников ' + _cf.src + '</span> · '
     + _zEsc(z.sources) + '</div>';
   if(z.index_link) h += _zText('Связь с индексом: ' + z.index_link);
 
   if((z.history||[]).length){
-    h += _zSec('Динамика индекса')
-      + _zTable(['Дата','Индекс','Событие'], z.history, 72);
+    h += _zSec('Динамика индекса', _tr ? (_tr.from + ' → ' + _tr.to) : '');
+    if(_tr){
+      h += '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#cbd5e1;'
+        + 'margin:0 0 8px">' + _arr + ' <span style="color:' + _trc + ';font-weight:600">'
+        + (_tr.delta > 0 ? '+' : '') + _tr.delta + '</span> за ' + _tr.points
+        + ' контрольных точки</div>';
+    }
+    h += _zTable(['Дата','Индекс','Событие'], z.history, 72);
   }
   if((z.crossings||[]).length){
     h += _zSec('Пересечения доменов')
