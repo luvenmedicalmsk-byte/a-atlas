@@ -9475,6 +9475,15 @@ var ZONE_PDF_BASE = 'https://raw.githubusercontent.com/'
 // путь и молча не находил зоны. Адрес задаётся здесь явно.
 var ZONE_API = 'https://api.a-atlas.com';
 
+/* Дата в человеческом виде: 2026-08-16 → 16 августа 2026. */
+var _Z_MON = ['января','февраля','марта','апреля','мая','июня',
+              'июля','августа','сентября','октября','ноября','декабря'];
+function _zRuDate(s){
+  var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return s || '';
+  return parseInt(m[3], 10) + ' ' + _Z_MON[parseInt(m[2], 10) - 1] + ' ' + m[1];
+}
+
 function _zEsc(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -9631,10 +9640,7 @@ function _zoneCard(z, i){
     +       'font-size:10px;margin-right:6px">▸</span>'
     +       _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
     +     '<div style="font-size:10px;color:#6f88ab;margin-top:7px;padding-left:16px">'
-    +     _zEsc(z.date)
-    +     (_tr ? ' · <span style="color:' + _trc + '">' + _arr + ' '
-        + (_tr.delta > 0 ? '+' : '') + _tr.delta + '</span>' : '')
-    +     '</div>'
+    +     _zEsc(_zRuDate(z.date)) + '</div>'
     +   '</div>'
     +   '<div style="text-align:right;flex-shrink:0;padding-left:6px">'
     +     '<div style="font-size:31px;font-weight:700;color:' + col + ';line-height:1;'
@@ -9644,6 +9650,18 @@ function _zoneCard(z, i){
     +     'margin-top:5px;text-transform:uppercase">' + _zEsc(lbl) + '</div>'
     +   '</div>'
     + '</div></div>';
+
+  // Явная строка раскрытия: по одному заголовку неочевидно, что карточка
+  // разворачивается. Справа число пунктов разбора.
+  h += '<div class="zone-head" data-zi="' + i + '" style="padding:10px 15px;cursor:pointer;'
+    + 'border-top:1px solid rgba(184,151,58,.10);display:flex;align-items:center;gap:8px">'
+    + '<span style="font-family:Montserrat,sans-serif;font-size:10px;color:#b8973a;'
+    + 'letter-spacing:.12em;text-transform:uppercase;font-weight:600">'
+    + 'Открыть разбор</span>'
+    + '<span style="margin-left:auto;font-family:Montserrat,sans-serif;font-size:9px;'
+    + 'color:#5a6b7d;letter-spacing:.08em">'
+    + ((z.crossings||[]).length + (z.manifest||[]).length + (z.watch||[]).length)
+    + ' пунктов</span></div>';
 
   h += '<div class="zone-body" data-zi="' + i + '" style="display:none;'
     + 'padding:14px 15px 15px;border-top:1px solid rgba(184,151,58,.10)">';
