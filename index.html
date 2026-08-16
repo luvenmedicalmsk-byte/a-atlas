@@ -9456,6 +9456,10 @@ window._renderCountryLocal = function(c){
 var _ZONES_CACHE = {};
 var ZONE_PDF_BASE = 'https://raw.githubusercontent.com/'
   + 'luvenmedicalmsk-byte/secrett-archive/main/docs/reports/';
+// API_BASE объявлен через const в другом инлайн-скрипте и в эту область
+// не попадает: typeof возвращал undefined, запрос уходил на относительный
+// путь и молча не находил зоны. Адрес задаётся здесь явно.
+var ZONE_API = 'https://api.a-atlas.com';
 
 function _zEsc(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -9625,7 +9629,7 @@ function _zoneDownload(z, btn){
 function grdfRenderZones(cc){
   var host = document.getElementById('grdf-zones-' + cc);
   if(!host) return;
-  var api = (typeof API_BASE !== 'undefined' && API_BASE) ? API_BASE : '';
+  var api = ZONE_API;
   var done = function(list){
     _ZONES_CACHE[cc] = list;
     if(!list.length){ host.innerHTML = ''; return; }
