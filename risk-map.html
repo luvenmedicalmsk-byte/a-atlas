@@ -9616,11 +9616,17 @@ var _ZI = {
        + 'stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
 
-function _zSec(title, kind, ico, col){
+/* Секции получают якорь: pill-навигация прокручивает к ним. Идентификатор
+   строится из индекса зоны и порядкового номера секции, чтобы при нескольких
+   зонах на страну якоря не пересекались. */
+var _zAnchors = [];
+function _zSec(title, kind, ico, col, anchor){
   // Цвет заголовка задаётся секцией, как в карточке события: там
   // «Паспорт» голубой, «Что это значит» фиолетовый, «Вывод» золотой.
   // Единый золотой на всех секциях делал разбор монотонным.
-  return '<div style="display:flex;align-items:center;gap:7px;margin:20px 0 11px">'
+  return '<div' + (anchor ? (' id="' + anchor + '"') : '')
+    + ' style="display:flex;align-items:center;gap:7px;margin:20px 0 11px;'
+    + 'scroll-margin-top:60px">'
     + (ico || '')
     + '<span style="font-family:Montserrat,sans-serif;font-size:9.5px;color:'
     + (col || '#b8973a') + ';'
@@ -9779,6 +9785,33 @@ function _zoneCard(z, i){
   h += '<div class="zone-body" data-zi="' + i + '" style="display:none;'
     + 'padding:14px 15px 15px;border-top:1px solid rgba(184,151,58,.10)">';
 
+  // Pill-навигация: якоря по секциям разбора. На узком экране кнопки
+  // переносятся на несколько строк, горизонтальной прокрутки нет.
+  var _navIt = [];
+  if(z.dependency || z.date)          _navIt.push(['Паспорт',       'zp' + i]);
+  if(z.trigger || (z.anchors||[]).length) _navIt.push(['Свидетельства', 'ze' + i]);
+  if(z.decode || (z.crossings||[]).length) _navIt.push(['Интерпретация', 'zi' + i]);
+  if((z.cascade||[]).length)          _navIt.push(['Каскад',        'zc' + i]);
+  if((z.manifest||[]).length)         _navIt.push(['Что это значит','zm' + i]);
+  if((z.history||[]).length || (z.table_rows||[]).length || (z.gradient||[]).length)
+                                      _navIt.push(['Данные',        'zd' + i]);
+  if((z.options||[]).length || z.filter) _navIt.push(['Возможности', 'zo' + i]);
+  if((z.watch||[]).length)            _navIt.push(['Мониторинг',    'zw' + i]);
+  if(z.user_note || (z.comment_low||[]).length) _navIt.push(['Вывод', 'zv' + i]);
+
+  if(_navIt.length > 2){
+    h += '<div style="display:flex;flex-wrap:wrap;gap:5px;margin:0 0 6px">'
+      + _navIt.map(function(nv){
+          return '<a href="#" class="zone-nav" data-anch="' + nv[1] + '" '
+            + 'style="display:inline-block;padding:5px 10px;border-radius:13px;'
+            + 'background:rgba(255,255,255,.03);border:1px solid rgba(184,151,58,.16);'
+            + 'font-family:Montserrat,sans-serif;font-size:10px;color:#8a9bb0;'
+            + 'letter-spacing:.04em;text-decoration:none;white-space:nowrap">'
+            + _zEsc(nv[0]) + '</a>';
+        }).join('')
+      + '</div>';
+  }
+
   // ── 1 · ГЛАВНЫЙ ВЫВОД ─────────────────────────────────────────────
   // Доминанта первой строкой: пользователь понимает суть, не читая всё.
   var _dom = _zDominant(z);
@@ -9801,7 +9834,7 @@ function _zoneCard(z, i){
   if((z.domains||[]).length) _pass.push(['Домены', z.domains.join(' · ')]);
   if(z.dependency)  _pass.push(['Зависимость', z.dependency]);
 
-  h += _zSec('Паспорт зоны', 'Данные', _ZI.pass, '#7ec8ea')
+  h += _zSec('Паспорт зоны', 'Данные', _ZI.pass, '#7ec8ea', 'zp' + i)
     + '<div style="background:rgba(126,200,234,.035);border:1px solid rgba(126,200,234,.16);'
     + 'border-radius:9px;padding:4px 13px 6px">'
     + _pass.map(function(p){
@@ -9823,7 +9856,7 @@ function _zoneCard(z, i){
   if(z.trigger) _ev.push(['Триггер индекса', z.trigger]);
   (z.anchors || []).forEach(function(a){ _ev.push([z.anchors_title || 'Ориентир', a]); });
   if(_ev.length){
-    h += _zSec('Свидетельства', 'Доказательная база · ' + _ev.length, _ZI.evid, '#9ec5a8')
+    h += _zSec('Свидетельства', 'Доказательная база · ' + _ev.length, _ZI.evid, '#9ec5a8', 'ze' + i)
       + _ev.map(function(e, ix){
           return '<div style="display:flex;gap:11px;margin:8px 0;padding:11px 13px;'
             + 'background:rgba(158,197,168,.035);border:1px solid rgba(158,197,168,.16);'
@@ -9846,7 +9879,7 @@ function _zoneCard(z, i){
 
   // ── 4 · ИНЖЕНЕРНАЯ ИНТЕРПРЕТАЦИЯ ──────────────────────────────────
   if(z.decode || z.index_link || (z.crossings||[]).length){
-    h += _zSec('Инженерная интерпретация', 'Тезис', _ZI.concl, '#e8eaf0');
+    h += _zSec('Инженерная интерпретация', 'Тезис', _ZI.concl, '#e8eaf0', 'zi' + i);
     if(z.decode){
       h += '<div style="font-family:Montserrat,sans-serif;font-size:13px;color:#e8eaf0;'
         + 'line-height:1.55;font-weight:500;margin:4px 0 10px">' + _zEsc(z.decode) + '</div>';
@@ -9872,7 +9905,7 @@ function _zoneCard(z, i){
     // Вертикальная схема: узлы различимы, связи показаны стрелками.
     // Строки, начинающиеся с «+», трактуются как усилители того же узла,
     // с «=» — как результат. Формат задаётся аналитиком в консоли.
-    h += _zSec('Каскад процесса', 'Инженерная схема', _ZI.casc, '#e0b84a')
+    h += _zSec('Каскад процесса', 'Инженерная схема', _ZI.casc, '#e0b84a', 'zc' + i)
       + '<div style="background:rgba(224,184,74,.04);border:1px solid rgba(224,184,74,.16);'
       + 'border-radius:9px;padding:13px 14px">'
       + (z.cascade||[]).map(function(l, ix){
@@ -9905,7 +9938,7 @@ function _zoneCard(z, i){
     // сплошной список этого не давал. Первая часть до двоеточия
     // становится заголовком сегмента, если она короткая.
     h += _zSec('Что это значит', 'Карта воздействия · ' + z.manifest.length,
-               _ZI.imp, '#9b7fc4')
+               _ZI.imp, '#9b7fc4', 'zm' + i)
       + z.manifest.map(function(m, ix){
           var s = String(m || '').trim();
           var cut = s.indexOf(':');
@@ -9930,7 +9963,7 @@ function _zoneCard(z, i){
   // ── 7 · ДАННЫЕ: динамика, диапазоны, градиент ─────────────────────
   if((z.history||[]).length){
     h += _zSec('Динамика индекса', _tr ? (_tr.from + ' \u00b7 ' + _tr.to) : 'История',
-               _ZI.dyn, '#7f9bc7');
+               _ZI.dyn, '#7f9bc7', 'zd' + i);
     if(_tr){
       h += '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#cbd5e1;'
         + 'margin:0 0 8px">' + _zArrow(_tr.delta > 0 ? 'up' : _tr.delta < 0 ? 'down' : 'flat', _trc)
@@ -9956,7 +9989,7 @@ function _zoneCard(z, i){
     // Ранжирование: порядок в данных задаёт приоритет, номер его
     // показывает. Первые три выделены цветом.
     h += _zSec(z.options_title || 'Варианты', 'Приоритет · ' + z.options.length,
-               _ZI.evid, '#9ec5a8')
+               _ZI.evid, '#9ec5a8', 'zo' + i)
       + z.options.map(function(o, oi){
           var top = oi < 3;
           return '<div style="display:flex;gap:11px;align-items:flex-start;'
@@ -9989,7 +10022,7 @@ function _zoneCard(z, i){
     // как инструмент мониторинга, а не как перечисление.
     var _wm = _zWatchGet(z);
     h += _zSec(z.watch_title || 'Что отслеживать',
-               'Операционный чек-лист · ' + z.watch.length, _ZI.mon, '#7f9bc7')
+               'Операционный чек-лист · ' + z.watch.length, _ZI.mon, '#7f9bc7', 'zw' + i)
       + '<div class="zone-watch" data-zi="' + i + '">'
       + z.watch.map(function(w, wi){
           var on = _wm.indexOf(wi) >= 0;
@@ -10012,7 +10045,7 @@ function _zoneCard(z, i){
   var _hasConcl = (z.comment_low||[]).length || (z.comment_high||[]).length
                 || (z.comment_under||[]).length || z.user_note || z.user_indicator;
   if(_hasConcl){
-    h += _zSec('Инженерный вывод', 'Заключение', _ZI.concl, '#d4af5a')
+    h += _zSec('Инженерный вывод', 'Заключение', _ZI.concl, '#d4af5a', 'zv' + i)
       + '<div style="background:rgba(212,175,90,.05);border:1px solid rgba(212,175,90,.20);'
       + 'border-radius:9px;padding:12px 14px">';
     if(z.user_note){
@@ -10097,6 +10130,24 @@ window.grdfRenderZones = function(cc){
     host.querySelectorAll('.zone-pdf').forEach(function(b){
       b.onclick = function(){ _zoneDownload(list[+b.getAttribute('data-zi')], b); };
     });
+    // Навигация по секциям: прокрутка к якорю внутри панели, а не переход
+    // по адресу. Активная кнопка подсвечивается до следующего клика.
+    host.querySelectorAll('.zone-nav').forEach(function(nv){
+      nv.onclick = function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        var el = document.getElementById(nv.getAttribute('data-anch'));
+        if(el && el.scrollIntoView) el.scrollIntoView({behavior:'smooth', block:'start'});
+        host.querySelectorAll('.zone-nav').forEach(function(o){
+          o.style.color = '#8a9bb0';
+          o.style.background = 'rgba(255,255,255,.03)';
+          o.style.borderColor = 'rgba(184,151,58,.16)';
+        });
+        nv.style.color = '#e8eaf0';
+        nv.style.background = 'rgba(184,151,58,.10)';
+        nv.style.borderColor = 'rgba(184,151,58,.34)';
+      };
+    });
+
     // Отметки чек-листа. Клик по строке переключает состояние
     // и сразу пишет его в localStorage: список работает как инструмент,
     // а не как перечисление.
