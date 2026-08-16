@@ -9570,6 +9570,27 @@ function _zSec(title, kind, ico){
     + '</div>';
 }
 
+/* Палитра доменов Atlas: та же, что в карточках событий. Ключи русские,
+   потому что в записи зоны домены хранятся словами, а не кодами. */
+var _ZDOM = {
+  'геополитика': '#ff7a00', 'геополитический': '#ff7a00',
+  'климат':      '#22c55e', 'климатический':   '#22c55e',
+  'экономика':   '#38bdf8', 'экономический':   '#38bdf8',
+  'технологии':  '#a855f7', 'технологический': '#a855f7',
+  'социум':      '#ef4444', 'социальный':      '#ef4444'
+};
+
+/* Цвет домена по названию. Совпадение по началу слова: «экономика»
+   и «экономический» дают один цвет. */
+function _zDomCol(name){
+  var k = String(name || '').toLowerCase().trim();
+  if(_ZDOM[k]) return _ZDOM[k];
+  for(var key in _ZDOM){
+    if(k.indexOf(key.slice(0, 6)) === 0) return _ZDOM[key];
+  }
+  return '#8a9bb0';
+}
+
 /* Чип домена. Цвета берутся из палитры карточек событий, если она есть. */
 function _zChip(t, col){
   var c = col || '#5eb4de';
@@ -9654,8 +9675,10 @@ function _zoneCard(z, i){
 
   h += '<div class="zone-head" data-zi="' + i + '" style="padding:15px;cursor:pointer">'
     + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">'
-    +   (z.domains||[]).map(function(dm, ix){
-          return _zChip(dm, ix===0 ? '#b8973a' : '#5eb4de');
+    +   (z.domains||[]).map(function(dm){
+          // Цвет по СМЫСЛУ домена, а не по порядку: климат зелёный,
+          // экономика голубая, технологии фиолетовые — как в событиях.
+          return _zChip(dm, _zDomCol(dm));
         }).join('')
     +   _zChip('Atlas Intelligence', '#5eb4de')
     +   (_cf.lvl === 'HIGH' ? _zChip('Высокая уверенность', '#5fae7a')
