@@ -9438,6 +9438,203 @@ window._renderCountryLocal = function(c){
     .then(function(d){ window._spRenderCountryLocal(el,d,cname); try{ window._renderCountryArchive(el, cc, cname, ds); }catch(_e){} })
     .catch(function(){ window._spRenderCountryLocal(el,{locked:true},cname); });
 };
+
+/* ══ МИНИ-РАЗБОРЫ ЗОН РИСКА ══════════════════════════════════════════════
+   Зона — аналитический разбор одного аспекта риска в стране: «Китай ·
+   Шанхай · Доход». Отличается от события тем, что описывает состояние,
+   а не происшествие: индекс, его историю, пересечение доменов, диапазоны
+   значений и градиент по группам.
+
+   Данные приходят из Worker по /api/country-zones, тот же гейт по тиру,
+   что у аннотаций: запись с visibility signal_pro бесплатному тиру
+   не отдаётся, поэтому фильтровать на фронте не нужно.
+
+   PDF отдаётся из публичного репозитория, но пользователь ссылки
+   не видит: файл скачивается через blob и подставляется в невидимую
+   ссылку с атрибутом download.
+════════════════════════════════════════════════════════════════════════ */
+var _ZONES_CACHE = {};
+var ZONE_PDF_BASE = 'https://raw.githubusercontent.com/'
+  + 'luvenmedicalmsk-byte/secrett-archive/main/docs/reports/';
+
+function _zEsc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* Список пунктов. Пустые массивы дают пустую строку: секция не рисуется. */
+function _zList(items, style){
+  var a = items || [];
+  if(!a.length) return '';
+  return a.map(function(x){
+    return '<div style="' + (style || 'font-size:11px;color:#94a3b8;line-height:1.5;margin:3px 0')
+      + '">• ' + _zEsc(x) + '</div>';
+  }).join('');
+}
+
+/* Таблица: массив массивов. Первый столбец уже, остальные тянутся. */
+function _zTable(head, rows, w1){
+  var r = rows || [];
+  if(!r.length) return '';
+  var th = (head||[]).map(function(h,i){
+    return '<div style="flex:' + (i===0 ? ('0 0 '+(w1||110)+'px') : '1')
+      + ';font-size:10px;color:#6f88ab;letter-spacing:.04em">' + _zEsc(h) + '</div>';
+  }).join('');
+  var tb = r.map(function(row){
+    return '<div style="display:flex;gap:8px;padding:6px 0;'
+      + 'border-top:1px solid rgba(184,151,58,.10)">'
+      + row.map(function(v,i){
+          return '<div style="flex:' + (i===0 ? ('0 0 '+(w1||110)+'px') : '1')
+            + ';font-size:11px;color:' + (i===0 ? '#cbd5e1' : '#94a3b8')
+            + ';line-height:1.45">' + _zEsc(v) + '</div>';
+        }).join('')
+      + '</div>';
+  }).join('');
+  return '<div style="margin:6px 0 10px">'
+    + (th ? '<div style="display:flex;gap:8px;padding-bottom:4px">' + th + '</div>' : '')
+    + tb + '</div>';
+}
+
+function _zSec(title){
+  return '<div style="margin:16px 0 7px;padding-top:11px;'
+    + 'border-top:1px solid rgba(184,151,58,.14);font-size:10px;color:#B8973A;'
+    + 'letter-spacing:.1em;text-transform:uppercase">' + _zEsc(title) + '</div>';
+}
+
+function _zText(s){
+  if(!s) return '';
+  return '<div style="font-size:11px;color:#94a3b8;line-height:1.55;'
+    + 'white-space:pre-line;margin:4px 0">' + _zEsc(s) + '</div>';
+}
+
+/* Полная карточка разбора: те же восемнадцать секций, что в PDF. */
+function _zoneCard(z, i){
+  var col = (typeof window._sevColor === 'function') ? window._sevColor(z.index) : '#1faacc';
+  var h = '<div style="margin:12px 0;padding:13px;background:rgba(13,20,32,.55);'
+    + 'border:1px solid rgba(184,151,58,.16);border-radius:9px">';
+
+  h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+    +   '<div><div style="font-size:13px;color:#e8eef7;font-weight:600">'
+    +     _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
+    +     '<div style="font-size:10px;color:#6f88ab;margin-top:3px">'
+    +     _zEsc(z.date) + ' · ' + _zEsc((z.domains||[]).join(' · ')) + '</div></div>'
+    +   '<div style="text-align:right"><div style="font-size:20px;color:' + col
+    +     ';font-weight:600;line-height:1">' + (z.index||0) + '<span style="font-size:11px'
+    +     ';color:#6f88ab">/100</span></div>'
+    +   (z.index_label ? '<div style="font-size:9px;color:#6f88ab;margin-top:2px">'
+        + _zEsc(z.index_label) + '</div>' : '') + '</div>'
+    + '</div>';
+
+  if(z.index_note) h += _zText(z.index_note);
+  if(z.dependency){ h += _zSec('Тип зависимости') + _zText(z.dependency); }
+  if(z.trigger){ h += _zSec('Текущее событие') + _zText(z.trigger); }
+  if(z.sources) h += '<div style="font-size:10px;color:#6f88ab;line-height:1.45;'
+    + 'margin-top:5px">Источники: ' + _zEsc(z.sources) + '</div>';
+  if(z.index_link) h += _zText('Связь с индексом: ' + z.index_link);
+
+  if((z.history||[]).length){
+    h += _zSec('Динамика индекса')
+      + _zTable(['Дата','Индекс','Событие'], z.history, 72);
+  }
+  if((z.crossings||[]).length){
+    h += _zSec('Пересечения доменов')
+      + (z.crossings||[]).map(function(p){
+          return '<div style="font-size:11px;line-height:1.5;margin:5px 0">'
+            + '<span style="color:#cbd5e1">' + _zEsc(p[0]) + '</span>'
+            + '<span style="color:#6f88ab"> · </span>'
+            + '<span style="color:#94a3b8">' + _zEsc(p[1]) + '</span></div>';
+        }).join('');
+    if(z.crossings_note) h += _zText(z.crossings_note);
+  }
+  if((z.cascade||[]).length){
+    h += _zSec('Цепочка')
+      + '<div style="font-size:11px;color:#94a3b8;line-height:1.6;padding-left:4px">'
+      + (z.cascade||[]).map(function(l){ return _zEsc(l); }).join('<br>') + '</div>';
+    if(z.cascade_note) h += _zText(z.cascade_note);
+  }
+  if((z.manifest||[]).length){ h += _zSec('Как проявляется') + _zList(z.manifest); }
+  if(z.decode){ h += _zSec('Расшифровка индекса') + _zText(z.decode); }
+  if((z.table_rows||[]).length){
+    h += _zSec(z.table_title || 'Диапазоны')
+      + _zTable(z.table_head, z.table_rows, 96);
+    if(z.table_note) h += '<div style="font-size:10px;color:#6f88ab">'
+      + _zEsc(z.table_note) + '</div>';
+  }
+  if((z.options||[]).length){ h += _zSec(z.options_title || 'Варианты') + _zList(z.options); }
+  if(z.filter){ h += _zSec(z.filter_title || 'Фильтр') + _zText(z.filter); }
+  if((z.anchors||[]).length){ h += _zSec(z.anchors_title || 'Ориентиры') + _zList(z.anchors); }
+  if((z.requirements||[]).length){
+    h += _zSec(z.requirements_title || 'Требования') + _zList(z.requirements);
+  }
+  if((z.comment_low||[]).length || (z.comment_high||[]).length || (z.comment_under||[]).length){
+    h += _zSec('Инженерный комментарий');
+    [['comment_low_title','comment_low'],
+     ['comment_high_title','comment_high'],
+     ['comment_under_title','comment_under']].forEach(function(p){
+      if(!(z[p[1]]||[]).length) return;
+      h += '<div style="font-size:11px;color:#cbd5e1;margin:8px 0 3px">'
+        + _zEsc(z[p[0]] || '') + '</div>' + _zList(z[p[1]]);
+    });
+  }
+  if(z.user_note){ h += _zSec('Что это значит') + _zText(z.user_note); }
+  if(z.user_indicator) h += _zText(z.user_indicator);
+  if((z.gradient||[]).length){
+    h += _zSec(z.gradient_title || 'Градиент по группам')
+      + _zTable(z.gradient_head, z.gradient, 120);
+  }
+  if(z.mini){ h += _zSec('Мини-информация') + _zText(z.mini); }
+  if((z.watch||[]).length){ h += _zSec(z.watch_title || 'Что отслеживать') + _zList(z.watch); }
+  if(z.atlas_note){ h += _zSec('Atlas показывает') + _zText(z.atlas_note); }
+
+  h += '<button type="button" class="zone-pdf" data-zi="' + i + '" '
+    + 'style="width:100%;margin-top:14px;padding:9px;background:#1faacc;border:0;'
+    + 'border-radius:7px;color:#06050A;font-size:12px;font-weight:600;cursor:pointer">'
+    + 'Скачать разбор PDF</button>';
+  h += '</div>';
+  return h;
+}
+
+/* Скачивание без показа ссылки: файл берётся как blob и отдаётся
+   через невидимый элемент с атрибутом download. */
+function _zoneDownload(z, btn){
+  var name = z.id + '-' + z.date + '.pdf';
+  var t0 = btn ? btn.textContent : '';
+  if(btn){ btn.textContent = 'Загрузка…'; btn.disabled = true; }
+  fetch(ZONE_PDF_BASE + name)
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+    .then(function(b){
+      var u = URL.createObjectURL(b);
+      var a = document.createElement('a');
+      a.href = u; a.download = 'Atlas · ' + z.zone + ' · ' + z.region + '.pdf';
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 1200);
+      if(btn){ btn.textContent = t0; btn.disabled = false; }
+    })
+    .catch(function(){
+      if(btn){ btn.textContent = 'Документ ещё готовится'; btn.disabled = false; }
+    });
+}
+
+function grdfRenderZones(cc){
+  var host = document.getElementById('grdf-zones-' + cc);
+  if(!host) return;
+  var api = (typeof API_BASE !== 'undefined' && API_BASE) ? API_BASE : '';
+  var done = function(list){
+    _ZONES_CACHE[cc] = list;
+    if(!list.length){ host.innerHTML = ''; return; }
+    host.innerHTML = '<div style="margin:18px 0 4px;font-size:10px;color:#B8973A;'
+      + 'letter-spacing:.1em;text-transform:uppercase">Зоны риска</div>'
+      + list.map(function(z, i){ return _zoneCard(z, i); }).join('');
+    host.querySelectorAll('.zone-pdf').forEach(function(b){
+      b.onclick = function(){ _zoneDownload(list[+b.getAttribute('data-zi')], b); };
+    });
+  };
+  if(_ZONES_CACHE[cc]) return done(_ZONES_CACHE[cc]);
+  fetch(api + '/api/country-zones?country=' + cc, { credentials: 'include' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ done((d && d.zones) || []); })
+    .catch(function(){ host.innerHTML = ''; });
+}
+
 function grdfRenderCountryPanel(cc) {
 
   try{ var _ct=(window.CC&&CC.tier&&CC.tier())||''; if(_ct&&_ct!=='free') _grdfTier='SIGNAL_PRO'; }catch(e){}
@@ -9536,7 +9733,9 @@ function grdfRenderCountryPanel(cc) {
   var _csEl = document.getElementById('grdf-cs-content');
   if(_csEl) {
     _csEl.scrollTop = 0;       // reset BEFORE setting content
-    _csEl.innerHTML = html;
+    _csEl.innerHTML = html
+      + '<div id="grdf-zones-' + cc + '"></div>';
+    try{ grdfRenderZones(cc); }catch(_e){}
     try{ window._renderCountryLocal(c); }catch(_e){}
     if(isSig){ try{ _grdfLoadHistory(c.country); }catch(e){} }
     _csEl.scrollTop = 0;       // reset AFTER setting content (point 5)
