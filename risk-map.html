@@ -9100,12 +9100,12 @@ function _grdfContextHtml(c){
       +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
   })();
 
-  H+='<div id="grdf-cc-local"></div>';  // Мини-разборы зон риска: после блока прогноза и траектории. Разбор
-  // дополняет расчётные метрики, поэтому читается следом за ними.
-  H+='<div id="grdf-zones-'+String(c.country||'').toUpperCase()+'"></div>';
+    // Мини-разборы зон риска: после блока прогноза и траектории.
+  // «Динамика изменений» — последняя карточка прогноза, дальше идёт
+  // история индексов, поэтому вставка стоит между ними.
+  H+='<div id="grdf-zones-'+String(c.country||'').toUpperCase()+'" style="margin:0"></div>';
   // Отложенный вызов: контейнер вставляется в DOM после сборки строки
-  // разметки, поэтому элемент ищется не сразу. Второй заход на случай,
-  // если к первому моменту вставка ещё не произошла.
+  // разметки, поэтому элемент ищется не сразу.
   (function(_cc){
     var _try = function(){
       if(typeof window.grdfRenderZones !== 'function') return;
@@ -9114,7 +9114,7 @@ function _grdfContextHtml(c){
     };
     setTimeout(_try, 60); setTimeout(_try, 400);
   })(String(c.country||'').toUpperCase());
-H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
+H+='<div id="grdf-cc-local"></div>';H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
   // ── 2. Динамика риска · график (history) ──
   H+=card('История индексов', '<div id="grdf-hist" style="min-height:70px"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>');
   // ── 8. Статистика обработки сигналов ──
@@ -9680,12 +9680,18 @@ window.grdfRenderZones = function(cc){
   var done = function(list){
     _ZONES_CACHE[cc] = list;
     if(!list.length){ host.innerHTML = ''; return; }
-    host.innerHTML = '<div style="display:flex;align-items:center;gap:7px;margin:4px 0 2px">'
-      + '<span style="font-size:9.5px;color:#b8973a;letter-spacing:.14em;'
-      + 'text-transform:uppercase;font-weight:600">Мини-разборы зон риска</span>'
-      + '<span style="margin-left:auto;font-size:8px;color:#5a6b7d;letter-spacing:.1em;'
-      + 'text-transform:uppercase">' + list.length + '</span></div>'
-      + list.map(function(z, i){ return _zoneCard(z, i); }).join('');
+    // Отступы совпадают с соседними заголовками панели: 14px по краям,
+    // 20px сверху, разделительная линия. Прежний вариант обрезался слева.
+    host.innerHTML = '<div style="font-family:Montserrat,sans-serif;font-size:10px;'
+      + 'font-weight:600;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;'
+      + 'line-height:1.35;margin:20px 14px 9px;padding-top:12px;'
+      + 'border-top:0.5px solid rgba(184,151,58,.20);display:flex;align-items:center">'
+      + '<span>Аналитика зон риска</span>'
+      + '<span style="margin-left:auto;font-size:9px;color:#5a6b7d;font-weight:400">'
+      + list.length + '</span></div>'
+      + '<div style="padding:0 14px">'
+      + list.map(function(z, i){ return _zoneCard(z, i); }).join('')
+      + '</div>';
     host.querySelectorAll('.zone-pdf').forEach(function(b){
       b.onclick = function(){ _zoneDownload(list[+b.getAttribute('data-zi')], b); };
     });
