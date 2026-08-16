@@ -9498,10 +9498,24 @@ function _zTable(head, rows, w1){
     + tb + '</div>';
 }
 
-function _zSec(title){
-  return '<div style="margin:16px 0 7px;padding-top:11px;'
-    + 'border-top:1px solid rgba(184,151,58,.14);font-size:10px;color:#B8973A;'
-    + 'letter-spacing:.1em;text-transform:uppercase">' + _zEsc(title) + '</div>';
+/* Заголовок секции в стиле карточки «Atlas фиксирует»: золотой,
+   разреженный, с маркером справа. */
+function _zSec(title, kind){
+  return '<div style="display:flex;align-items:center;gap:7px;margin:16px 0 10px">'
+    + '<span style="font-size:9.5px;color:#b8973a;letter-spacing:.14em;'
+    + 'text-transform:uppercase;font-weight:600">' + _zEsc(title) + '</span>'
+    + (kind ? '<span style="margin-left:auto;font-size:8px;color:#5a6b7d;'
+      + 'letter-spacing:.1em;text-transform:uppercase">' + _zEsc(kind) + '</span>' : '')
+    + '</div>';
+}
+
+/* Чип домена. Цвета берутся из палитры карточек событий, если она есть. */
+function _zChip(t, col){
+  var c = col || '#5eb4de';
+  return '<span style="display:inline-block;padding:3px 8px;border-radius:11px;'
+    + 'font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;'
+    + 'background:' + c + '14;border:1px solid ' + c + '2e;color:' + c
+    + ';white-space:nowrap">' + _zEsc(t) + '</span>';
 }
 
 function _zText(s){
@@ -9513,28 +9527,44 @@ function _zText(s){
 /* Полная карточка разбора: те же восемнадцать секций, что в PDF. */
 function _zoneCard(z, i){
   var col = (typeof window._sevColor === 'function') ? window._sevColor(z.index) : '#1faacc';
-  var h = '<div style="margin:12px 0;padding:13px;background:rgba(13,20,32,.55);'
-    + 'border:1px solid rgba(184,151,58,.16);border-radius:9px">';
+  var lbl = (typeof window._sevLabel === 'function') ? window._sevLabel(z.index) : (z.index_label||'');
+  var h = '<div style="margin:14px 0;background:rgba(13,20,32,.55);'
+    + 'border:1px solid rgba(184,151,58,.16);border-radius:12px;overflow:hidden">';
 
   // Шапка кликабельна: карточка из восемнадцати секций разворачивалась
   // на всю панель, и до хроники событий приходилось листать. Свёрнута
   // до заголовка с индексом, разбор открывается по клику.
-  h += '<div class="zone-head" data-zi="' + i + '" style="display:flex;'
-    +   'justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer">'
-    +   '<div><div style="font-size:13px;color:#e8eef7;font-weight:600">'
-    +     '<span class="zone-caret" data-zi="' + i + '" style="color:#6f88ab;'
-    +     'font-size:10px;margin-right:5px">▸</span>'
-    +     _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
-    +     '<div style="font-size:10px;color:#6f88ab;margin-top:3px;padding-left:15px">'
-    +     _zEsc(z.date) + ' · ' + _zEsc((z.domains||[]).join(' · ')) + '</div></div>'
-    +   '<div style="text-align:right"><div style="font-size:20px;color:' + col
-    +     ';font-weight:600;line-height:1">' + (z.index||0) + '<span style="font-size:11px'
-    +     ';color:#6f88ab">/100</span></div>'
-    +   (z.index_label ? '<div style="font-size:9px;color:#6f88ab;margin-top:2px">'
-        + _zEsc(z.index_label) + '</div>' : '') + '</div>'
-    + '</div>';
+  // Шапка повторяет карточку «Atlas фиксирует»: чипы доменов, крупный
+  // заголовок, дата, справа индекс с подписью уровня.
+  h += '<div class="zone-head" data-zi="' + i + '" style="padding:15px;cursor:pointer">'
+    + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">'
+    +   (z.domains||[]).map(function(dm, ix){
+          return _zChip(dm, ix===0 ? '#b8973a' : '#5eb4de');
+        }).join('')
+    +   _zChip('Atlas Intelligence', '#5eb4de')
+    +   ((z.history||[]).length >= 3 ? _zChip('Динамика отслежена', '#5fae7a') : '')
+    + '</div>'
+    + '<div style="display:flex;gap:12px;align-items:flex-start">'
+    +   '<div style="flex:1;min-width:0">'
+    +     '<div style="color:#e8eaf0;font-size:13.5px;font-weight:600;line-height:1.4;'
+    +     'letter-spacing:.01em">'
+    +       '<span class="zone-caret" data-zi="' + i + '" style="color:#6f88ab;'
+    +       'font-size:10px;margin-right:6px">\u25B8</span>'
+    +       _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
+    +     '<div style="font-size:10px;color:#6f88ab;margin-top:7px;padding-left:16px">'
+    +     _zEsc(z.date) + '</div>'
+    +   '</div>'
+    +   '<div style="text-align:right;flex-shrink:0;padding-left:6px">'
+    +     '<div style="font-size:31px;font-weight:700;color:' + col + ';line-height:1;'
+    +     'font-variant-numeric:tabular-nums">' + (z.index||0)
+    +     '<span style="font-size:11px;color:#6f88ab;font-weight:400">/100</span></div>'
+    +     '<div style="font-size:8.5px;color:' + col + ';letter-spacing:.06em;'
+    +     'margin-top:5px;text-transform:uppercase">' + _zEsc(lbl) + '</div>'
+    +   '</div>'
+    + '</div></div>';
 
-  h += '<div class="zone-body" data-zi="' + i + '" style="display:none">';
+  h += '<div class="zone-body" data-zi="' + i + '" style="display:none;'
+    + 'padding:0 15px 15px;border-top:1px solid rgba(184,151,58,.10)">';
   if(z.index_note) h += _zText(z.index_note);
   if(z.dependency){ h += _zSec('Тип зависимости') + _zText(z.dependency); }
   if(z.trigger){ h += _zSec('Текущее событие') + _zText(z.trigger); }
@@ -9633,8 +9663,11 @@ function grdfRenderZones(cc){
   var done = function(list){
     _ZONES_CACHE[cc] = list;
     if(!list.length){ host.innerHTML = ''; return; }
-    host.innerHTML = '<div style="margin:18px 0 4px;font-size:10px;color:#B8973A;'
-      + 'letter-spacing:.1em;text-transform:uppercase">Зоны риска</div>'
+    host.innerHTML = '<div style="display:flex;align-items:center;gap:7px;margin:4px 0 2px">'
+      + '<span style="font-size:9.5px;color:#b8973a;letter-spacing:.14em;'
+      + 'text-transform:uppercase;font-weight:600">Мини-разборы зон риска</span>'
+      + '<span style="margin-left:auto;font-size:8px;color:#5a6b7d;letter-spacing:.1em;'
+      + 'text-transform:uppercase">' + list.length + '</span></div>'
       + list.map(function(z, i){ return _zoneCard(z, i); }).join('');
     host.querySelectorAll('.zone-pdf').forEach(function(b){
       b.onclick = function(){ _zoneDownload(list[+b.getAttribute('data-zi')], b); };
@@ -9775,8 +9808,10 @@ function grdfRenderCountryPanel(cc) {
   var _csEl = document.getElementById('grdf-cs-content');
   if(_csEl) {
     _csEl.scrollTop = 0;       // reset BEFORE setting content
-    _csEl.innerHTML = html
-      + '<div id="grdf-zones-' + cc + '"></div>';
+    // Блок зон ставится ПЕРЕД остальным содержимым панели: разбор
+    // важнее хроники и в конце страницы оставался незамеченным.
+    _csEl.innerHTML = '<div id="grdf-zones-' + cc + '" style="padding:0 14px"></div>'
+      + html;
     try{ grdfRenderZones(cc); }catch(_e){}
     try{ window._renderCountryLocal(c); }catch(_e){}
     if(isSig){ try{ _grdfLoadHistory(c.country); }catch(e){} }
