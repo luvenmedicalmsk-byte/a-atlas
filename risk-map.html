@@ -9746,7 +9746,12 @@ function _zoneCard(z, i){
     +   '<div style="flex:1;min-width:0">'
     +     '<div style="color:#e8eaf0;font-size:13.5px;font-weight:600;line-height:1.4;'
     +     'letter-spacing:.01em">'
-    +       _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
+    +       _zEsc(z.zone)
+    +       // Регион показывается, только если отличается от страны:
+    +       // у зоны на всю страну «Продукты · Россия» дублировало бы
+    +       // подпись ниже.
+            (z.region && z.region !== z.country ? (' · ' + _zEsc(z.region)) : '')
+    +       '</div>'
     +     '<div style="font-size:10px;color:#6f88ab;margin-top:7px;padding-left:16px">'
     +     _zEsc(_zRuDate(z.date)) + '</div>'
     +   '</div>'
@@ -9818,8 +9823,9 @@ function _zoneCard(z, i){
   // ── 2 · ПАСПОРТ ───────────────────────────────────────────────────
   // Пары «метка → значение»: метки вторичны, значения основные.
   var _pass = [];
-  if(z.zone)        _pass.push(['Объект',   z.zone + ' · ' + (z.region || '')]);
-  if(z.country)     _pass.push(['Локация',  z.country + (z.region ? (', ' + z.region) : '')]);
+  var _rg = (z.region && z.region !== z.country) ? z.region : '';
+  if(z.zone)    _pass.push(['Объект',  z.zone + (_rg ? (' · ' + _rg) : '')]);
+  if(z.country) _pass.push(['Локация', z.country + (_rg ? (', ' + _rg) : '')]);
   if(z.date)        _pass.push(['Дата',     _zRuDate(z.date)]);
   _pass.push(['Риск', (z.index || 0) + '/100 · ' + (lbl || z.index_label || '')]);
   if(z.index_adj && z.index_adj !== z.index)
