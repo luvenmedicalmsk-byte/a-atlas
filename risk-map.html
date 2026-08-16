@@ -9570,15 +9570,6 @@ function _zArrow(dir, col){
     + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 }
 
-/* Треугольник раскрытия: заменяет знаки ▸ и ▾. */
-function _zCaret(open, col){
-  var c = col || '#6f88ab';
-  var p = open ? 'M3 5l4 4 4-4' : 'M5 3l4 4-4 4';
-  return '<svg width="10" height="10" viewBox="0 0 14 14" fill="none" '
-    + 'style="vertical-align:-1px"><path d="' + p + '" stroke="' + c
-    + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-}
-
 /* Стрелка вниз для узлов каскада. */
 function _zChainArrow(){
   return '<svg width="11" height="14" viewBox="0 0 11 14" fill="none" '
@@ -9755,8 +9746,6 @@ function _zoneCard(z, i){
     +   '<div style="flex:1;min-width:0">'
     +     '<div style="color:#e8eaf0;font-size:13.5px;font-weight:600;line-height:1.4;'
     +     'letter-spacing:.01em">'
-    +       '<span class="zone-caret" data-zi="' + i + '" style="margin-right:6px">'
-    +       _zCaret(false) + '</span>'
     +       _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
     +     '<div style="font-size:10px;color:#6f88ab;margin-top:7px;padding-left:16px">'
     +     _zEsc(_zRuDate(z.date)) + '</div>'
@@ -9770,15 +9759,19 @@ function _zoneCard(z, i){
     +   '</div>'
     + '</div></div>';
 
-  // Явная строка раскрытия: по одному заголовку неочевидно, что карточка
-  // разворачивается. Справа число пунктов разбора.
+  // Строка раскрытия повторяет карточку события: шеврон, поворот при
+  // открытии, подпись «Открыть анализ» / «Свернуть». Цвет — по первому
+  // домену зоны, как там он берётся от домена события.
+  var _dc = _zDomCol((z.domains||[])[0] || '');
   h += '<div class="zone-head" data-zi="' + i + '" style="padding:10px 15px;cursor:pointer;'
-    + 'border-top:1px solid rgba(184,151,58,.10);display:flex;align-items:center;gap:8px">'
-    + '<span style="font-family:Montserrat,sans-serif;font-size:10px;color:#b8973a;'
-    + 'letter-spacing:.12em;text-transform:uppercase;font-weight:600">'
-    + 'Открыть разбор</span>'
-    + '<span style="margin-left:auto;font-family:Montserrat,sans-serif;font-size:9px;'
-    + 'color:#5a6b7d;letter-spacing:.08em">'
+    + 'border-top:1px solid rgba(184,151,58,.10);display:flex;align-items:center;gap:5px;'
+    + 'font-size:10.5px;color:' + _dc + '">'
+    + '<svg class="zone-car" data-zi="' + i + '" width="9" height="9" viewBox="0 0 24 24" '
+    + 'style="transition:transform .18s">'
+    + '<path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.4" '
+    + 'stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    + '<span class="zone-lbl" data-zi="' + i + '">Открыть анализ</span>'
+    + '<span style="margin-left:auto;font-size:9px;color:#5a6b7d;letter-spacing:.08em">'
     + ((z.crossings||[]).length + (z.manifest||[]).length + (z.watch||[]).length)
     + ' пунктов</span></div>';
 
@@ -10068,7 +10061,7 @@ function _zoneCard(z, i){
   }
 
   // ── 11 · КОНТЕКСТ ─────────────────────────────────────────────────
-  if(z.mini){ h += _zSec('Мини-информация', 'Контекст', _ZI.pass, '#7ec8ea') + _zText(z.mini); }
+  if(z.mini){ h += _zSec('Контекст', 'Фон', _ZI.pass, '#7ec8ea') + _zText(z.mini); }
   if(z.atlas_note){
     h += '<div style="margin-top:16px;padding-top:12px;'
       + 'border-top:1px solid rgba(184,151,58,.14);font-family:Montserrat,sans-serif;'
@@ -10182,7 +10175,12 @@ window.grdfRenderZones = function(cc){
         if(!bd) return;
         var open = bd.style.display !== 'none';
         bd.style.display = open ? 'none' : 'block';
-        if(cr) cr.innerHTML = _zCaret(!open);
+        // Шеврон поворачивается на 90 градусов, подпись меняется:
+        // ровно так же ведёт себя карточка события.
+        var cv = host.querySelector('.zone-car[data-zi="' + zi + '"]');
+        var lb = host.querySelector('.zone-lbl[data-zi="' + zi + '"]');
+        if(cv) cv.style.transform = open ? '' : 'rotate(90deg)';
+        if(lb) lb.textContent = open ? 'Открыть анализ' : 'Свернуть';
       };
     });
   };
