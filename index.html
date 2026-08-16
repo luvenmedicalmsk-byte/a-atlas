@@ -9054,20 +9054,6 @@ function _grdfContextHtml(c){
 
   // ── Atlas фиксирует — экспертный слой поверх процессов (после Картины давления) ──
   H+='<div id="cc-ann-block" data-iso="'+String(c.country||'').toUpperCase()+'"></div>';
-  // Мини-разборы зон риска идут сразу за экспертным слоем «Atlas фиксирует»:
-  // оба относятся к аналитике поверх расчётных метрик и читаются подряд.
-  H+='<div id="grdf-zones-'+String(c.country||'').toUpperCase()+'"></div>';
-  // Отложенный вызов: контейнер вставляется в DOM после сборки строки,
-  // поэтому ищем элемент не сразу. Повтор через 300 мс на случай,
-  // если разметка ещё не смонтирована.
-  (function(_cc){
-    var _try = function(){
-      if(typeof window.grdfRenderZones !== 'function') return;
-      if(!document.getElementById('grdf-zones-' + _cc)) return;
-      try{ window.grdfRenderZones(_cc); }catch(_e){}
-    };
-    setTimeout(_try, 60); setTimeout(_try, 400);
-  })(String(c.country||'').toUpperCase());
   try{ if(window._annWait) window._annWait(String(c.country||'').toUpperCase()); }catch(e){}
 
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
@@ -9114,7 +9100,21 @@ function _grdfContextHtml(c){
       +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
   })();
 
-  H+='<div id="grdf-cc-local"></div>';H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
+  H+='<div id="grdf-cc-local"></div>';  // Мини-разборы зон риска: после блока прогноза и траектории. Разбор
+  // дополняет расчётные метрики, поэтому читается следом за ними.
+  H+='<div id="grdf-zones-'+String(c.country||'').toUpperCase()+'"></div>';
+  // Отложенный вызов: контейнер вставляется в DOM после сборки строки
+  // разметки, поэтому элемент ищется не сразу. Второй заход на случай,
+  // если к первому моменту вставка ещё не произошла.
+  (function(_cc){
+    var _try = function(){
+      if(typeof window.grdfRenderZones !== 'function') return;
+      if(!document.getElementById('grdf-zones-' + _cc)) return;
+      try{ window.grdfRenderZones(_cc); }catch(_e){}
+    };
+    setTimeout(_try, 60); setTimeout(_try, 400);
+  })(String(c.country||'').toUpperCase());
+H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Методология и аналитика</div>';
   // ── 2. Динамика риска · график (history) ──
   H+=card('История индексов', '<div id="grdf-hist" style="min-height:70px"><div style="color:#6f88ab;font-size:11px">загрузка…</div></div>');
   // ── 8. Статистика обработки сигналов ──
