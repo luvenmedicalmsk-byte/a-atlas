@@ -9722,26 +9722,116 @@ function _zoneCard(z, i){
 
   h += '<div class="zone-body" data-zi="' + i + '" style="display:none;'
     + 'padding:14px 15px 15px;border-top:1px solid rgba(184,151,58,.10)">';
-  // Доминанта первой строкой разбора: главный вывод не должен теряться
-  // среди восемнадцати секций.
+
+  // ── 1 · ГЛАВНЫЙ ВЫВОД ─────────────────────────────────────────────
+  // Доминанта первой строкой: пользователь понимает суть, не читая всё.
   var _dom = _zDominant(z);
   if(_dom){
-    h += '<div style="margin:2px 0 4px;padding:11px 13px;background:rgba(31,170,204,.06);'
+    h += '<div style="margin:2px 0 6px;padding:11px 13px;background:rgba(31,170,204,.06);'
       + 'border-left:2px solid #1faacc;border-radius:0 7px 7px 0;'
       + 'font-family:Montserrat,sans-serif;font-size:12.5px;color:#e8eaf0;'
       + 'line-height:1.5;font-weight:500">' + _zEsc(_dom) + '</div>';
   }
-  if(z.index_note){ h += _zSec('Оценка индекса', 'Метрика', _ZI.pass, '#7ec8ea') + _zText(z.index_note); }
-  if(z.dependency){ h += _zSec('Тип зависимости', 'Паспорт зоны', _ZI.pass, '#7ec8ea') + _zText(z.dependency); }
-  if(z.trigger){ h += _zSec('Текущее событие', 'Доказательная база', _ZI.evid, '#9ec5a8') + _zText(z.trigger); }
-  if(z.sources) h += '<div style="font-family:Montserrat,sans-serif;font-size:10.5px;'
-    + 'color:#8a9bb0;line-height:1.55;margin-top:8px">'
-    + '<span style="color:#8a9bb0">Источников ' + _cf.src + '</span> · '
-    + _zEsc(z.sources) + '</div>';
-  if(z.index_link) h += _zText('Связь с индексом: ' + z.index_link);
 
+  // ── 2 · ПАСПОРТ ───────────────────────────────────────────────────
+  // Пары «метка → значение»: метки вторичны, значения основные.
+  var _pass = [];
+  if(z.zone)        _pass.push(['Объект',   z.zone + ' · ' + (z.region || '')]);
+  if(z.country)     _pass.push(['Локация',  z.country + (z.region ? (', ' + z.region) : '')]);
+  if(z.date)        _pass.push(['Дата',     _zRuDate(z.date)]);
+  _pass.push(['Риск', (z.index || 0) + '/100 · ' + (lbl || z.index_label || '')]);
+  if(z.index_adj && z.index_adj !== z.index)
+    _pass.push(['С поправкой', z.index_adj + '/100']);
+  if((z.domains||[]).length) _pass.push(['Домены', z.domains.join(' · ')]);
+  if(z.dependency)  _pass.push(['Зависимость', z.dependency]);
+
+  h += _zSec('Паспорт зоны', 'Данные', _ZI.pass, '#7ec8ea')
+    + '<div style="background:rgba(126,200,234,.035);border:1px solid rgba(126,200,234,.16);'
+    + 'border-radius:9px;padding:4px 13px 6px">'
+    + _pass.map(function(p){
+        return '<div style="display:flex;gap:12px;padding:7px 0;'
+          + 'border-bottom:1px solid rgba(126,200,234,.10)">'
+          + '<div style="flex:0 0 92px;font-family:Montserrat,sans-serif;font-size:8.5px;'
+          + 'color:#7f9bc7;letter-spacing:.1em;text-transform:uppercase;padding-top:2px">'
+          + _zEsc(p[0]) + '</div>'
+          + '<div style="flex:1;font-family:Montserrat,sans-serif;font-size:12px;'
+          + 'color:#e8eaf0;line-height:1.5">' + _zEsc(p[1]) + '</div></div>';
+      }).join('')
+    + '</div>';
+  if(z.index_note) h += _zText(z.index_note);
+
+  // ── 3 · СВИДЕТЕЛЬСТВА ─────────────────────────────────────────────
+  // Нумерованные карточки: доказательная база, а не список новостей.
+  // Источник события и перечисления собираются в единый набор.
+  var _ev = [];
+  if(z.trigger) _ev.push(['Триггер индекса', z.trigger]);
+  (z.anchors || []).forEach(function(a){ _ev.push([z.anchors_title || 'Ориентир', a]); });
+  if(_ev.length){
+    h += _zSec('Свидетельства', 'Доказательная база · ' + _ev.length, _ZI.evid, '#9ec5a8')
+      + _ev.map(function(e, ix){
+          return '<div style="display:flex;gap:11px;margin:8px 0;padding:11px 13px;'
+            + 'background:rgba(158,197,168,.035);border:1px solid rgba(158,197,168,.16);'
+            + 'border-radius:9px">'
+            + '<div style="flex:0 0 20px;font-family:Montserrat,sans-serif;font-size:14px;'
+            + 'font-weight:700;color:#9ec5a8;line-height:1;font-variant-numeric:tabular-nums">'
+            + (ix < 9 ? '0' : '') + (ix + 1) + '</div>'
+            + '<div style="flex:1;min-width:0">'
+            + '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#7f9bc7;'
+            + 'letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">'
+            + _zEsc(e[0]) + '</div>'
+            + '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#e8eaf0;'
+            + 'line-height:1.55">' + _zEsc(e[1]) + '</div></div></div>';
+        }).join('');
+    if(z.sources) h += '<div style="font-family:Montserrat,sans-serif;font-size:10.5px;'
+      + 'color:#8a9bb0;line-height:1.55;margin-top:6px">'
+      + '<span style="color:#7f9bc7">Источников ' + _cf.src + '</span> · '
+      + _zEsc(z.sources) + '</div>';
+  }
+
+  // ── 4 · ИНЖЕНЕРНАЯ ИНТЕРПРЕТАЦИЯ ──────────────────────────────────
+  if(z.decode || z.index_link || (z.crossings||[]).length){
+    h += _zSec('Инженерная интерпретация', 'Тезис', _ZI.concl, '#e8eaf0');
+    if(z.decode){
+      h += '<div style="font-family:Montserrat,sans-serif;font-size:13px;color:#e8eaf0;'
+        + 'line-height:1.55;font-weight:500;margin:4px 0 10px">' + _zEsc(z.decode) + '</div>';
+    }
+    if(z.index_link) h += _zText(z.index_link);
+    if((z.crossings||[]).length){
+      h += (z.crossings||[]).map(function(p){
+        return '<div style="margin:8px 0;padding:10px 12px;'
+          + 'background:rgba(155,127,196,.05);border-left:2px solid #9b7fc4;'
+          + 'border-radius:0 7px 7px 0">'
+          + '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#9b7fc4;'
+          + 'letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">'
+          + _zEsc(p[0]) + '</div>'
+          + '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#cbd5e1;'
+          + 'line-height:1.55">' + _zEsc(p[1]) + '</div></div>';
+      }).join('');
+    }
+    if(z.crossings_note && z.crossings_note !== _dom) h += _zText(z.crossings_note);
+  }
+
+  // ── 5 · КАСКАД ────────────────────────────────────────────────────
+  if((z.cascade||[]).length){
+    h += _zSec('Каскад процесса', 'Инженерная схема', _ZI.casc, '#e0b84a')
+      + '<div style="background:rgba(224,184,74,.05);border:1px solid rgba(224,184,74,.18);'
+      + 'border-radius:9px;padding:12px 14px;font-family:Montserrat,sans-serif;'
+      + 'font-size:12px;color:#e8eaf0;line-height:1.85">'
+      + (z.cascade||[]).map(function(l){ return _zEsc(l); }).join('<br>') + '</div>';
+    if(z.cascade_note) h += _zText(z.cascade_note);
+  }
+
+  // ── 6 · ЧТО ЭТО ЗНАЧИТ ────────────────────────────────────────────
+  if((z.manifest||[]).length){
+    h += _zSec('Что это значит', 'Карта воздействия · ' + z.manifest.length,
+               _ZI.imp, '#9b7fc4')
+      + _zList(z.manifest);
+  }
+
+  // ── 7 · ДАННЫЕ: динамика, диапазоны, градиент ─────────────────────
   if((z.history||[]).length){
-    h += _zSec('Динамика индекса', _tr ? (_tr.from + ' → ' + _tr.to) : 'История', _ZI.dyn, '#7f9bc7');
+    h += _zSec('Динамика индекса', _tr ? (_tr.from + ' → ' + _tr.to) : 'История',
+               _ZI.dyn, '#7f9bc7');
     if(_tr){
       h += '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#cbd5e1;'
         + 'margin:0 0 8px">' + _arr + ' <span style="color:' + _trc + ';font-weight:600">'
@@ -9750,42 +9840,55 @@ function _zoneCard(z, i){
     }
     h += _zTable(['Дата','Индекс','Событие'], z.history, 72);
   }
-  if((z.crossings||[]).length){
-    h += _zSec('Пересечения доменов', 'Механизм', _ZI.imp, '#9b7fc4')
-      + (z.crossings||[]).map(function(p){
-          return '<div style="font-family:Montserrat,sans-serif;font-size:12px;'
-            + 'line-height:1.6;margin:8px 0">'
-            + '<span style="color:#e8eaf0;font-weight:500">' + _zEsc(p[0]) + '</span>'
-            + '<span style="color:#5a6b7d"> · </span>'
-            + '<span style="color:#cbd5e1">' + _zEsc(p[1]) + '</span></div>';
-        }).join('');
-    if(z.crossings_note) h += _zText(z.crossings_note);
-  }
-  if((z.cascade||[]).length){
-    h += _zSec('Цепочка', 'Инженерная схема', _ZI.casc, '#e0b84a')
-      + '<div style="background:rgba(224,184,74,.05);border:1px solid rgba(224,184,74,.18);'
-      + 'border-radius:9px;padding:12px 14px;font-family:Montserrat,sans-serif;'
-      + 'font-size:12px;color:#e8eaf0;line-height:1.85">'
-      + (z.cascade||[]).map(function(l){ return _zEsc(l); }).join('<br>') + '</div>';
-    if(z.cascade_note) h += _zText(z.cascade_note);
-  }
-  if((z.manifest||[]).length){ h += _zSec('Как проявляется', 'Карта воздействия', _ZI.imp, '#9b7fc4') + _zList(z.manifest); }
-  if(z.decode){ h += _zSec('Расшифровка индекса', 'Тезис', _ZI.concl, '#e8eaf0') + _zText(z.decode); }
   if((z.table_rows||[]).length){
     h += _zSec(z.table_title || 'Диапазоны', 'Шкала', _ZI.pass, '#7ec8ea')
       + _zTable(z.table_head, z.table_rows, 96);
     if(z.table_note) h += '<div style="font-family:Montserrat,sans-serif;'
-      + 'font-size:10.5px;color:#8a9bb0;line-height:1.5">'
-      + _zEsc(z.table_note) + '</div>';
+      + 'font-size:10.5px;color:#8a9bb0;line-height:1.5">' + _zEsc(z.table_note) + '</div>';
   }
-  if((z.options||[]).length){ h += _zSec(z.options_title || 'Варианты', 'Приоритет', _ZI.evid, '#9ec5a8') + _zList(z.options); }
-  if(z.filter){ h += _zSec(z.filter_title || 'Фильтр', 'Инструмент', _ZI.pass, '#7ec8ea') + _zText(z.filter); }
-  if((z.anchors||[]).length){ h += _zSec(z.anchors_title || 'Ориентиры', 'Данные', _ZI.evid, '#9ec5a8') + _zList(z.anchors); }
+  if((z.gradient||[]).length){
+    h += _zSec(z.gradient_title || 'Градиент по группам', 'Шкала риска', _ZI.imp, '#9b7fc4')
+      + _zTable(z.gradient_head, z.gradient, 120);
+  }
+
+  // ── 8 · ВОЗМОЖНОСТИ ───────────────────────────────────────────────
+  if((z.options||[]).length){
+    h += _zSec(z.options_title || 'Варианты', 'Приоритет', _ZI.evid, '#9ec5a8')
+      + _zList(z.options);
+  }
+  if(z.filter){
+    h += _zSec(z.filter_title || 'Фильтр', 'Инструмент', _ZI.pass, '#7ec8ea')
+      + '<div style="background:rgba(126,200,234,.05);border:1px solid rgba(126,200,234,.18);'
+      + 'border-radius:9px;padding:11px 13px;font-family:Montserrat,sans-serif;'
+      + 'font-size:12px;color:#e8eaf0;line-height:1.55">' + _zEsc(z.filter) + '</div>';
+  }
   if((z.requirements||[]).length){
-    h += _zSec(z.requirements_title || 'Требования', 'Условия входа', _ZI.evid, '#9ec5a8') + _zList(z.requirements);
+    h += _zSec(z.requirements_title || 'Требования', 'Условия входа', _ZI.evid, '#9ec5a8')
+      + _zList(z.requirements);
   }
-  if((z.comment_low||[]).length || (z.comment_high||[]).length || (z.comment_under||[]).length){
-    h += _zSec('Инженерный комментарий', 'Заключение', _ZI.concl, '#d4af5a');
+
+  // ── 9 · МОНИТОРИНГ ────────────────────────────────────────────────
+  if((z.watch||[]).length){
+    h += _zSec(z.watch_title || 'Что отслеживать',
+               'Операционный чек-лист · ' + z.watch.length, _ZI.mon, '#7f9bc7')
+      + _zList(z.watch);
+  }
+
+  // ── 10 · ИНЖЕНЕРНЫЙ ВЫВОД ─────────────────────────────────────────
+  var _hasConcl = (z.comment_low||[]).length || (z.comment_high||[]).length
+                || (z.comment_under||[]).length || z.user_note || z.user_indicator;
+  if(_hasConcl){
+    h += _zSec('Инженерный вывод', 'Заключение', _ZI.concl, '#d4af5a')
+      + '<div style="background:rgba(212,175,90,.05);border:1px solid rgba(212,175,90,.20);'
+      + 'border-radius:9px;padding:12px 14px">';
+    if(z.user_note){
+      h += '<div style="font-family:Montserrat,sans-serif;font-size:13px;color:#e8eaf0;'
+        + 'line-height:1.55;font-weight:500;margin-bottom:8px">' + _zEsc(z.user_note) + '</div>';
+    }
+    if(z.user_indicator){
+      h += '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#d4af5a;'
+        + 'line-height:1.55;margin-bottom:6px">' + _zEsc(z.user_indicator) + '</div>';
+    }
     [['comment_low_title','comment_low'],
      ['comment_high_title','comment_high'],
      ['comment_under_title','comment_under']].forEach(function(p){
@@ -9794,16 +9897,16 @@ function _zoneCard(z, i){
         + 'font-weight:600;margin:12px 0 5px">' + _zEsc(z[p[0]] || '') + '</div>'
         + _zList(z[p[1]]);
     });
+    h += '</div>';
   }
-  if(z.user_note){ h += _zSec('Что это значит', 'Практический выход', _ZI.imp, '#e0a458') + _zText(z.user_note); }
-  if(z.user_indicator) h += _zText(z.user_indicator);
-  if((z.gradient||[]).length){
-    h += _zSec(z.gradient_title || 'Градиент по группам', 'Шкала риска', _ZI.imp, '#9b7fc4')
-      + _zTable(z.gradient_head, z.gradient, 120);
-  }
+
+  // ── 11 · КОНТЕКСТ ─────────────────────────────────────────────────
   if(z.mini){ h += _zSec('Мини-информация', 'Контекст', _ZI.pass, '#7ec8ea') + _zText(z.mini); }
-  if((z.watch||[]).length){ h += _zSec(z.watch_title || 'Что отслеживать', 'Операционный чек-лист', _ZI.mon, '#7f9bc7') + _zList(z.watch); }
-  if(z.atlas_note){ h += _zSec('Atlas показывает', 'Заключение', _ZI.concl, '#d4af5a') + _zText(z.atlas_note); }
+  if(z.atlas_note){
+    h += '<div style="margin-top:16px;padding-top:12px;'
+      + 'border-top:1px solid rgba(184,151,58,.14);font-family:Montserrat,sans-serif;'
+      + 'font-size:11px;color:#8a9bb0;line-height:1.6">' + _zEsc(z.atlas_note) + '</div>';
+  }
 
   h += '<button type="button" class="zone-pdf" data-zi="' + i + '" '
     + 'style="width:100%;margin-top:14px;padding:9px;background:#1faacc;border:0;'
