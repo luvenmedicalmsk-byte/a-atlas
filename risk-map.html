@@ -9484,8 +9484,9 @@ function _zList(items, style){
   var a = items || [];
   if(!a.length) return '';
   return a.map(function(x){
-    return '<div style="' + (style || 'font-size:11px;color:#94a3b8;line-height:1.5;margin:3px 0')
-      + '">• ' + _zEsc(x) + '</div>';
+    return '<div style="' + (style || 'font-family:Montserrat,sans-serif;font-size:12px;'
+      + 'color:#cbd5e1;line-height:1.6;margin:5px 0;padding-left:14px;text-indent:-14px')
+      + '"><span style="color:#b8973a">•</span>&nbsp; ' + _zEsc(x) + '</div>';
   }).join('');
 }
 
@@ -9495,29 +9496,37 @@ function _zTable(head, rows, w1){
   if(!r.length) return '';
   var th = (head||[]).map(function(h,i){
     return '<div style="flex:' + (i===0 ? ('0 0 '+(w1||110)+'px') : '1')
-      + ';font-size:10px;color:#6f88ab;letter-spacing:.04em">' + _zEsc(h) + '</div>';
+      + ';font-family:Montserrat,sans-serif;font-size:8.5px;color:#8a9bb0;'
+      + 'letter-spacing:.1em;text-transform:uppercase;font-weight:600">'
+      + _zEsc(h) + '</div>';
   }).join('');
   var tb = r.map(function(row){
-    return '<div style="display:flex;gap:8px;padding:6px 0;'
-      + 'border-top:1px solid rgba(184,151,58,.10)">'
+    return '<div style="display:flex;gap:10px;padding:8px 0;'
+      + 'border-top:1px solid rgba(184,151,58,.12)">'
       + row.map(function(v,i){
           return '<div style="flex:' + (i===0 ? ('0 0 '+(w1||110)+'px') : '1')
-            + ';font-size:11px;color:' + (i===0 ? '#cbd5e1' : '#94a3b8')
-            + ';line-height:1.45">' + _zEsc(v) + '</div>';
+            + ';font-family:Montserrat,sans-serif;font-size:12px;color:'
+            + (i===0 ? '#e8eaf0' : '#cbd5e1') + ';line-height:1.5'
+            + (i===0 ? ';font-weight:500' : '') + '">' + _zEsc(v) + '</div>';
         }).join('')
       + '</div>';
   }).join('');
-  return '<div style="margin:6px 0 10px">'
-    + (th ? '<div style="display:flex;gap:8px;padding-bottom:4px">' + th + '</div>' : '')
+  return '<div style="margin:8px 0 12px;background:rgba(201,162,39,.03);'
+    + 'border:1px solid rgba(201,162,39,.14);border-radius:9px;padding:9px 13px 11px">'
+    + (th ? '<div style="display:flex;gap:10px;padding-bottom:6px">' + th + '</div>' : '')
     + tb + '</div>';
 }
 
 /* Заголовок секции в стиле карточки «Atlas фиксирует»: золотой,
    разреженный, с маркером справа. */
 function _zSec(title, kind){
-  return '<div style="display:flex;align-items:center;gap:7px;margin:16px 0 10px">'
-    + '<span style="font-size:9.5px;color:#b8973a;letter-spacing:.14em;'
-    + 'text-transform:uppercase;font-weight:600">' + _zEsc(title) + '</span>'
+  // Ромб-маркер вместо иконок: у карточки события перед каждым разделом
+  // стоит svg, здесь достаточно единого знака — секций восемнадцать.
+  return '<div style="display:flex;align-items:center;gap:7px;margin:20px 0 11px">'
+    + '<span style="color:#c9a227;font-size:7px;line-height:1">\u25C6</span>'
+    + '<span style="font-family:Montserrat,sans-serif;font-size:9.5px;color:#b8973a;'
+    + 'letter-spacing:.14em;text-transform:uppercase;font-weight:600">'
+    + _zEsc(title) + '</span>'
     + (kind ? '<span style="margin-left:auto;font-size:8px;color:#5a6b7d;'
       + 'letter-spacing:.1em;text-transform:uppercase">' + _zEsc(kind) + '</span>' : '')
     + '</div>';
@@ -9534,8 +9543,11 @@ function _zChip(t, col){
 
 function _zText(s){
   if(!s) return '';
-  return '<div style="font-size:11px;color:#94a3b8;line-height:1.55;'
-    + 'white-space:pre-line;margin:4px 0">' + _zEsc(s) + '</div>';
+  // Цвет и кегль как в карточке события: #cbd5e1 на 12px читается,
+  // прежний #94a3b8 на 11px сливался с фоном.
+  return '<div style="font-family:Montserrat,sans-serif;font-size:12px;'
+    + 'color:#cbd5e1;line-height:1.62;white-space:pre-line;margin:6px 0">'
+    + _zEsc(s) + '</div>';
 }
 
 /* Полная карточка разбора: те же восемнадцать секций, что в PDF. */
@@ -9582,8 +9594,9 @@ function _zoneCard(z, i){
   if(z.index_note) h += _zText(z.index_note);
   if(z.dependency){ h += _zSec('Тип зависимости') + _zText(z.dependency); }
   if(z.trigger){ h += _zSec('Текущее событие') + _zText(z.trigger); }
-  if(z.sources) h += '<div style="font-size:10px;color:#6f88ab;line-height:1.45;'
-    + 'margin-top:5px">Источники: ' + _zEsc(z.sources) + '</div>';
+  if(z.sources) h += '<div style="font-family:Montserrat,sans-serif;font-size:10.5px;'
+    + 'color:#8a9bb0;line-height:1.55;margin-top:8px">Источники: '
+    + _zEsc(z.sources) + '</div>';
   if(z.index_link) h += _zText('Связь с индексом: ' + z.index_link);
 
   if((z.history||[]).length){
@@ -9593,16 +9606,19 @@ function _zoneCard(z, i){
   if((z.crossings||[]).length){
     h += _zSec('Пересечения доменов')
       + (z.crossings||[]).map(function(p){
-          return '<div style="font-size:11px;line-height:1.5;margin:5px 0">'
-            + '<span style="color:#cbd5e1">' + _zEsc(p[0]) + '</span>'
-            + '<span style="color:#6f88ab"> · </span>'
-            + '<span style="color:#94a3b8">' + _zEsc(p[1]) + '</span></div>';
+          return '<div style="font-family:Montserrat,sans-serif;font-size:12px;'
+            + 'line-height:1.6;margin:8px 0">'
+            + '<span style="color:#e8eaf0;font-weight:500">' + _zEsc(p[0]) + '</span>'
+            + '<span style="color:#b8973a"> · </span>'
+            + '<span style="color:#cbd5e1">' + _zEsc(p[1]) + '</span></div>';
         }).join('');
     if(z.crossings_note) h += _zText(z.crossings_note);
   }
   if((z.cascade||[]).length){
     h += _zSec('Цепочка')
-      + '<div style="font-size:11px;color:#94a3b8;line-height:1.6;padding-left:4px">'
+      + '<div style="background:rgba(201,162,39,.03);border:1px solid rgba(201,162,39,.14);'
+      + 'border-radius:9px;padding:11px 13px;font-family:Montserrat,sans-serif;'
+      + 'font-size:12px;color:#cbd5e1;line-height:1.75">'
       + (z.cascade||[]).map(function(l){ return _zEsc(l); }).join('<br>') + '</div>';
     if(z.cascade_note) h += _zText(z.cascade_note);
   }
@@ -9611,7 +9627,8 @@ function _zoneCard(z, i){
   if((z.table_rows||[]).length){
     h += _zSec(z.table_title || 'Диапазоны')
       + _zTable(z.table_head, z.table_rows, 96);
-    if(z.table_note) h += '<div style="font-size:10px;color:#6f88ab">'
+    if(z.table_note) h += '<div style="font-family:Montserrat,sans-serif;'
+      + 'font-size:10.5px;color:#8a9bb0;line-height:1.5">'
       + _zEsc(z.table_note) + '</div>';
   }
   if((z.options||[]).length){ h += _zSec(z.options_title || 'Варианты') + _zList(z.options); }
@@ -9626,8 +9643,9 @@ function _zoneCard(z, i){
      ['comment_high_title','comment_high'],
      ['comment_under_title','comment_under']].forEach(function(p){
       if(!(z[p[1]]||[]).length) return;
-      h += '<div style="font-size:11px;color:#cbd5e1;margin:8px 0 3px">'
-        + _zEsc(z[p[0]] || '') + '</div>' + _zList(z[p[1]]);
+      h += '<div style="font-family:Montserrat,sans-serif;font-size:12px;color:#e8eaf0;'
+        + 'font-weight:600;margin:12px 0 5px">' + _zEsc(z[p[0]] || '') + '</div>'
+        + _zList(z[p[1]]);
     });
   }
   if(z.user_note){ h += _zSec('Что это значит') + _zText(z.user_note); }
