@@ -9512,10 +9512,16 @@ function _zoneCard(z, i){
   var h = '<div style="margin:12px 0;padding:13px;background:rgba(13,20,32,.55);'
     + 'border:1px solid rgba(184,151,58,.16);border-radius:9px">';
 
-  h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+  // Шапка кликабельна: карточка из восемнадцати секций разворачивалась
+  // на всю панель, и до хроники событий приходилось листать. Свёрнута
+  // до заголовка с индексом, разбор открывается по клику.
+  h += '<div class="zone-head" data-zi="' + i + '" style="display:flex;'
+    +   'justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer">'
     +   '<div><div style="font-size:13px;color:#e8eef7;font-weight:600">'
+    +     '<span class="zone-caret" data-zi="' + i + '" style="color:#6f88ab;'
+    +     'font-size:10px;margin-right:5px">▸</span>'
     +     _zEsc(z.zone) + ' · ' + _zEsc(z.region) + '</div>'
-    +     '<div style="font-size:10px;color:#6f88ab;margin-top:3px">'
+    +     '<div style="font-size:10px;color:#6f88ab;margin-top:3px;padding-left:15px">'
     +     _zEsc(z.date) + ' · ' + _zEsc((z.domains||[]).join(' · ')) + '</div></div>'
     +   '<div style="text-align:right"><div style="font-size:20px;color:' + col
     +     ';font-weight:600;line-height:1">' + (z.index||0) + '<span style="font-size:11px'
@@ -9524,6 +9530,7 @@ function _zoneCard(z, i){
         + _zEsc(z.index_label) + '</div>' : '') + '</div>'
     + '</div>';
 
+  h += '<div class="zone-body" data-zi="' + i + '" style="display:none">';
   if(z.index_note) h += _zText(z.index_note);
   if(z.dependency){ h += _zSec('Тип зависимости') + _zText(z.dependency); }
   if(z.trigger){ h += _zSec('Текущее событие') + _zText(z.trigger); }
@@ -9589,7 +9596,8 @@ function _zoneCard(z, i){
     + 'style="width:100%;margin-top:14px;padding:9px;background:#1faacc;border:0;'
     + 'border-radius:7px;color:#06050A;font-size:12px;font-weight:600;cursor:pointer">'
     + 'Скачать разбор PDF</button>';
-  h += '</div>';
+  h += '</div>';      // конец zone-body
+  h += '</div>';      // конец карточки
   return h;
 }
 
@@ -9626,6 +9634,19 @@ function grdfRenderZones(cc){
       + list.map(function(z, i){ return _zoneCard(z, i); }).join('');
     host.querySelectorAll('.zone-pdf').forEach(function(b){
       b.onclick = function(){ _zoneDownload(list[+b.getAttribute('data-zi')], b); };
+    });
+    // Разворачивание разбора. Кнопка скачивания внутри тела, поэтому
+    // её клик до шапки не доходит и лишнего сворачивания не вызывает.
+    host.querySelectorAll('.zone-head').forEach(function(hd){
+      hd.onclick = function(){
+        var zi = hd.getAttribute('data-zi');
+        var bd = host.querySelector('.zone-body[data-zi="' + zi + '"]');
+        var cr = host.querySelector('.zone-caret[data-zi="' + zi + '"]');
+        if(!bd) return;
+        var open = bd.style.display !== 'none';
+        bd.style.display = open ? 'none' : 'block';
+        if(cr) cr.textContent = open ? '\u25B8' : '\u25BE';
+      };
     });
   };
   if(_ZONES_CACHE[cc]) return done(_ZONES_CACHE[cc]);
