@@ -9057,7 +9057,17 @@ function _grdfContextHtml(c){
   // Мини-разборы зон риска идут сразу за экспертным слоем «Atlas фиксирует»:
   // оба относятся к аналитике поверх расчётных метрик и читаются подряд.
   H+='<div id="grdf-zones-'+String(c.country||'').toUpperCase()+'"></div>';
-  try{ grdfRenderZones(String(c.country||'').toUpperCase()); }catch(_e){}
+  // Отложенный вызов: контейнер вставляется в DOM после сборки строки,
+  // поэтому ищем элемент не сразу. Повтор через 300 мс на случай,
+  // если разметка ещё не смонтирована.
+  (function(_cc){
+    var _try = function(){
+      if(typeof window.grdfRenderZones !== 'function') return;
+      if(!document.getElementById('grdf-zones-' + _cc)) return;
+      try{ window.grdfRenderZones(_cc); }catch(_e){}
+    };
+    setTimeout(_try, 60); setTimeout(_try, 400);
+  })(String(c.country||'').toUpperCase());
   try{ if(window._annWait) window._annWait(String(c.country||'').toUpperCase()); }catch(e){}
 
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Прогноз и траектория</div>';
@@ -9660,7 +9670,10 @@ function _zoneDownload(z, btn){
     });
 }
 
-function grdfRenderZones(cc){
+// В window: объявление находится ниже по файлу и внутри блока, а вызов
+// стоит в _renderCountryLocal выше. Без явного экспорта функция в момент
+// вызова ещё не определена, и блок зон молча не появлялся.
+window.grdfRenderZones = function(cc){
   var host = document.getElementById('grdf-zones-' + cc);
   if(!host) return;
   var api = ZONE_API;
@@ -9712,7 +9725,7 @@ function grdfRenderZones(cc){
     .then(function(r){ return r.json(); })
     .then(function(d){ done((d && d.zones) || []); })
     .catch(function(){ host.innerHTML = ''; });
-}
+};
 
 function grdfRenderCountryPanel(cc) {
 
