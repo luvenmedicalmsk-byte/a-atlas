@@ -9654,7 +9654,24 @@ function grdfRenderZones(cc){
     });
   };
   if(_ZONES_CACHE[cc]) return done(_ZONES_CACHE[cc]);
-  fetch(api + '/api/country-zones?country=' + cc, { credentials: 'include' })
+  // Признак доступа передаётся всеми путями: заголовок, cookie, query.
+  // Worker определяет тир по токену сессии; без него запрос приходит
+  // как анонимный, зоны с visibility signal_pro не отдаются, и блок
+  // остаётся пустым даже у владельца. Тот же приём, что у аннотаций.
+  var hd = {}, _t = '', _ak = '', _ct = '';
+  try { _t = localStorage.getItem('tg_session_token') || ''; } catch(e) {}
+  try {
+    var _m1 = document.cookie.match(/(?:^|;\s*)atlas_ck=([^;]+)/);
+    var _m2 = document.cookie.match(/(?:^|;\s*)atlas_ct=([^;]+)/);
+    _ak = _m1 ? decodeURIComponent(_m1[1]) : '';
+    _ct = _m2 ? decodeURIComponent(_m2[1]) : '';
+  } catch(e) {}
+  if(_t) hd['X-Session-Token'] = _t; else if(_ct) hd['X-Session-Token'] = _ct;
+  if(_ak) hd['X-Admin-Key'] = _ak;
+  var u = api + '/api/country-zones?country=' + cc;
+  if(_ak) u += '&key=' + encodeURIComponent(_ak);
+  else if(_t || _ct) u += '&t=' + encodeURIComponent(_t || _ct);
+  fetch(u, { headers: hd, credentials: 'include' })
     .then(function(r){ return r.json(); })
     .then(function(d){ done((d && d.zones) || []); })
     .catch(function(){ host.innerHTML = ''; });
