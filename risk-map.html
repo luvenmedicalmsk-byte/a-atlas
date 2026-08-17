@@ -9804,8 +9804,8 @@ function _zoneCard(z, i){
   if((z.history||[]).length || (z.table_rows||[]).length || (z.gradient||[]).length)
                                       _navIt.push(['Данные',        'zd' + i]);
   if((z.options||[]).length || z.filter) _navIt.push(['Возможности', 'zo' + i]);
-  if((z.for_people||[]).length || (z.for_business||[]).length)
-                                      _navIt.push(['Что делать',    'zf' + i]);
+  if((z.for_business||[]).length || (z.for_people||[]).length)
+                                      _navIt.push(['Бизнес и люди', 'zf' + i]);
   if((z.watch||[]).length)            _navIt.push(['Мониторинг',    'zw' + i]);
   if(z.user_note || (z.comment_low||[]).length) _navIt.push(['Вывод', 'zv' + i]);
 
@@ -10052,20 +10052,47 @@ function _zoneCard(z, i){
       + '</div>';
   }
 
-  // ── ПРАКТИЧЕСКИЙ ВЫХОД ────────────────────────────────────────
-  // После мониторинга и перед выводом: сначала читатель понимает,
-  // что отслеживать, затем что делать, и только потом заключение.
-  // Два адресата разведены: рекомендации человеку и бизнесу решают
-  // разные задачи и в одном списке терялись бы.
-  if((z.for_people||[]).length){
-    h += _zSec(z.for_people_title || 'Для людей',
-               'Практический выход · ' + z.for_people.length, _ZI.imp, '#e0a458', 'zf' + i)
-      + _zList(z.for_people);
-  }
-  if((z.for_business||[]).length){
-    h += _zSec(z.for_business_title || 'Для бизнеса',
-               'Практический выход · ' + z.for_business.length, _ZI.imp, '#e0a458')
-      + _zList(z.for_business);
+  // ── ВЛИЯНИЕ НА БИЗНЕС И ЛЮДЕЙ ─────────────────────────────────
+  // Разметка повторяет одноимённый блок карточки события: единая рамка
+  // оранжевого контура, внутри группы с цветными подписями и точками.
+  // Бизнес идёт первым: он принимает решения раньше частных лиц.
+  if((z.for_business||[]).length || (z.for_people||[]).length){
+    var _grp = function(title, arr, col){
+      if(!arr || !arr.length) return '';
+      return '<div style="margin-bottom:11px">'
+        + '<div style="font-size:9px;color:' + col + ';letter-spacing:.1em;'
+        +   'text-transform:uppercase;margin-bottom:6px;font-weight:600">'
+        + _zEsc(title) + '</div>'
+        + arr.map(function(x){
+            // Тире делит пункт на подлежащее и пояснение, как в событии.
+            var s = String(x), lead = '', tail = s;
+            var parts = s.split('\u2014');
+            if(parts.length === 1) parts = s.split(' - ');
+            if(parts.length > 1){
+              lead = parts[0].trim();
+              tail = parts.slice(1).join(' - ').trim();
+            } else {
+              var cut = s.indexOf(':');
+              if(cut > 3 && cut < 60){ lead = s.slice(0, cut).trim(); tail = s.slice(cut + 1).trim(); }
+            }
+            return '<div style="display:flex;gap:8px;padding:6px 0;align-items:flex-start">'
+              + '<span style="width:4px;height:4px;border-radius:50%;background:' + col + ';'
+              +   'flex-shrink:0;margin-top:7px"></span>'
+              + '<div style="flex:1;min-width:0;font-family:Montserrat,sans-serif">'
+              + (lead ? '<span style="font-size:11.5px;color:#e8eaf0;font-weight:600">'
+                  + _zEsc(lead) + '</span><span style="color:#5a6b7d"> \u00b7 </span>' : '')
+              + '<span style="font-size:11.5px;color:#94a3b8;line-height:1.55">'
+              + _zEsc(tail) + '</span></div></div>';
+          }).join('')
+        + '</div>';
+    };
+    h += _zSec('Влияние на бизнес и людей', 'Практический выход',
+               _ZI.imp, '#e0a458', 'zf' + i)
+      + '<div style="border:1px solid rgba(224,164,88,.18);border-radius:9px;'
+      + 'padding:13px;background:rgba(224,164,88,.035)">'
+      + _grp(z.for_business_title || 'Для бизнеса', z.for_business, '#e0a458')
+      + _grp(z.for_people_title || 'Для частных лиц', z.for_people, '#7ec8ea')
+      + '</div>';
   }
 
   // ── 10 · ИНЖЕНЕРНЫЙ ВЫВОД ─────────────────────────────────────────
