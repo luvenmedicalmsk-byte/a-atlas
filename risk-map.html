@@ -10096,6 +10096,12 @@ function _zoneCard(z, i){
 
   // ── 11 · КОНТЕКСТ ─────────────────────────────────────────────────
   if(z.mini){ h += _zSec('Контекст', 'Фон', _ZI.pass, '#7ec8ea') + _zText(z.mini); }
+  // Связь с Atlas как системой: место разбора в картине платформы.
+  if(z.atlas_link){
+    h += _zSec(z.atlas_link_title || 'Связь с Atlas как системой',
+               'Позиция платформы', _ZI.concl, '#d4af5a')
+      + _zText(z.atlas_link);
+  }
   if(z.atlas_note){
     h += '<div style="margin-top:16px;padding-top:12px;'
       + 'border-top:1px solid rgba(184,151,58,.14);font-family:Montserrat,sans-serif;'
