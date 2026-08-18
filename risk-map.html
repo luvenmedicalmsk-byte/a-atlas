@@ -9804,7 +9804,7 @@ function _zoneCard(z, i){
   if((z.history||[]).length || (z.table_rows||[]).length || (z.gradient||[]).length)
                                       _navIt.push(['Данные',        'zd' + i]);
   if((z.options||[]).length || z.filter) _navIt.push(['Возможности', 'zo' + i]);
-  if((z.for_people||[]).length || (z.for_business||[]).length)
+  if((z.for_business||[]).length || (z.for_people||[]).length)
                                       _navIt.push(['Что делать',    'zf' + i]);
   if((z.watch||[]).length)            _navIt.push(['Мониторинг',    'zw' + i]);
   if(z.user_note || (z.comment_low||[]).length) _navIt.push(['Вывод', 'zv' + i]);
@@ -10055,17 +10055,24 @@ function _zoneCard(z, i){
   // ── ПРАКТИЧЕСКИЙ ВЫХОД ────────────────────────────────────────
   // После мониторинга и перед выводом: сначала читатель понимает,
   // что отслеживать, затем что делать, и только потом заключение.
-  // Два адресата разведены: рекомендации человеку и бизнесу решают
-  // разные задачи и в одном списке терялись бы.
-  if((z.for_people||[]).length){
-    h += _zSec(z.for_people_title || 'Для людей',
-               'Практический выход · ' + z.for_people.length, _ZI.imp, '#e0a458', 'zf' + i)
-      + _zList(z.for_people);
+  // Порядок как в карточке события: сначала бизнес, затем частные лица.
+  // Общий заголовок над обоими списками, как в блоке «Влияние на бизнес
+  // и людей» формы аннотаций.
+  if((z.for_business||[]).length || (z.for_people||[]).length){
+    h += _zSec('Влияние на бизнес и людей', 'Практический выход',
+               _ZI.imp, '#e0a458', 'zf' + i);
   }
   if((z.for_business||[]).length){
-    h += _zSec(z.for_business_title || 'Для бизнеса',
-               'Практический выход · ' + z.for_business.length, _ZI.imp, '#e0a458')
+    h += '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#e0a458;'
+      + 'letter-spacing:.1em;text-transform:uppercase;margin:10px 0 5px">'
+      + _zEsc(z.for_business_title || 'Для бизнеса') + '</div>'
       + _zList(z.for_business);
+  }
+  if((z.for_people||[]).length){
+    h += '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#e0a458;'
+      + 'letter-spacing:.1em;text-transform:uppercase;margin:12px 0 5px">'
+      + _zEsc(z.for_people_title || 'Для частных лиц') + '</div>'
+      + _zList(z.for_people);
   }
 
   // ── 10 · ИНЖЕНЕРНЫЙ ВЫВОД ─────────────────────────────────────────
