@@ -10055,24 +10055,27 @@ function _zoneCard(z, i){
   // ── ПРАКТИЧЕСКИЙ ВЫХОД ────────────────────────────────────────
   // После мониторинга и перед выводом: сначала читатель понимает,
   // что отслеживать, затем что делать, и только потом заключение.
-  // Порядок как в карточке события: сначала бизнес, затем частные лица.
-  // Общий заголовок над обоими списками, как в блоке «Влияние на бизнес
-  // и людей» формы аннотаций.
+  // Один в один как в карточке события: общий заголовок «Что это значит
+  // для бизнеса и людей», внутри рамки два подзаголовка своими цветами.
+  // Порядок и названия оттуда же: бизнес оранжевый, частные лица голубые.
   if((z.for_business||[]).length || (z.for_people||[]).length){
-    h += _zSec('Влияние на бизнес и людей', 'Практический выход',
-               _ZI.imp, '#e0a458', 'zf' + i);
-  }
-  if((z.for_business||[]).length){
-    h += '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#e0a458;'
-      + 'letter-spacing:.1em;text-transform:uppercase;margin:10px 0 5px">'
-      + _zEsc(z.for_business_title || 'Для бизнеса') + '</div>'
-      + _zList(z.for_business);
-  }
-  if((z.for_people||[]).length){
-    h += '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#e0a458;'
-      + 'letter-spacing:.1em;text-transform:uppercase;margin:12px 0 5px">'
-      + _zEsc(z.for_people_title || 'Для частных лиц') + '</div>'
-      + _zList(z.for_people);
+    h += _zSec('Что это значит для бизнеса и людей', 'Практический выход',
+               _ZI.imp, '#e0a458', 'zf' + i)
+      + '<div style="border:1px solid rgba(224,164,88,.18);border-radius:9px;'
+      + 'padding:13px;background:rgba(224,164,88,.035)">';
+    if((z.for_business||[]).length){
+      h += '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#e0a458;'
+        + 'letter-spacing:.1em;text-transform:uppercase;margin:0 0 6px">'
+        + _zEsc(z.for_business_title || 'Для бизнеса') + '</div>'
+        + _zList(z.for_business);
+    }
+    if((z.for_people||[]).length){
+      h += '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#7ec8ea;'
+        + 'letter-spacing:.1em;text-transform:uppercase;margin:14px 0 6px">'
+        + _zEsc(z.for_people_title || 'Для частных лиц') + '</div>'
+        + _zList(z.for_people);
+    }
+    h += '</div>';
   }
 
   // ── 10 · ИНЖЕНЕРНЫЙ ВЫВОД ─────────────────────────────────────────
