@@ -8471,7 +8471,7 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
       +'</div>';
   }
   return micro
-    +'<div style="margin:12px 14px 4px;padding:11px 12px;background:rgba(184,151,58,.045);border:0.5px solid rgba(184,151,58,.15);border-radius:9px">'
+    +'<div style="margin:12px 14px 4px;padding:11px 12px;background:transparent;border:0.5px solid rgba(184,151,58,.15);border-radius:9px">'
     +hdr+body+'</div>';
 }catch(_e){ return ''; } }
 
@@ -8557,19 +8557,19 @@ function _grdfFreeMirror(c){ try{
   function SUB(t){ return '<div style="font-size:11px;color:rgba(203,213,225,.62);margin:-4px 14px 9px">'+t+'</div>'; }
   function CTA(){ return '<div style="margin:8px 14px 18px;text-align:center"><button onclick="openAccess()" style="display:inline-block;font-size:11.5px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:9px 20px;font-family:Montserrat,sans-serif;cursor:pointer">'+CTA_TXT+' →</button></div>'; }
   function grp(items){ return items.map(ACC).join(''); }
-  function ARCHCARD(){ return '<div style="border:0.5px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:0 14px 10px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012))">'
+  function ARCHCARD(){ return '<div style="border:0.5px solid rgba(184,151,58,.18);border-radius:12px;padding:16px;margin:0 14px 10px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012))">'
     +'<div id="grdf-fm-arch-num" style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:#e2e8f0;line-height:1;min-height:34px"></div>'
     +'<div style="filter:blur(4px);opacity:.6;font-size:10px;color:rgba(148,163,184,.6);margin-top:4px;user-select:none">Последнее обновление: ···········</div>'
     +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div>'
     +'<div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Профильные исследования и аналитические материалы по '+gname+'.</div>'
     +'<div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Архив используется для поиска исторических параллелей, оценки долгосрочных факторов и построения сценарных моделей.</div></div>'; }
-  function HOWBUILT(){ return '<div style="margin:22px 14px 10px;padding:16px;border:0.5px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.015)">'
+  function HOWBUILT(){ return '<div style="margin:22px 14px 10px;padding:16px;border:0.5px solid rgba(184,151,58,.18);border-radius:12px;background:rgba(255,255,255,.015)">'
     +'<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px">Как формируется профиль</div>'
     +'<div style="font-size:11.5px;color:rgba(203,213,225,.80);line-height:1.55">Система выявляет взаимосвязи между сферами риска, рассчитывает вероятные сценарии развития и формирует стратегические выводы.</div>'
     +'<div style="font-size:10.5px;color:rgba(148,163,184,.7);line-height:1.5;margin-top:8px">В анализе используются профильные исследования и архивные материалы по стране.</div>'
   +'</div>'; }
   function HIDDEN(){ var its=['Что сейчас является главным источником давления на страну','Какой риск будет усиливаться дальше','По какому сценарию вероятнее всего будет развиваться ситуация','Куда риск распространится следующим','Какие регионы требуют особого наблюдения','Какие скрытые связи усиливают давление','Что система прогнозирует на горизонте наблюдения','Где находятся ключевые точки передачи риска'];
-    return '<div style="margin:22px 14px 12px;padding:16px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:rgba(184,151,58,.04)">'
+    return '<div style="margin:22px 14px 12px;padding:16px;border:0.5px solid rgba(184,151,58,.20);border-radius:12px;background:transparent">'
       +'<div style="font-size:11px;font-weight:700;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;margin-bottom:11px">Что остаётся скрытым</div>'
       +its.map(function(t){ return '<div style="display:flex;align-items:center;gap:9px;font-size:12.5px;color:rgba(203,213,225,.82);padding:6px 0;border-top:0.5px solid rgba(255,255,255,.04)">🔒 '+esc(t)+'</div>'; }).join('')
       +'</div>'; }
@@ -8796,7 +8796,7 @@ function grdfRiskMatrixHTML(risk, delta, isSig){
     h+='</div><div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,.25);margin-bottom:9px"><span>сейчас</span><span>6м</span><span>12м</span><span>18м</span><span>24м</span></div>';
     h+='<div style="font-size:10px;color:#94a3b8;letter-spacing:.04em;margin-bottom:3px">5 лет · по годам</div>';
     h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">';
-    y5.forEach(function(v,i){ h+='<div style="text-align:center;background:rgba(255,255,255,.03);border-radius:4px;padding:5px 2px"><div style="font-size:8px;color:rgba(255,255,255,.3);margin-bottom:2px">'+(i+1)+'Y</div><div style="font-size:14px;font-weight:700;font-family:\'Cormorant Garamond\',serif;color:'+rmCol(v)+'">'+v+'</div></div>'; });
+    y5.forEach(function(v,i){ h+='<div style="text-align:center;background:transparent;border-radius:4px;padding:5px 2px"><div style="font-size:8px;color:rgba(255,255,255,.3);margin-bottom:2px">'+(i+1)+'Y</div><div style="font-size:14px;font-weight:700;font-family:\'Cormorant Garamond\',serif;color:'+rmCol(v)+'">'+v+'</div></div>'; });
     h+='</div><div style="font-size:8px;color:rgba(255,255,255,.28);margin-top:6px">Проекция на основе текущего риска и динамики. Не является гарантией.</div></div>';
   } else {
     h+='<div style="padding:0 14px 10px"><div style="position:relative;border-radius:6px;overflow:hidden"><div style="display:flex;gap:1px;height:22px;filter:blur(2px);opacity:.5">';
@@ -8830,7 +8830,7 @@ function grdfRelocTopListsHTML(){
     return s+'</div>';
   }
   var h='<div style="padding:4px 14px 12px;border-top:1px solid rgba(184,151,58,.12);margin-top:4px">';
-  h+='<div style="display:flex;align-items:center;gap:8px;padding:9px 11px;margin:2px 0 10px;border:1px solid rgba(167,139,250,.3);border-radius:8px;background:rgba(167,139,250,.06)"><span style="font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:#a78bfa;border:1px solid rgba(167,139,250,.4);border-radius:5px;padding:2px 7px;flex-shrink:0">в разработке</span><span style="font-size:9.5px;color:#94a3b8;line-height:1.4">Рейтинги формируются. Полные данные — по странам с национальными источниками (Россия, Турция); остальные предварительны.</span></div>';
+  h+='<div style="display:flex;align-items:center;gap:8px;padding:9px 11px;margin:2px 0 10px;border:1px solid rgba(167,139,250,.3);border-radius:8px;background:transparent"><span style="font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:#a78bfa;border:1px solid rgba(167,139,250,.4);border-radius:5px;padding:2px 7px;flex-shrink:0">в разработке</span><span style="font-size:9.5px;color:#94a3b8;line-height:1.4">Рейтинги формируются. Полные данные — по странам с национальными источниками (Россия, Турция); остальные предварительны.</span></div>';
   h+='<div style="font-size:11px;font-weight:600;color:#cbd5e1;margin:2px 0 8px">Рейтинги релокации · '+all.length+' стран</div>';
   h+=top('resilience','Top Resilient Countries');
   h+=top('climate','Top Climate Safe');
@@ -8909,7 +8909,7 @@ function _grdfScenHtml(d){
   if(best==null) return '<div style="color:#6f88ab;font-size:11px">Сценарии пока недоступны.</div>';
   function row(lab,val,col,p){ return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0">'
     +'<span style="width:96px;font-size:11px;color:'+col+'">'+lab+'</span>'
-    +'<span style="flex:1;height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+(p!=null?p:50)+'%;background:'+col+';opacity:.7"></span></span>'
+    +'<span style="flex:1;height:5px;background:transparent;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+(p!=null?p:50)+'%;background:'+col+';opacity:.7"></span></span>'
     +'<span style="font-size:11px;color:#cbd5e1;width:48px;text-align:right">GRI '+val+'</span>'
     +(p!=null?'<span style="font-size:10px;color:#6f88ab;width:30px;text-align:right">'+p+'%</span>':'')+'</div>'; }
   var H=row('Стабилизация',best,'#10b981',probs?probs.best:null)
@@ -8999,7 +8999,7 @@ function _grdfContextHtml(c){
      (TR/EG/SA…) карточка схлопывалась при первом же затишье, хотя процессы живы.
      Структура едина для всех стран; блоки, зависящие от событий, честно пишут «нет данных». */
   function card(label, inner){
-    return '<details class="grdf-acc" style="margin:0 14px 10px;padding:11px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">'
+    return '<details class="grdf-acc" style="margin:0 14px 10px;padding:11px 12px;background:transparent;border:0.5px solid rgba(184,151,58,.18);border-radius:9px">'
       + '<summary class="grdf-acc-h" style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>';
   }
   var _AD=['climate','geopolitics','economy','technology','social'];
@@ -9009,7 +9009,7 @@ function _grdfContextHtml(c){
   function _cband(v){ if(v==null)return ''; if(v>=75)return 'системный'; if(v>=60)return 'междоменный'; if(v>=40)return 'ограниченный'; return 'локальный'; }
   function _next(g){ var ts=[40,60,75]; for(var i=0;i<ts.length;i++){ if(g<ts[i])return ts[i]; } return null; }
   var dc={}; evs.forEach(function(e){ var d=e.domain||'other'; dc[d]=(dc[d]||0)+1; });
-  function cardS(label, inner){ if(label==='Обновлено'){ return '<div style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><div style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+label+'</div>'+inner+'</div>'; } return '<details class="grdf-acc" style="margin:0 14px 8px;padding:9px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px"><summary class="grdf-acc-h" style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>'; }
+  function cardS(label, inner){ if(label==='Обновлено'){ return '<div style="margin:0 14px 8px;padding:9px 12px;background:transparent;border:0.5px solid rgba(184,151,58,.18);border-radius:9px"><div style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">'+label+'</div>'+inner+'</div>'; } return '<details class="grdf-acc" style="margin:0 14px 8px;padding:9px 12px;background:transparent;border:0.5px solid rgba(184,151,58,.18);border-radius:9px"><summary class="grdf-acc-h" style="font-size:9px;font-weight:600;color:#f1f5f9;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">'+label+'<span class="grdf-acc-cv">›</span></summary>'+inner+'</details>'; }
   var H='';
 
   H+='<div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">Картина давления</div>';
@@ -9021,7 +9021,7 @@ function _grdfContextHtml(c){
       var lv=dlvl(o.v), col=DOM_COLORS[o.d]||'#888', pct=Math.round(o.v/_sum*100);
       return '<div style="display:flex;align-items:center;gap:8px;margin:6px 0">'
         +'<span style="width:80px;font-size:11px;color:'+(idx===0?'#e8eef5':'#cbd5e1')+';font-weight:'+(idx===0?'600':'400')+';flex-shrink:0">'+(DOM_LABELS[o.d]||o.d)+(idx===0?' <span style="font-size:8px;color:#f97316;font-weight:400;letter-spacing:.04em">ведущий</span>':'')+'</span>'
-        +'<span style="flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+Math.max(2,o.v)+'%;background:'+col+'"></span></span>'
+        +'<span style="flex:1;height:6px;background:transparent;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+Math.max(2,o.v)+'%;background:'+col+'"></span></span>'
         +'<span style="width:56px;text-align:right;font-size:12px;color:#cbd5e1">'+o.v+' <span style="color:#6f88ab;font-size:10px">'+pct+'%</span></span>'
         +'<span style="width:72px;text-align:right;font-size:10px;color:'+lv[1]+'">'+lv[0]+'</span></div>';
     }).join('');
@@ -9092,7 +9092,7 @@ function _grdfContextHtml(c){
   if(regs.length){
     var _mx=rc[regs[0]]||1;
     var f4=regs.map(function(r){ var hot=(rc[r]>=Math.max(2,_mx*0.6));
-      return '<span style="display:inline-block;font-size:11px;color:'+(hot?'#e8eef5':'#94a3b8')+';background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.10);border-radius:6px;padding:3px 9px;margin:0 5px 5px 0">'+esc(r)+' <span style="color:#6f88ab">'+rc[r]+'</span></span>'; }).join('');
+      return '<span style="display:inline-block;font-size:11px;color:'+(hot?'#e8eef5':'#94a3b8')+';background:transparent;border:0.5px solid rgba(255,255,255,.10);border-radius:6px;padding:3px 9px;margin:0 5px 5px 0">'+esc(r)+' <span style="color:#6f88ab">'+rc[r]+'</span></span>'; }).join('');
     H+=card('Горячие регионы', f4);
   } else { H+=card('Горячие регионы', '<div style="font-size:11px;color:#6f88ab;padding:4px 0">Нет свежих сигналов в ленте · оценка по процессам и базовому профилю</div>'); }
 
@@ -9355,7 +9355,7 @@ window._renderCountryArchive = function(el, cc, cname, ds){
         +subL('Временные всплески', mats(recent));
       var rgroups=(CURATED[cc]&&CURATED[cc].research)?CURATED[cc].research:null;
       var research=rgroups?Array.prototype.concat.apply([],rgroups.map(function(x){return x.items||[];})):((CURATED[cc]&&CURATED[cc].length)?CURATED[cc]:(a.related||[]).slice(0,6));
-      var krStyle='<style>.kr-g{border:0.5px solid rgba(255,255,255,.08);border-radius:8px;margin:0 0 7px;padding:0 12px;background:rgba(255,255,255,.025)}.kr-g summary{cursor:pointer;padding:11px 0;font-size:12px;color:rgba(232,224,208,0.9);display:flex;align-items:center;gap:8px;list-style:none}.kr-g summary::-webkit-details-marker{display:none}.kr-g .kr-chev{color:rgba(232,224,208,0.5);transition:transform .15s;display:inline-block;font-size:10px}.kr-g[open] .kr-chev{transform:rotate(90deg)}.kr-g .kr-n{font-size:10px;color:rgba(148,163,184,.55)}</style>';
+      var krStyle='<style>.kr-g{border:0.5px solid rgba(184,151,58,.18);border-radius:8px;margin:0 0 7px;padding:0 12px;background:rgba(255,255,255,.025)}.kr-g summary{cursor:pointer;padding:11px 0;font-size:12px;color:rgba(232,224,208,0.9);display:flex;align-items:center;gap:8px;list-style:none}.kr-g summary::-webkit-details-marker{display:none}.kr-g .kr-chev{color:rgba(232,224,208,0.5);transition:transform .15s;display:inline-block;font-size:10px}.kr-g[open] .kr-chev{transform:rotate(90deg)}.kr-g .kr-n{font-size:10px;color:rgba(148,163,184,.55)}</style>';
       function krGroups(){ if(!rgroups) return mats(research); return rgroups.map(function(gr){ if(!gr.items||!gr.items.length) return ''; return '<details class="kr-g"><summary><span class="kr-chev">&#9658;</span><span style="flex:1">'+esc(gr.g)+'</span><span class="kr-n">'+gr.items.length+'</span></summary><div style="padding:2px 0 10px">'+mats(gr.items)+'</div></details>'; }).join(''); }
       var hist=(a.historical||[]).slice(0,4);
       var GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'};
@@ -9367,7 +9367,7 @@ window._renderCountryArchive = function(el, cc, cname, ds){
       function ruDate(d){ if(!d)return ''; var p=String(d).split('-'); return p.length===3?(parseInt(p[2],10)+' '+MO[parseInt(p[1],10)-1]+' '+p[0]):d; }
       var dts=research.map(function(m){return m.date;}).filter(Boolean).sort();
       var lastUpd='9 июля 2026';
-      var fundCard='<div style="border:0.5px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-top:8px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012))">'
+      var fundCard='<div style="border:0.5px solid rgba(184,151,58,.18);border-radius:12px;padding:16px;margin-top:8px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.012))">'
         +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:#e2e8f0;line-height:1">'+total+' <span style="font-size:13px;font-family:inherit;color:rgba(148,163,184,.8);font-weight:400">'+plr(total,['материал','материала','материалов'])+'</span></div>'+((ct&&ct!==total)?('<div style="font-size:11px;color:rgba(184,151,58,.9);margin-top:3px;font-weight:500">из них '+ct+' '+plr(ct,['материал','материала','материалов'])+' по стране</div>'):'')
         +(lastUpd?('<div style="font-size:10px;color:rgba(148,163,184,.6);margin-top:4px">Последнее обновление: '+lastUpd+'</div>'):'')
         +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div><div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Собрание исследований, сценариев, исторических параллелей и аналитических материалов по '+esc(gname)+'.</div><div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Исследования Архива учитываются в сценариях и прогнозах для данной страны.</div></div>';
@@ -9464,8 +9464,8 @@ window._renderCountryArchive = function(el, cc, cname, ds){
 ];
   var cat={metals:'Металл',real:'Реальный актив',human:'Человеческий актив'};
   var pl={high:'Высокий',mid:'Средний',low:'Низкий'},pc={high:'#34d399',mid:'#eab308',low:'#64748b'};
-  function bdg(y,p){return '<div style="flex:1;text-align:center;padding:5px 4px;border-radius:6px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.07)"><div style="font-size:8px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">'+y+'</div><div style="font-size:9px;font-weight:600;color:'+pc[p]+'">'+pl[p]+'</div></div>';}
-  return A.map(function(a){var c=(cat[a.group[0]]||'Актив').toUpperCase();return '<div style="border:0.5px solid rgba(255,255,255,.07);border-radius:10px;padding:13px;margin-bottom:8px;background:rgba(255,255,255,.02)"><div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,224,208,0.6);margin-bottom:6px">'+e(c)+'</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:#e2e8f0;line-height:1.15">'+e(a.name)+'</div><div style="font-size:10px;color:rgba(232,224,208,0.6);margin:2px 0 4px">'+e(a.sub)+'</div><div style="display:flex;gap:6px;margin:9px 0">'+bdg('2 года',a.p2)+bdg('5 лет',a.p5)+bdg('10 лет',a.p10)+'</div><div style="font-size:11.5px;line-height:1.5;color:rgba(232,224,208,0.9)">'+e(a.logic)+'</div></div>';}).join('');
+  function bdg(y,p){return '<div style="flex:1;text-align:center;padding:5px 4px;border-radius:6px;background:transparent;border:0.5px solid rgba(184,151,58,.18)"><div style="font-size:8px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">'+y+'</div><div style="font-size:9px;font-weight:600;color:'+pc[p]+'">'+pl[p]+'</div></div>';}
+  return A.map(function(a){var c=(cat[a.group[0]]||'Актив').toUpperCase();return '<div style="border:0.5px solid rgba(184,151,58,.18);border-radius:10px;padding:13px;margin-bottom:8px;background:rgba(255,255,255,.02)"><div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,224,208,0.6);margin-bottom:6px">'+e(c)+'</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;color:#e2e8f0;line-height:1.15">'+e(a.name)+'</div><div style="font-size:10px;color:rgba(232,224,208,0.6);margin:2px 0 4px">'+e(a.sub)+'</div><div style="display:flex;gap:6px;margin:9px 0">'+bdg('2 года',a.p2)+bdg('5 лет',a.p5)+bdg('10 лет',a.p10)+'</div><div style="font-size:11.5px;line-height:1.5;color:rgba(232,224,208,0.9)">'+e(a.logic)+'</div></div>';}).join('');
 })()+'</details>'
         
         +'</div>';
@@ -9858,7 +9858,7 @@ function _zoneCard(z, i){
       + _navIt.map(function(nv){
           return '<a href="#" class="zone-nav" data-anch="' + nv[1] + '" '
             + 'style="display:inline-block;padding:5px 10px;border-radius:13px;'
-            + 'background:rgba(255,255,255,.03);border:1px solid rgba(184,151,58,.16);'
+            + 'background:transparent;border:1px solid rgba(184,151,58,.16);'
             + 'font-family:Montserrat,sans-serif;font-size:10px;color:#8a9bb0;'
             + 'letter-spacing:.04em;text-decoration:none;white-space:nowrap">'
             + _zEsc(nv[0]) + '</a>';
@@ -9870,7 +9870,7 @@ function _zoneCard(z, i){
   // Доминанта первой строкой: пользователь понимает суть, не читая всё.
   var _dom = _zDominant(z);
   if(_dom){
-    h += '<div style="margin:2px 0 6px;padding:11px 13px;background:rgba(31,170,204,.06);'
+    h += '<div style="margin:2px 0 6px;padding:11px 13px;background:transparent;'
       + 'border-left:2px solid #1faacc;border-radius:0 7px 7px 0;'
       + 'font-family:Montserrat,sans-serif;font-size:12.5px;color:#e8eaf0;'
       + 'line-height:1.5;font-weight:500">' + _zEsc(_dom) + '</div>';
@@ -9890,7 +9890,7 @@ function _zoneCard(z, i){
   if(z.dependency)  _pass.push(['Зависимость', z.dependency]);
 
   h += _zSec('Паспорт зоны', 'Данные', _ZI.pass, '#7ec8ea', 'zp' + i)
-    + '<div style="background:rgba(126,200,234,.035);border:1px solid rgba(126,200,234,.16);'
+    + '<div style="background:transparent;border:1px solid rgba(126,200,234,.16);'
     + 'border-radius:9px;padding:4px 13px 6px">'
     + _pass.map(function(p){
         return '<div style="display:flex;gap:12px;padding:7px 0;'
@@ -9914,7 +9914,7 @@ function _zoneCard(z, i){
     h += _zSec('Свидетельства', 'Доказательная база · ' + _ev.length, _ZI.evid, '#9ec5a8', 'ze' + i)
       + _ev.map(function(e, ix){
           return '<div style="display:flex;gap:11px;margin:8px 0;padding:11px 13px;'
-            + 'background:rgba(158,197,168,.035);border:1px solid rgba(158,197,168,.16);'
+            + 'background:transparent;border:1px solid rgba(158,197,168,.16);'
             + 'border-radius:9px">'
             + '<div style="flex:0 0 20px;font-family:Montserrat,sans-serif;font-size:14px;'
             + 'font-weight:700;color:#9ec5a8;line-height:1;font-variant-numeric:tabular-nums">'
@@ -9943,7 +9943,7 @@ function _zoneCard(z, i){
     if((z.crossings||[]).length){
       h += (z.crossings||[]).map(function(p){
         return '<div style="margin:8px 0;padding:10px 12px;'
-          + 'background:rgba(155,127,196,.05);border-left:2px solid #9b7fc4;'
+          + 'background:transparent;border-left:2px solid #9b7fc4;'
           + 'border-radius:0 7px 7px 0">'
           + '<div style="font-family:Montserrat,sans-serif;font-size:8.5px;color:#9b7fc4;'
           + 'letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px">'
