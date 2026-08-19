@@ -12082,8 +12082,10 @@ function grdfPopulateCountriesList(countries) {
     var _modelOnly = (_st==='ELEVATED'||_st==='ESCALATING'||_st==='CRITICAL') && _nev===0;
     h += '<div style="font-size:10px;color:#3d5068;margin-top:1px">GRI '+gri+' · EWS '+fr(c.ews_score ?? gri)
        + (_modelOnly?' · <span style="color:#7a6a3a">модельная оценка</span>':'')+'</div></div>';
-    h += '<div style="text-align:right"><div style="font-size:10px;color:'+sc+';font-weight:500">'+STATUS_RU[getStatus(gri)]+'</div>';
-    h += '<div style="font-size:9px;color:'+(delta>0?'#f97316':'#10b981')+';margin-top:1px">'+(delta>0?'+':'')+delta.toFixed(1)+'</div></div>';
+    // Правая колонка со статусом и суточной дельтой снята: уровень риска
+    // уже виден в GRI под названием страны, а дельта в списке из сорока
+    // строк создаёт шум и уводит взгляд от самих стран. Обе величины
+    // остаются в карточке страны при открытии.
     h += '</div>';
     return h;
   }
