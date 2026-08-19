@@ -1601,51 +1601,40 @@ html,body{overscroll-behavior-y:contain}
 
 <style>
 /* ═══ TASK-148 · ЯРКОСТЬ ИНТЕРФЕЙСА ═══
-   Переопределение цветов через атрибут на html. Фильтр brightness
-   не использован намеренно: он создаёт containing block, и 39 элементов
-   position:fixed начали бы позиционироваться относительно контейнера,
-   а не окна.
+   Слой поверх всего интерфейса с режимом наложения soft-light.
 
-   Приглушённые цвета поднимаются по светлоте с сохранением тона.
-   Цвета риска не затрагиваются: красный, оранжевый, зелёный, синий
-   и фиолетовый означают то же самое во всех режимах. */
+   ПОЧЕМУ НЕ filter НА html: он создаёт containing block, и сорок
+   элементов position:fixed - карта, боковые панели, легенда, нижняя
+   навигация - начали бы позиционироваться относительно контейнера.
 
-/* ── BRIGHT ─────────────────────────────────────────────────── */
-html[data-bright="bright"] [style*="#6f88ab"] { color: #8fa2bd !important; }
-html[data-bright="bright"] [style*="#8a93a6"] { color: #a4abba !important; }
-html[data-bright="bright"] [style*="#94a3b8"] { color: #acb7c8 !important; }
-html[data-bright="bright"] [style*="#c8d0da"] { color: #d4dae2 !important; }
-html[data-bright="bright"] [style*="#cbd5e1"] { color: #d6dee8 !important; }
+   ПОЧЕМУ НЕ ПЕРЕОПРЕДЕЛЕНИЕ ЦВЕТОВ: селектор [style*="#6f88ab"]
+   ловит элемент только если цвет попал в атрибут style при отрисовке.
+   Интерфейс собирается из JS-строк, покрытие получалось частичным.
 
-/* Золото: усиливается, оттенок сохраняется */
-html[data-bright="bright"] [style*="#B8973A"] { color: #cdb060 !important; }
+   SOFT-LIGHT осветляет тёмные области сильнее светлых и почти
+   не трогает насыщенные цвета. Серый текст поднимается, красный
+   и зелёный остаются собой: семантика риска сохраняется.
 
-/* Поверхности */
-html[data-bright="bright"] body { background: #0e0d12 !important; }
+   Слой не перехватывает события: pointer-events отключены. */
 
-/* Границы и разделители */
-html[data-bright="bright"] [style*="rgba(184,151,58,.18)"] { border-color: rgba(184,151,58,.29) !important; }
-html[data-bright="bright"] [style*="rgba(184,151,58,.22)"] { border-color: rgba(184,151,58,.35) !important; }
-html[data-bright="bright"] [style*="rgba(255,255,255,.25)"] { color: rgba(255,255,255,.40) !important; }
+html[data-bright="bright"]::after,
+html[data-bright="max"]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483000;
+  background: #ffffff;
+  mix-blend-mode: soft-light;
+}
 
-/* ── MAXIMUM ────────────────────────────────────────────────── */
-html[data-bright="max"] [style*="#6f88ab"] { color: #abbace !important; }
-html[data-bright="max"] [style*="#8a93a6"] { color: #bbc0cb !important; }
-html[data-bright="max"] [style*="#94a3b8"] { color: #c1cad6 !important; }
-html[data-bright="max"] [style*="#c8d0da"] { color: #dfe4ea !important; }
-html[data-bright="max"] [style*="#cbd5e1"] { color: #e1e7ee !important; }
-html[data-bright="max"] [style*="#B8973A"] { color: #dac589 !important; }
-html[data-bright="max"] body { background: #16151a !important; }
-html[data-bright="max"] [style*="rgba(184,151,58,.18)"] { border-color: rgba(184,151,58,.40) !important; }
-html[data-bright="max"] [style*="rgba(184,151,58,.22)"] { border-color: rgba(184,151,58,.48) !important; }
-html[data-bright="max"] [style*="rgba(255,255,255,.25)"] { color: rgba(255,255,255,.55) !important; }
+html[data-bright="bright"]::after { opacity: 0.42; }
+html[data-bright="max"]::after    { opacity: 0.72; }
 
-/* Полупрозрачный текст описаний: поднимается в обоих режимах */
-html[data-bright="bright"] [style*="rgba(232,224,208,0.62)"] { color: rgba(232,224,208,0.80) !important; }
-html[data-bright="max"]    [style*="rgba(232,224,208,0.62)"] { color: rgba(232,224,208,0.94) !important; }
-html[data-bright="bright"] [style*="rgba(148,163,184,0.6)"]  { color: rgba(148,163,184,0.80) !important; }
-html[data-bright="max"]    [style*="rgba(148,163,184,0.6)"]  { color: rgba(148,163,184,0.95) !important; }
-
+/* Дополнительно: приглушённые подписи поднимаются точечно там,
+   где soft-light даёт недостаточный эффект на очень тёмном фоне. */
+html[data-bright="max"] [style*="rgba(232,224,208,0.62)"] { color: rgba(232,224,208,0.92) !important; }
+html[data-bright="max"] [style*="rgba(148,163,184,0.6)"]  { color: rgba(148,163,184,0.92) !important; }
 </style>
 </head>
 <body>
