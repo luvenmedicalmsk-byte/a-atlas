@@ -8570,8 +8570,16 @@ function _grdfFreeMirror(c){ try{
       +'</summary>'
       +'<div style="margin-top:11px;padding-top:10px;border-top:0.5px solid rgba(255,255,255,.06)"><div style="font-size:11.5px;color:rgba(184,151,58,.92);line-height:1.5">🔒 '+esc(m[1])+' в полном профиле страны.</div></div>'
     +'</details>'; }
-  function SH(t){ return '<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;margin:20px 14px 9px;padding-top:12px;border-top:0.5px solid rgba(184,151,58,.20)">'+t+'</div>'; }
-  function SUB(t){ return '<div style="font-size:11px;color:rgba(203,213,225,.62);margin:-4px 14px 9px">'+t+'</div>'; }
+  /* Заголовок раздела с подписью. После снятия заливок сверху остался
+     только разделитель, и заголовок висел в пустоте. Обёрнут в тот же
+     контур, что блоки под ним: раздел читается как единая группа. */
+  function SH(t){ return '<div style="margin:18px 14px 8px;padding:11px 13px 10px;'
+    + 'border:0.5px solid rgba(184,151,58,.20);border-radius:8px">'
+    + '<div style="font-size:10px;font-weight:600;font-family:Montserrat,sans-serif;'
+    + 'color:#b8973a;letter-spacing:.1em;text-transform:uppercase;line-height:1.35">'
+    + t + '</div></div>'; }
+  function SUB(t){ return '<div style="font-size:11px;color:rgba(203,213,225,.62);'
+    + 'line-height:1.45;margin:-6px 14px 10px;padding:0 13px 10px">'+t+'</div>'; }
   function CTA(){ return '<div style="margin:8px 14px 18px;text-align:center"><button onclick="openAccess()" style="display:inline-block;font-size:11.5px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:9px 20px;font-family:Montserrat,sans-serif;cursor:pointer">'+CTA_TXT+' →</button></div>'; }
   function grp(items){ return items.map(ACC).join(''); }
   function ARCHCARD(){ return '<div style="border:0.5px solid rgba(184,151,58,.18);border-radius:12px;padding:16px;margin:0 14px 10px;background:transparent'
