@@ -12073,7 +12073,7 @@ function grdfPopulateCountriesList(countries) {
     // Признак статуса несут бейдж «в разработке» и подпись «модельная оценка» —
     // они информативнее, чем прозрачность, и не мешают чтению данных.
     var h = '<div class="grdf-country-row" data-grdf-cc="'+esc(c.country)+'" onclick="grdfOpenCountrySheet(this.dataset.grdfCc)">';
-    h += '<div class="grdf-country-avatar" style="font-size:26px">'+_flag(c.country)+'</div>';
+    h += '<div class="grdf-country-avatar" style="font-size:22px">'+_flag(c.country)+'</div>';
     h += '<div style="flex:1"><div style="font-size:12px;font-weight:500;color:#e2e8f0">'+esc(c.country_name||c.country)
        + (dev?' <span style="font-size:7.5px;letter-spacing:.05em;text-transform:uppercase;color:#a78bfa;border:1px solid rgba(167,139,250,.4);border-radius:4px;padding:1px 5px;vertical-align:middle">в разработке</span>':'')
        + '</div>';
