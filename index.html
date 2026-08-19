@@ -8420,7 +8420,7 @@ function _nowSummary(c, gri, ews, cri, dom, isSig){ try{
   } else {
     s2 = ' Это модельная оценка: свежих событий по стране сейчас нет, рейтинг отражает структурный фон.';
   }
-  return '<div style="margin:10px 14px 14px;padding:12px 13px;background:rgba(184,151,58,.06);border:1px solid rgba(184,151,58,.18);border-radius:11px;font-size:12px;line-height:1.5;color:rgba(226,232,240,.9)"><span style="color:#B8973A;font-weight:600">Что это значит сейчас. </span>'+s1+s2+'</div>';
+  return '<div style="margin:10px 14px 14px;padding:12px 13px;background:transparent;border:0.5px solid rgba(184,151,58,.24);border-radius:11px;font-size:12px;line-height:1.5;color:rgba(226,232,240,.9)"><span style="color:#B8973A;font-weight:600">Что это значит сейчас. </span>'+s1+s2+'</div>';
 }catch(_e){ return ''; } }
 function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   var cc=String(c.country||'').toUpperCase(), cnLc=String(c.country_name||'').toLowerCase();
@@ -8433,7 +8433,7 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
     if(cnLc){ var t=((e.title||'')+' '+(e.region||'')).toLowerCase(); return t.indexOf(cnLc)>=0; }
     return false;
   });
-  var n=evs.length; if(!n) return ''; if(!isSig){ return '<div style="margin:12px 14px 4px;padding:13px 13px;background:rgba(184,151,58,.05);border:0.5px solid rgba(184,151,58,.18);border-radius:10px">'+'<div style="font-size:12.5px;color:#f1f5f9;font-weight:600;line-height:1.45"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>'+_aHdr+'</div>'+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">На основе многодоменного анализа, сценарного моделирования, каскадных связей и архивных исследований сформированы стратегические выводы, прогнозы и вероятные сценарии развития.</div>'+'<button onclick="openAccess()" style="margin-top:13px;font-size:11.5px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:8px 18px;cursor:pointer;font-family:Montserrat,sans-serif">Разблокировать полный профиль страны \u2192</button>'+'</div>'; } var _plu_nom=_plu(n,'сигнал','сигнала','сигналов'), _plu_prep=_plu(n,'сигнале','сигналах','сигналах');
+  var n=evs.length; if(!n) return ''; if(!isSig){ return '<div style="margin:12px 14px 4px;padding:13px 13px;background:transparent;border:0.5px solid rgba(184,151,58,.24);border-radius:10px">'+'<div style="font-size:12.5px;color:#f1f5f9;font-weight:600;line-height:1.45"><svg width="15" height="15" viewBox="0 0 24 24" style="vertical-align:-2px;margin-right:6px;animation:grdfPulse 1.3s ease-in-out infinite"><path d="M12 2.8 1.2 21.2h21.6L12 2.8Z" fill="rgba(227,178,60,.16)" stroke="#E3B23C" stroke-width="1.7" stroke-linejoin="round"/><line x1="12" y1="9.2" x2="12" y2="14.4" stroke="#E3B23C" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="17.7" r="1.05" fill="#E3B23C"/></svg>'+_aHdr+'</div>'+'<div style="font-size:11.5px;color:rgba(203,213,225,.78);line-height:1.55;margin-top:8px">На основе многодоменного анализа, сценарного моделирования, каскадных связей и архивных исследований сформированы стратегические выводы, прогнозы и вероятные сценарии развития.</div>'+'<button onclick="openAccess()" style="margin-top:13px;font-size:11.5px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:8px 18px;cursor:pointer;font-family:Montserrat,sans-serif">Разблокировать полный профиль страны \u2192</button>'+'</div>'; } var _plu_nom=_plu(n,'сигнал','сигнала','сигналов'), _plu_prep=_plu(n,'сигнале','сигналах','сигналах');
   var sev=evs.map(function(e){return +e.severity||0;});
   var avg=Math.round(sev.reduce(function(a,b){return a+b;},0)/n);
   var dsum={}; evs.forEach(function(e){var d=e.domain||'other';dsum[d]=(dsum[d]||0)+(+e.severity||0);});
@@ -8535,7 +8535,7 @@ function _grdfFreeMirror(c){ try{
     'Стратегические активы':['Определены ключевые узлы, влияющие на устойчивость.','Доступны стратегические активы']
   };
   function ACC(t){ var m=MAP[t]||['Раздел проанализирован.','Доступен полный анализ'];
-    return '<details class="grdf-acc" style="margin:0 14px 9px;padding:12px 13px;background:rgba(255,255,255,.02);border:0.5px solid rgba(255,255,255,.08);border-radius:10px">'
+    return '<details class="grdf-acc" style="margin:0 14px 9px;padding:12px 13px;background:transparent;border:0.5px solid rgba(184,151,58,.16);border-radius:10px">'
       +'<summary class="grdf-acc-h" style="cursor:pointer;list-style:none;display:block">'
         +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'
           +'<div style="flex:1">'
@@ -8686,7 +8686,7 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
   var statusColMap = {CRITICAL:'#ef4444',ESCALATING:'#f97316',ELEVATED:'#eab308',STABLE:'#10b981'};
   var sCol = statusColMap[status] || '#10b981';
 
-  out += '<div style="margin:0 14px 10px;padding:11px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">';
+  out += '<div style="margin:0 14px 10px;padding:11px 12px;background:transparent;border:0.5px solid rgba(184,151,58,.18);border-radius:9px">';
   out += '<div style="font-size:9px;color:#f1f5f9;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Ключевой вывод</div>';
   out += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">';
   out += '<span style="width:10px;height:10px;border-radius:50%;background:'+sCol+';flex-shrink:0"></span>';
@@ -8715,7 +8715,7 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
   reasons = reasons.slice(0,4);
   if(reasons.length === 0) reasons.push('Профиль рисков в пределах нормы');
 
-  out += '<details class="grdf-acc" style="margin:0 14px 10px;padding:11px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">';
+  out += '<details class="grdf-acc" style="margin:0 14px 10px;padding:11px 12px;background:transparent;border:0.5px solid rgba(184,151,58,.18);border-radius:9px">';
   out += '<summary class="grdf-acc-h" style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">Основания оценки<span class="grdf-acc-cv">›</span></summary>';
   reasons.slice(0,5).forEach(function(r){
     out += '<div style="display:flex;align-items:flex-start;gap:7px;padding:3px 0;font-size:11px;color:#94a3b8">';
@@ -8754,7 +8754,7 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
   trackItems = trackItems.slice(0,12);
 
   if(trackItems.length > 0) {
-    out += '<details class="grdf-acc" style="margin:0 14px 10px;padding:11px 12px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.08);border-radius:9px">';
+    out += '<details class="grdf-acc" style="margin:0 14px 10px;padding:11px 12px;background:transparent;border:0.5px solid rgba(184,151,58,.18);border-radius:9px">';
     out += '<summary class="grdf-acc-h" style="font-size:10px;color:#f1f5f9;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;cursor:pointer">Система отслеживает<span class="grdf-acc-cv">›</span></summary>';
     trackItems.forEach(function(item){
       out += '<div style="display:flex;align-items:center;gap:7px;padding:2px 0;font-size:11px;color:#94a3b8">';
