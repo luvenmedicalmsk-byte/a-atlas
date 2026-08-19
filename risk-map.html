@@ -102,8 +102,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
 /* TASK-149 · колонка слева от события, как в блоке расхождений графа.
    Фон прозрачный, цвет единый золотой: полоса работает разделителем,
    а не носителем смысла. Цвет домена остаётся на точке и подписи. */
-.ei{border-left:2px solid rgba(184,151,58,0.30) !important;padding-left:9px !important}
-.ei.sel{border-left-color:rgba(184,151,58,0.62) !important}
+/* TASK-149 · рамка события по образцу карточек графа: контур без фона. */
+.ei{border:0.5px solid rgba(184,151,58,0.20) !important;border-radius:8px !important;
+    margin:0 10px 6px !important;padding:9px 11px !important;background:transparent !important}
+.ei.sel{border-color:rgba(184,151,58,0.45) !important;background:rgba(184,151,58,0.05) !important}
 .ei-meta{font-size:8px;color:#94a3b8;display:flex;justify-content:space-between}
 .ei-bar{height:1px;background:rgba(184,151,58,0.08);margin-top:5px}
 .ei-fill{height:100%}
@@ -291,7 +293,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
 .grdf-sig-filters::-webkit-scrollbar{display:none}
 .grdf-sig-pill{flex:0 0 auto;background:transparent;border:0.5px solid rgba(184,151,58,0.25);color:rgba(148,163,184,0.7);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:300;letter-spacing:0.08em;text-transform:uppercase;padding:5px 11px;border-radius:20px;cursor:pointer;white-space:nowrap}
 .grdf-sig-pill.active{background:rgba(184,151,58,0.15);border-color:#B8973A;color:#D4AF5A}
-.grdf-sig-card{display:flex;align-items:flex-start;gap:12px;padding:11px 13px 11px 12px;margin:0 14px 8px;background:transparent;border:0;border-left:2px solid rgba(184,151,58,0.34);border-radius:0;transition:border-color .15s ease,background .15s ease}.grdf-sig-card:active{background:rgba(184,151,58,0.07);border-left-color:rgba(184,151,58,0.62)}
+.grdf-sig-card{display:flex;align-items:flex-start;gap:12px;padding:11px 13px;margin:0 14px 8px;background:transparent;border:0.5px solid rgba(184,151,58,0.24);border-radius:11px;transition:background .15s ease,border-color .15s ease}.grdf-sig-card:active{background:rgba(184,151,58,0.08);border-color:rgba(184,151,58,0.40)}
 .grdf-sig-card .sig-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
 .grdf-sig-card .sig-main{flex:1;min-width:0}
 .grdf-sig-dom{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:2px}
