@@ -10655,7 +10655,16 @@ window._atlasRender = function(bEl, mEl, dEl, d){
 window._atlasAbout = function(d, nCountries, gc){
   function esc(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   var nC=(d&&d.brief_free&&d.brief_free.countries_count)||nCountries||0;
-  var nSig=0; try{ var o=gc||{}; for(var k in o){ nSig+=(parseInt(o[k],10)||0); } }catch(e){}
+  /* Счётчик берёт total_built - все построенные события, а не только
+   дошедшие до ленты. За её пределами остаются отсеянные лимитами
+   отображения: переполнение, квота темы, фильтр после построения.
+   Они прошли классификатор и оценку, то есть распознаны системой.
+   Пока поле не накопилось, показываем прежнюю сумму по доменам. */
+var nSig=0; try{
+  var _cv=window._COV_TOTALS||{};
+  nSig=parseInt(_cv.total_built,10)||0;
+  if(!nSig){ var o=gc||{}; for(var k in o){ nSig+=(parseInt(o[k],10)||0); } }
+}catch(e){}
   var upd=''; try{ if(typeof _todayData!=='undefined'&&_todayData&&_todayData.generated_at) upd=String(_todayData.generated_at).replace('T',' ').replace(/\..*$/,'').slice(0,19)+' UTC'; }catch(e){}
   if(!upd){ try{ upd=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC'; }catch(e){ upd='\u2014'; } }
   function row(l,v){ return '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:0.5px solid rgba(184,151,58,0.08);font-size:12px"><span style="color:rgba(148,163,184,0.72)">'+esc(l)+'</span><span style="color:rgba(232,224,208,0.9);font-weight:500;text-align:right">'+esc(v)+'</span></div>'; }
