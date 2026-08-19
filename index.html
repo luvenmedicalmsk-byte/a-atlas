@@ -1598,6 +1598,55 @@ html,body{overscroll-behavior-y:contain}
   else show();
 })();
 </script>
+
+<style>
+/* ═══ TASK-148 · ЯРКОСТЬ ИНТЕРФЕЙСА ═══
+   Переопределение цветов через атрибут на html. Фильтр brightness
+   не использован намеренно: он создаёт containing block, и 39 элементов
+   position:fixed начали бы позиционироваться относительно контейнера,
+   а не окна.
+
+   Приглушённые цвета поднимаются по светлоте с сохранением тона.
+   Цвета риска не затрагиваются: красный, оранжевый, зелёный, синий
+   и фиолетовый означают то же самое во всех режимах. */
+
+/* ── BRIGHT ─────────────────────────────────────────────────── */
+html[data-bright="bright"] [style*="#6f88ab"] { color: #8fa2bd !important; }
+html[data-bright="bright"] [style*="#8a93a6"] { color: #a4abba !important; }
+html[data-bright="bright"] [style*="#94a3b8"] { color: #acb7c8 !important; }
+html[data-bright="bright"] [style*="#c8d0da"] { color: #d4dae2 !important; }
+html[data-bright="bright"] [style*="#cbd5e1"] { color: #d6dee8 !important; }
+
+/* Золото: усиливается, оттенок сохраняется */
+html[data-bright="bright"] [style*="#B8973A"] { color: #cdb060 !important; }
+
+/* Поверхности */
+html[data-bright="bright"] body { background: #0e0d12 !important; }
+
+/* Границы и разделители */
+html[data-bright="bright"] [style*="rgba(184,151,58,.18)"] { border-color: rgba(184,151,58,.29) !important; }
+html[data-bright="bright"] [style*="rgba(184,151,58,.22)"] { border-color: rgba(184,151,58,.35) !important; }
+html[data-bright="bright"] [style*="rgba(255,255,255,.25)"] { color: rgba(255,255,255,.40) !important; }
+
+/* ── MAXIMUM ────────────────────────────────────────────────── */
+html[data-bright="max"] [style*="#6f88ab"] { color: #abbace !important; }
+html[data-bright="max"] [style*="#8a93a6"] { color: #bbc0cb !important; }
+html[data-bright="max"] [style*="#94a3b8"] { color: #c1cad6 !important; }
+html[data-bright="max"] [style*="#c8d0da"] { color: #dfe4ea !important; }
+html[data-bright="max"] [style*="#cbd5e1"] { color: #e1e7ee !important; }
+html[data-bright="max"] [style*="#B8973A"] { color: #dac589 !important; }
+html[data-bright="max"] body { background: #16151a !important; }
+html[data-bright="max"] [style*="rgba(184,151,58,.18)"] { border-color: rgba(184,151,58,.40) !important; }
+html[data-bright="max"] [style*="rgba(184,151,58,.22)"] { border-color: rgba(184,151,58,.48) !important; }
+html[data-bright="max"] [style*="rgba(255,255,255,.25)"] { color: rgba(255,255,255,.55) !important; }
+
+/* Полупрозрачный текст описаний: поднимается в обоих режимах */
+html[data-bright="bright"] [style*="rgba(232,224,208,0.62)"] { color: rgba(232,224,208,0.80) !important; }
+html[data-bright="max"]    [style*="rgba(232,224,208,0.62)"] { color: rgba(232,224,208,0.94) !important; }
+html[data-bright="bright"] [style*="rgba(148,163,184,0.6)"]  { color: rgba(148,163,184,0.80) !important; }
+html[data-bright="max"]    [style*="rgba(148,163,184,0.6)"]  { color: rgba(148,163,184,0.95) !important; }
+
+</style>
 </head>
 <body>
 
@@ -12506,6 +12555,31 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
     } }catch(_lo){}
     h+='<div style="margin-top:20px;padding:20px 18px;border:0.5px solid rgba(184,151,58,.18);border-radius:14px;background:rgba(184,151,58,.025)">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:15px">🌙</span><span style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:300;letter-spacing:.02em;color:#D4AF5A">Режим Atlas Intelligence</span></div>'
+      /* TASK-148 · яркость интерфейса. Настройка визуальная, на расчёт
+         риска и цветовую семантику сигналов не влияет. */
+      +'<div style="margin:0 0 16px;padding:13px;border:0.5px solid rgba(184,151,58,.14);border-radius:10px">'
+      +  '<div style="display:flex;align-items:center;gap:7px;margin-bottom:9px">'
+      +    '<span style="font-size:13px">\u2600</span>'
+      +    '<span style="font-family:Montserrat,sans-serif;font-size:11px;letter-spacing:.09em;'
+      +      'text-transform:uppercase;color:#D4AF5A">Яркость интерфейса</span></div>'
+      +  '<div style="display:flex;gap:6px">'
+      +    ['standard|Стандарт','bright|Яркий','max|Максимальный'].map(function(p){
+           var q=p.split('|');
+           var cur=(function(){try{return localStorage.getItem('atlasBrightness')||'standard';}catch(e){return 'standard';}})();
+           var on=(q[0]===cur);
+           return '<button type="button" id="br-'+q[0]+'" onclick="atlasSetBrightness(\''+q[0]+'\')" '
+             + 'style="flex:1;padding:8px 4px;border-radius:7px;cursor:pointer;'
+             + 'font-family:Montserrat,sans-serif;font-size:10.5px;'
+             + 'background:'+(on?'rgba(184,151,58,.16)':'transparent')+';'
+             + 'color:'+(on?'#D4AF5A':'#6f88ab')+';'
+             + 'border:1px solid '+(on?'rgba(184,151,58,.45)':'rgba(184,151,58,.18)')+'">'
+             + q[1]+'</button>';
+         }).join('')
+      +  '</div>'
+      +  '<div style="font-family:Montserrat,sans-serif;font-size:9.5px;color:#6f88ab;'
+      +    'margin-top:8px;line-height:1.5">Яркость самого интерфейса, не экрана устройства. '
+      +    'Цвета уровней риска не меняются.</div>'
+      +'</div>'
       +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.65;color:rgba(232,224,208,0.62)">'
       +'<p style="margin:0 0 10px">Atlas создавался не для того, чтобы забирать ваше внимание весь день. Пока вы живёте, работаете, отдыхаете или проводите время с близкими, система непрерывно анализирует тысячи мировых сигналов, отсеивает информационный шум и формирует стратегическую картину происходящего.</p>'
       +'<p style="margin:0 0 12px;padding:11px 13px;border-left:2px solid rgba(212,175,90,0.5);background:rgba(184,151,58,.05);border-radius:0 8px 8px 0"><strong style="color:rgba(232,224,208,0.92);font-weight:600">Оптимальный режим работы с Atlas — одна вечерняя аналитическая сессия продолжительностью 30–60 минут.</strong> За это время вы увидите всё действительно важное, что изменилось за день, поймёте ключевые тенденции и получите целостное представление о ситуации — без необходимости следить за новостями каждый час.</p>'
@@ -15061,5 +15135,42 @@ function _scenIntel(s){
 })();
 </script>
 
+
+<script>
+/* TASK-148 · Яркость интерфейса. Применяется до отрисовки, чтобы
+   не было вспышки стандартной темы при загрузке. */
+(function(){
+  try {
+    var b = localStorage.getItem('atlasBrightness');
+    if (b === 'bright' || b === 'max') {
+      document.documentElement.setAttribute('data-bright', b);
+    }
+  } catch(e) {}
+  window.atlasSetBrightness = function(mode){
+    var el = document.documentElement;
+    if (mode === 'standard' || !mode) {
+      el.removeAttribute('data-bright');
+      try { localStorage.setItem('atlasBrightness', 'standard'); } catch(e) {}
+    } else {
+      el.setAttribute('data-bright', mode);
+      try { localStorage.setItem('atlasBrightness', mode); } catch(e) {}
+    }
+    // Перерисовка кнопок в кабинете, если он открыт
+    ['standard','bright','max'].forEach(function(m){
+      var btn = document.getElementById('br-' + m);
+      if (!btn) return;
+      var on = (m === (mode || 'standard'));
+      btn.style.background = on ? 'rgba(184,151,58,.16)' : 'transparent';
+      btn.style.color = on ? '#D4AF5A' : '#6f88ab';
+      btn.style.borderColor = on ? 'rgba(184,151,58,.45)' : 'rgba(184,151,58,.18)';
+    });
+  };
+  window.atlasCycleBrightness = function(){
+    var cur = document.documentElement.getAttribute('data-bright') || 'standard';
+    var next = cur === 'standard' ? 'bright' : cur === 'bright' ? 'max' : 'standard';
+    window.atlasSetBrightness(next);
+  };
+})();
+</script>
 </body>
 </html>
