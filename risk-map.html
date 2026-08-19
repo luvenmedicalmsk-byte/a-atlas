@@ -8441,12 +8441,22 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   var accel=evs.filter(function(e){var t=String(e.forecast_trend||'').toLowerCase();return t==='accelerating'||t==='rising'||t==='escalating'||t==='up';}).length;
   var accelPct=Math.round(accel/n*100);
   var drv=evs.slice().sort(function(a,b){return (+b.severity||0)-(+a.severity||0);}).slice(0,3)
-    .map(function(e){var t=String(e.title||'').replace(/\s+/g,' ').trim(); return t.length>44?t.slice(0,44)+'…':t;});
+    .map(function(e){
+      var t=String(e.title||'').replace(/\s+/g,' ').trim();
+      // Хвост про источник в заголовок драйвера не нужен: «пишут Известия»
+      // не говорит ничего о самом событии.
+      t=t.replace(/,?\s*(?:пишут|сообщает|передаёт|передает|по данным)\s+[^,.]{0,40}$/i,'').trim();
+      if(t.length<=52) return t;
+      // Обрезаем по границе слова, а не по символу: «на нефтеперерабатывающем
+      // заво…» читается хуже, чем «на нефтеперерабатывающем…».
+      var cut=t.slice(0,52), sp=cut.lastIndexOf(' ');
+      return (sp>28?cut.slice(0,sp):cut)+'…';
+    });
   var dl=function(d){return DOM_LABELS[d]||d;};
   var srcDom=dl(dom);
   var ch=_cascadeProf(c); var recv=(ch.prof||[]).filter(function(x){return x.d!==dom;}).slice(0,2).map(function(x){return dl(x.d);});
   var chain=[srcDom].concat(recv).join(' → ');
-  var tempo=ews>=60?'быстро нарастает':ews>=35?'умеренный':'низкий';
+  var tempo=ews>=60?'быстрый':ews>=35?'умеренный':'низкий';
   var criw=cri>=70?'высокая':cri>=45?'умеренная':'низкая';
   // ── микро-строки под индексами ──
   var micro='<div style="margin:2px 14px 0;display:flex;flex-direction:column;gap:3px">'
@@ -8454,9 +8464,16 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
     +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#1faacc">EWS '+ews+'</b> — большинство сигналов растут, темп '+tempo+'.</div>'
     +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#f59e0b">CRI '+cri+'</b> — давление охватывает '+active+' из 5 основных доменов.</div></div>';
   // ── нарратив ──
-  var l1='Риск (GRI '+gri+') держится на '+n+' сигналах средней остроты '+avg+'/100. Главный источник — '+srcDom+': '+drv.slice(0,2).join('; ')+'.';
-  var l2='Темп нарастания '+tempo+' (EWS '+ews+'): '+accelPct+'% сигналов растут.';
-  var l3='Системная связность '+criw+' (CRI '+cri+'): давление охватывает '+active+' из 5 доменов. Основная цепочка: '+chain+'.';
+  // Три строки отвечают на разные вопросы: из чего сложился уровень,
+  // как он меняется, насколько широко расходится. Повторов между ними
+  // быть не должно.
+  var l1='Оценка '+gri+' сложилась из '+n+' '+_plu_nom+' со средней остротой '
+        +avg+'/100. Наибольший вклад даёт контур «'+srcDom+'»: '
+        +drv.slice(0,2).join('; ')+'.';
+  var l2='Темп нарастания '+tempo+' (EWS '+ews+'). Доля сигналов с растущей '
+        +'оценкой — '+accelPct+'%.';
+  var l3='Связность '+criw+' (CRI '+cri+'): давление затрагивает '+active
+        +' из пяти доменов'+(active>1?', цепочка распространения — '+chain:'')+'.';
   var lineStyle='font-size:12px;color:rgba(232,227,216,.82);line-height:1.55;margin-top:7px';
   var hdr='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:4px">Почему такой риск</div>';
   var body;
