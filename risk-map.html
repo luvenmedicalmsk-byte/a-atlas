@@ -7980,17 +7980,60 @@ function _evM(val, lbl, col) {
     <div style="height:0.5px;background:rgba(255,255,255,.08);margin:2px 0 10px"></div>
 
     <!-- Block 2: Archive full access -->
-    <!-- Блок предложения Архива снят: он показывался всем бесплатным
-       пользователям, тогда как предназначался только пришедшим
-       из Telegram. У остальных другие условия доступа.
-       Окно и кнопка сохранены: они нужны для прочих платных функций. -->
-      <!-- CTA Button -->
+    <div style="background:rgba(212,175,90,.06);border:0.5px solid rgba(212,175,90,.25);border-radius:9px;padding:12px 13px;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:#D4AF5A;margin-bottom:8px">📚 Полный и бессрочный доступ к Архиву</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#fef3c7">
+          <span style="color:#D4AF5A;font-weight:600">•</span> 500+ аналитических исследований
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#fef3c7">
+          <span style="color:#D4AF5A;font-weight:600">•</span> Стратегические активы 2026–2036
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#fef3c7">
+          <span style="color:#D4AF5A;font-weight:600">•</span> Карты рисков и уязвимостей
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#fef3c7">
+          <span style="color:#D4AF5A;font-weight:600">•</span> Архив исследований и аналитики
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#fef3c7">
+          <span style="color:#D4AF5A;font-weight:600">•</span> Все будущие обновления без доплат
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#fef3c7">
+          <span style="color:#D4AF5A;font-weight:600">•</span> Приоритетный доступ к новым модулям
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:0.5px;background:rgba(255,255,255,.08);margin:2px 0 10px"></div>
+
+    <!-- Block 3: Community -->
+    <div style="background:rgba(99,102,241,.07);border:0.5px solid rgba(99,102,241,.25);border-radius:9px;padding:12px 13px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:#a5b4fc;margin-bottom:8px">🤝 Для участников Архива</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#e0e7ff">
+          <span style="color:#a5b4fc;font-weight:600">•</span> Закрытое сообщество и чат
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#e0e7ff">
+          <span style="color:#a5b4fc;font-weight:600">•</span> Закрытый канал связи для участников
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:#e0e7ff">
+          <span style="color:#a5b4fc;font-weight:600">•</span> Резервное копирование материалов
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Button -->
     <button class="grdf-cta-btn grdf-cta-primary" id="grdf-up-cta" onclick="grdfActivateSignalPro()" style="background:linear-gradient(135deg,#065f46,#047857);border:1px solid #10b981;color:#d1fae5;font-size:14px;font-weight:600;letter-spacing:.03em;padding:14px 0;border-radius:9px">
       Получить доступ к Архиву
     </button>
 
     <!-- Footer note -->
-    
+    <div style="margin-top:11px;padding:10px 12px;background:rgba(16,185,129,.05);border-radius:7px;border:0.5px solid rgba(16,185,129,.15)">
+      <div style="font-size:10px;color:#6ee7b7;line-height:1.65;text-align:center">
+        ⭐ Участникам Архива доступны: Прогноз на 7 дней, риск-драйверы, лента сигналов, лента предупреждений и монитор обострений.
+      </div>
+    </div>
   </div>
 </div>
 
@@ -12515,32 +12558,12 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
       h+='<div id="cab-login-msg" class="cab-msg"></div>';
       
     }
-    try{ var _curTier=(window.CC&&CC.tier?CC.tier():'free'); if(_curTier==='free'){
-      h+='<div style="margin-top:6px;padding:22px 18px;border:1px solid rgba(212,175,90,0.45);border-radius:14px;background:linear-gradient(160deg,rgba(184,151,58,.12),rgba(184,151,58,.03))">'
-        +'<div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#D4AF5A;margin-bottom:12px;font-family:Montserrat,sans-serif">Для владельцев Архива</div>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.7;color:rgba(232,224,208,0.72);margin-bottom:14px">Вы были частью этого проекта с самого начала. Именно исследования Архива стали фундаментом Atlas Intelligence. Благодаря вашей поддержке исследования смогли перейти на следующий этап — работающую аналитическую систему.</div>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.7;color:rgba(232,224,208,0.72);margin-bottom:16px">Поэтому для владельцев Архива, которые приобрели доступ до марта 2026 года, я открываю персональное предложение.</div>'
-        +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:300;color:#D4AF5A;line-height:1.25;margin-bottom:4px">Атлас · Сигнал Про</div>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:11px;color:rgba(232,224,208,0.6);margin-bottom:14px">Полный доступ сроком на 1 год</div>'
-        +'<div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,224,208,0.45);margin-bottom:9px;font-family:Montserrat,sans-serif">Что входит</div>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:12px;line-height:1.9;color:rgba(232,224,208,0.72);margin-bottom:16px">'
-          +'• тысячи сигналов в режиме реального времени<br>'
-          +'• работа 37 аналитических движков<br>'
-          +'• ежедневная аналитика Atlas Intelligence<br>'
-          +'• прогнозы системы на 7 дней<br>'
-          +'• интеллектуальный анализ мировых рисков<br>'
-          +'• граф взаимосвязей<br>'
-          +'• матрица рисков<br>'
-          +'• профиль стран<br>'
-          +'• все обновления Сигнал Про в течение года'
-        +'</div>'
-        +'<div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,224,208,0.45);margin-bottom:6px;font-family:Montserrat,sans-serif">Персональная стоимость для владельцев Архива</div>'
-        +'<div style="font-family:\'Cormorant Garamond\',serif;margin-bottom:16px"><span style="font-size:34px;font-weight:300;color:#D4AF5A">69 000 ₽</span> <span style="font-size:17px;color:rgba(232,224,208,0.4);text-decoration:line-through;margin-left:6px">119 000 ₽</span></div>'
-        +'<a href="https://telegram.me/anirisao" target="_blank" rel="noopener" style="display:block;text-align:center;font-size:13px;font-weight:700;color:#E3B23C;background:transparent;border:1px solid #E3B23C;border-radius:26px;padding:13px 24px;font-family:Montserrat,sans-serif;text-decoration:none;margin-bottom:14px">Подключить Сигнал Про →</a>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:10.5px;line-height:1.6;color:rgba(232,224,208,0.45)">Это предложение доступно только владельцам Архива, которые приобрели его в период с 2022 года по март 2026 года. Для новых клиентов действует текущая стоимость и условия.</div>'
-        +'<div style="font-family:Montserrat,sans-serif;font-size:11px;line-height:1.6;color:rgba(232,224,208,0.55);margin-top:12px;font-style:italic">Atlas Intelligence стал следующим этапом развития Архива. Поэтому владельцы Архива получают персональные условия подключения в знак благодарности за то, что были частью этого пути с самого начала.</div>'
-        +'</div>';
-    } }catch(_lo){}
+    try{ /* Персональное предложение для владельцев Архива снято: условие
+         показа проверяло только тир free, а не факт покупки Архива.
+         Человек с нового устройства видел скидку 69 000 вместо 119 000,
+         которая ему не принадлежит, и при обращении узнавал другую цену.
+         Признака владельца во фронте нет: CC.tier() даёт уровень доступа,
+         не историю покупки. Предложение отправляется адресно. */ }catch(_lo){}
     h+='<div style="margin-top:20px;padding:20px 18px;border:0.5px solid rgba(184,151,58,.18);border-radius:14px;background:rgba(184,151,58,.025)">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:15px">🌙</span><span style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:300;letter-spacing:.02em;color:#D4AF5A">Режим Atlas Intelligence</span></div>'
       /* TASK-148 · яркость интерфейса. Настройка визуальная, на расчёт
