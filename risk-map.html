@@ -12571,8 +12571,10 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         +'</div>';
       h+='<div class="cab-seclabel">Ваша активность</div><div class="cab-list">';
       h+=row('history','Последний вход',_last?_fd(_last):'—');
-      h+=row('profile','Изучено стран',_cN+' '+_sw(_cN));
-      h+=row('archive','Просмотрено материалов',_mN+' '+_mw(_mN));
+      /* Строки «Изучено стран» и «Просмотрено материалов» сняты: счёт
+         ведётся в localStorage и живёт только на одном устройстве.
+         С нового браузера обнуляется, при очистке кэша теряется.
+         Учёт в коде сохранён на случай переноса на серверную сторону. */
       h+='</div>';
       h+='<div class="cab-logout"><button class="cab-btn" onclick="cabLogout()">Выйти</button></div>';
     } else {
