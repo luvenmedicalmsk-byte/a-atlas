@@ -3460,7 +3460,34 @@ window._grdfDisasterEnsure=function(){
     window._sigTapBound = true;
     document.addEventListener('click', function(e){
       var c = (e.target && e.target.closest) ? e.target.closest('.grdf-sig-card') : null;
-      if(c) window._toggleSig(c);
+      if(!c) return;
+      window._toggleSig(c);
+      /* Учёт просмотра в мобильной ленте. На десктопе он подключён
+         к обработчику карточки, здесь отсутствовал: счётчик
+         «Просмотрено материалов» на телефоне всегда показывал ноль. */
+      try{
+        if(window.atlasTrackMaterial){
+          var _t=c.querySelector('.grdf-sig-title');
+          var _k=c.getAttribute('data-ev-id')||(_t?_t.textContent.slice(0,90):'');
+          if(_k) atlasTrackMaterial(_k);
+        }
+      }catch(_e){}
+    });
+  }
+  /* Учёт открытия карточек вкладки «Риски»: землетрясения, криосфера,
+     экстремальная погода. Прежде считались только события ленты,
+     поэтому показатель отражал лишь часть работы с платформой. */
+  if(!window._qkTapBound){
+    window._qkTapBound = true;
+    document.addEventListener('click', function(e){
+      if(!e.target || !e.target.closest) return;
+      var c = e.target.closest('.qk-card, .dn-card');
+      if(!c || !window.atlasTrackMaterial) return;
+      try{
+        var _t=c.querySelector('.qk-main, .dn-title, .dn-text');
+        var _k=c.getAttribute('data-id')||(_t?_t.textContent.slice(0,90):'');
+        if(_k) atlasTrackMaterial(_k);
+      }catch(_e){}
     });
   }
   (function(){ var s=document.createElement('style'); s.textContent='.grdf-sig-card.sig-news{cursor:pointer}.grdf-sig-card.sig-news .sig-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.grdf-sig-card.sig-news.sig-open .sig-clamp{-webkit-line-clamp:unset;overflow:visible;display:block}'; document.head.appendChild(s); })();
