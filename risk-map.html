@@ -10723,8 +10723,7 @@ var nSig=0; try{
     +row('Модель','Atlas Intelligence Engine')
     +row('Версия','Core Revision 37')
     +row('Дата создания','2026.06.07')
-    +row('Охват стран', nC+' стран')
-    +row('Обработано сигналов', (nSig>0?(nSig+'+'):'\u2014'))
+        +row('Обработано сигналов', (nSig>0?(nSig+'+'):'\u2014'))
     +row('Последнее обновление', upd);
 };
 window.grdfRenderAtlas = function(){
@@ -12530,7 +12529,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAccess(
         h+='<a class="cab-eco" href="https://t.me/anirisao" target="_blank" rel="noopener">Получить полный доступ к экосистеме</a>';
       }
       if(_aDate){
-        h+='<div class="cab-seclabel">Последнее обновление Архива</div>'
+        h+='<div class="cab-seclabel">Последнее обновление</div>'
           +'<div class="cab-upd"><div class="cab-upd-date">'+_aDate+'</div>'
           +(_aCnt>0?'<div class="cab-upd-sub">Добавлено '+_aCnt+' '+_mw(_aCnt)+'</div>':'')
           +'</div>';
