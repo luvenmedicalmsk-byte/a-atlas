@@ -2991,10 +2991,12 @@ var _qkExpoCache={};
 var _qkOafCache={};
 function _loadOaf(container){
   var u=container.getAttribute('data-oaf');
-  // Атрибут проставляется при разборе detail. Если карточка открыта
-  // повторно и разбор уже прошёл, атрибут на месте. Если он пуст -
-  // продукт oaf у события отсутствует, блок не показываем.
-  if(u===null||u==='') return;
+  // Атрибут отсутствует - detail ещё не разобран, ждём.
+  if(u===null) return;
+  // Атрибут пуст - detail разобран, продукта oaf у события нет.
+  // Это состояние, а не молчание: показываем причину, иначе пустое
+  // место неотличимо от неработающего блока.
+  if(u===''){ _qkOafCache['']=null; _renderOaf(container); return; }
   if(_qkOafCache[u]!==undefined){ _renderOaf(container); return; }
   fetch(u,{cache:'force-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
     var out=null;
@@ -3027,9 +3029,19 @@ function _loadOaf(container){
 function _renderOaf(container){
   var u=container.getAttribute('data-oaf');
   var o=_qkOafCache[u];
-  if(o===undefined||!o) return;
+  if(o===undefined) return;
   var box=container.parentNode&&container.parentNode.querySelector('.qk-oaf');
   if(!box) return;
+  if(!o){
+    /* Продукта нет. USGS выпускает афтершоковый прогноз для коровых
+       событий: очаг примерно до 70 км. Глубокофокусные землетрясения
+       в зонах субдукции афтершоковых последовательностей почти
+       не порождают, и прогноз для них не публикуется. */
+    box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз USGS</div>'
+      + '<div class="qk-exp-note">Прогноз не выпущен. Для глубокофокусных '
+      + 'событий и толчков вне населённых зон USGS его не публикует.</div>';
+    return;
+  }
   var rows='';
   o.rows.forEach(function(r){
     var pct=Math.round((r.p||0)*100);
