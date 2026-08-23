@@ -2991,6 +2991,9 @@ var _qkExpoCache={};
 var _qkOafCache={};
 function _loadOaf(container){
   var u=container.getAttribute('data-oaf');
+  // Атрибут проставляется при разборе detail. Если карточка открыта
+  // повторно и разбор уже прошёл, атрибут на месте. Если он пуст -
+  // продукт oaf у события отсутствует, блок не показываем.
   if(u===null||u==='') return;
   if(_qkOafCache[u]!==undefined){ _renderOaf(container); return; }
   fetch(u,{cache:'force-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
@@ -3050,7 +3053,9 @@ function _renderExposure(container){
 }
 function _loadExposure(container){
   var key=container.getAttribute('data-detail'); if(!key) return;
-  if(_qkExpoCache[key]!==undefined){ _renderExposure(container); return; }
+  // Ранний возврат при кэше экспозиции пропускал загрузку афтершоков:
+  // при повторном открытии карточки блок прогноза не появлялся.
+  if(_qkExpoCache[key]!==undefined){ _renderExposure(container); _loadOaf(container); return; }
   if(container.getAttribute('data-busy')==='1') return;
   container.setAttribute('data-busy','1');
   fetch(key,{cache:'force-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
@@ -3079,7 +3084,7 @@ function _loadExposure(container){
       try{ var pe=e&&e.population_exposure; if(pe){ var mmi=pe.mmi||[], agg=pe.aggregated_exposure||[], felt=0, strong=0; for(var i=0;i<mmi.length;i++){ var lvl=+mmi[i], n=+agg[i]||0; if(lvl>=4)felt+=n; if(lvl>=6)strong+=n; } out={felt:felt,strong:strong}; } }catch(_){}
       _qkExpoCache[key]=out; container.removeAttribute('data-busy'); _renderExposure(container); _loadOaf(container);
     });
-  }).catch(function(){ _qkExpoCache[key]=null; container.removeAttribute('data-busy'); _renderExposure(container); });
+  }).catch(function(){ _qkExpoCache[key]=null; container.removeAttribute('data-busy'); _renderExposure(container); _loadOaf(container); });
 }
 function _loadCities(container){
   var key=container.getAttribute('data-detail'); if(!key) return;
