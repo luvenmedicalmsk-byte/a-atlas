@@ -2958,7 +2958,7 @@ function renderQuakeList(){
           'Глубина: '+dep+'<br>Время: '+tf+'<br>Воздействие: '+imp.label.replace(' воздействие','')+' — '+imp.basis+(q.felt?('<br>Подтвердили (DYFI): '+q.felt+' сообщ.'):'')+(q.mmi!=null?('<br>Макс. интенсивность: MMI '+q.mmi.toFixed(1)):'')+(q.tsunami?'<br><span style="color:#FF7A1A">'+SVG_WARN+'Предупреждение о цунами</span>':'')+
           
           qkRevisions(q)+
-          '<div class="qk-exposure" data-detail="'+qkEsc(q.detail||'')+'"></div>'+'<div class="qk-cities" data-detail="'+qkEsc(q.detail||'')+'" data-lat="'+q.lat+'" data-lng="'+q.lng+'"></div>'+
+          '<div class="qk-exposure" data-detail="'+qkEsc(q.detail||'')+'"></div>'+'<div class="qk-oaf" style="margin-top:8px"></div>'+'<div class="qk-cities" data-detail="'+qkEsc(q.detail||'')+'" data-lat="'+q.lat+'" data-lng="'+q.lng+'"></div>'+
         '</div>'+
       '</div>'+
       '<div class="qk-sev" style="color:'+imp.col+'">M'+q.mag.toFixed(1)+'</div>'+
@@ -2985,6 +2985,62 @@ function _renderCities(container){
   container.innerHTML='<div class="qk-cities-h">Ближайшие города</div>'+rows;
 }
 var _qkExpoCache={};
+/* Афтершоки: вероятность повторных толчков на неделю вперёд.
+   Показываются два порога - M≥3 как признак продолжения серии
+   и M≥5 как признак возможного повторного значимого события. */
+var _qkOafCache={};
+function _loadOaf(container){
+  var u=container.getAttribute('data-oaf');
+  if(u===null||u==='') return;
+  if(_qkOafCache[u]!==undefined){ _renderOaf(container); return; }
+  fetch(u,{cache:'force-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+    var out=null;
+    try{
+      var fc=(j&&j.forecast)||[];
+      /* Берём окно длиной около недели: у USGS их несколько -
+         день, неделя, месяц, год. Неделя - горизонт, на котором
+         прогноз ещё информативен и уже устойчив. */
+      var wk=null, best=1e9;
+      for(var i=0;i<fc.length;i++){
+        var f=fc[i];
+        var dur=(f.timeEnd&&f.timeStart)?(f.timeEnd-f.timeStart):null;
+        if(dur==null) continue;
+        var diff=Math.abs(dur-604800000);
+        if(diff<best){ best=diff; wk=f; }
+      }
+      if(wk&&wk.bins&&wk.bins.length){
+        var rows=[];
+        wk.bins.forEach(function(b){
+          if(b.magnitude!==3&&b.magnitude!==5) return;
+          rows.push({m:b.magnitude, p:b.probability,
+                     lo:b.p95minimum, hi:b.p95maximum});
+        });
+        if(rows.length) out={rows:rows};
+      }
+    }catch(_){}
+    _qkOafCache[u]=out; _renderOaf(container);
+  }).catch(function(){ _qkOafCache[u]=null; _renderOaf(container); });
+}
+function _renderOaf(container){
+  var u=container.getAttribute('data-oaf');
+  var o=_qkOafCache[u];
+  if(o===undefined||!o) return;
+  var box=container.parentNode&&container.parentNode.querySelector('.qk-oaf');
+  if(!box) return;
+  var rows='';
+  o.rows.forEach(function(r){
+    var pct=Math.round((r.p||0)*100);
+    var cnt='';
+    if(r.hi&&r.hi>0) cnt=(r.lo===r.hi)?(r.hi+' толч.'):('ожидается '+r.lo+'-'+r.hi);
+    rows+='<div class="qk-exp-row"><span>M\u2265'+r.m+' в ближайшую неделю</span>'
+        + '<span class="qk-exp-n"'+(pct>=50?' style="color:#FF7A1A"':'')+'>'+pct+'%'
+        + (cnt?(' \u00b7 '+cnt):'')+'</span></div>';
+  });
+  box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз USGS</div>'+rows
+    + '<div class="qk-exp-note">Статистика затухания последовательности. '
+    + 'Не прогноз нового землетрясения.</div>';
+}
+
 function _renderExposure(container){
   var key=container.getAttribute('data-detail'); var ex=_qkExpoCache[key]; if(ex===undefined) return;
   if(!ex){ container.innerHTML=''; return; }
@@ -3000,11 +3056,28 @@ function _loadExposure(container){
   fetch(key,{cache:'force-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
     var url=null;
     try{ var pr=(j&&j.properties&&j.properties.products)||{}; var lp=pr['losspager']; if(lp&&lp[0]&&lp[0].contents){ var cc=lp[0].contents; var k=Object.keys(cc).find(function(x){ return /exposures\.json$/i.test(x); }); if(k) url=cc[k].url; } }catch(_){}
-    if(!url){ _qkExpoCache[key]=null; container.removeAttribute('data-busy'); _renderExposure(container); return; }
+    /* Афтершоковый прогноз. Единственный прогнозный продукт USGS:
+       не предсказание нового землетрясения, а статистика затухания
+       уже произошедшей последовательности.
+
+       Приходит тем же detail-запросом, отдельного обращения не нужно.
+       Выпускается не для всех событий - в основном для M≥5 в населённых
+       зонах, поэтому отсутствие продукта нормально. */
+    try{
+      var _oaf=(j&&j.properties&&j.properties.products||{})['oaf'];
+      var _url2=null;
+      if(_oaf&&_oaf[0]&&_oaf[0].contents){
+        var _c2=_oaf[0].contents;
+        var _k2=Object.keys(_c2).find(function(x){ return /forecast\.json$/i.test(x); });
+        if(_k2) _url2=_c2[_k2].url;
+      }
+      container.setAttribute('data-oaf', _url2||'');
+    }catch(_){}
+    if(!url){ _qkExpoCache[key]=null; container.removeAttribute('data-busy'); _renderExposure(container); _loadOaf(container); return; }
     return fetch(url,{cache:'force-cache'}).then(function(r){ return r.ok?r.json():null; }).then(function(e){
       var out=null;
       try{ var pe=e&&e.population_exposure; if(pe){ var mmi=pe.mmi||[], agg=pe.aggregated_exposure||[], felt=0, strong=0; for(var i=0;i<mmi.length;i++){ var lvl=+mmi[i], n=+agg[i]||0; if(lvl>=4)felt+=n; if(lvl>=6)strong+=n; } out={felt:felt,strong:strong}; } }catch(_){}
-      _qkExpoCache[key]=out; container.removeAttribute('data-busy'); _renderExposure(container);
+      _qkExpoCache[key]=out; container.removeAttribute('data-busy'); _renderExposure(container); _loadOaf(container);
     });
   }).catch(function(){ _qkExpoCache[key]=null; container.removeAttribute('data-busy'); _renderExposure(container); });
 }
