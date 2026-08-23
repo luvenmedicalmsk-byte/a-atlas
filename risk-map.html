@@ -3037,7 +3037,7 @@ function _renderOaf(container){
        событий: очаг примерно до 70 км. Глубокофокусные землетрясения
        в зонах субдукции афтершоковых последовательностей почти
        не порождают, и прогноз для них не публикуется. */
-    box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз USGS</div>'
+    box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз</div>'
       + '<div class="qk-exp-note">Прогноз не выпущен. Для глубокофокусных '
       + 'событий и толчков вне населённых зон USGS его не публикует.</div>';
     return;
@@ -3051,7 +3051,7 @@ function _renderOaf(container){
         + '<span class="qk-exp-n"'+(pct>=50?' style="color:#FF7A1A"':'')+'>'+pct+'%'
         + (cnt?(' \u00b7 '+cnt):'')+'</span></div>';
   });
-  box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз USGS</div>'+rows
+  box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз</div>'+rows
     + '<div class="qk-exp-note">Статистика затухания последовательности. '
     + 'Не прогноз нового землетрясения.</div>';
 }
