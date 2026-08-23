@@ -2868,10 +2868,28 @@ function _qkImpactRaw(q){
   var C=['#3FB37F','#FFC83D','#FF7A1A','#FF2D2D'], LBL=['Низкое','Умеренное','Значительное','Тяжёлое'];
   function R(l,b){ return {lvl:l,col:C[l],label:LBL[l]+' воздействие',basis:b}; }
   var a=(q.alert||'').toLowerCase();
+  /* Уровень PAGER оценивает ОЖИДАЕМЫЙ УЩЕРБ: погибших и стоимость,
+     а не силу толчка. Зелёный означает прогноз нулевых потерь.
+
+     При сильной магнитуде и десятках миллионов в зоне тряски подпись
+     «Низкое воздействие» читается как противоречие. Причина обычно
+     в глубине очага: толчок с 60 километров доходит до поверхности
+     значительно ослабленным.
+
+     Добавляем причину прямо в основание оценки, чтобы она читалась
+     сразу, а не выводилась из строки о глубине ниже. */
+  function _dep(){
+    var d=(typeof q.depth==='number')?q.depth:null;
+    if(d==null) return '';
+    if(d>=300) return ' · очень глубокий очаг '+Math.round(d)+' км';
+    if(d>=70)  return ' · глубокий очаг '+Math.round(d)+' км';
+    if(d>=40)  return ' · очаг на глубине '+Math.round(d)+' км';
+    return '';
+  }
   if(a==='red')    return R(3,'уровень USGS: красный');
   if(a==='orange') return R(2,'уровень USGS: оранжевый');
   if(a==='yellow') return R(1,'уровень USGS: жёлтый');
-  if(a==='green')  return R(0,'уровень USGS: зелёный');
+  if(a==='green')  return R(0,'уровень USGS: зелёный'+_dep());
   var mmi=q.mmi;
   if(mmi!=null){ if(mmi>=7)return R(3,'макс. интенсивность MMI '+mmi.toFixed(1)); if(mmi>=6)return R(2,'макс. интенсивность MMI '+mmi.toFixed(1)); if(mmi>=4)return R(1,'макс. интенсивность MMI '+mmi.toFixed(1)); return R(0,'макс. интенсивность MMI '+mmi.toFixed(1)); }
   var d=(q.depth==null?33:q.depth), m=q.mag||0, felt=q.felt||0, cdi=q.cdi;
