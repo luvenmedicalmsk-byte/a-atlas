@@ -8673,6 +8673,9 @@ function _nowSummary(c, gri, ews, cri, dom, isSig){ try{
   }
   return '<div style="margin:10px 14px 14px;padding:12px 13px;background:transparent;border:0.5px solid rgba(184,151,58,.24);border-radius:11px;font-size:12px;line-height:1.5;color:rgba(226,232,240,.9)"><span style="color:#B8973A;font-weight:600">Что это значит сейчас. </span>'+s1+s2+'</div>';
 }catch(_e){ return ''; } }
+// Словесная форма уровня GRI. Пороги те же, что в _sevColor: цифра
+// и слово не должны расходиться.
+function _griWord(v){ v=+v||0; return v>=80?'критический':(v>=60?'повышенный':(v>=40?'умеренный':'низкий')); }
 function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   var cc=String(c.country||'').toUpperCase(), cnLc=String(c.country_name||'').toLowerCase();
   // статус анализа страны: завершён только для готовых стран (_GRDF_READY, сейчас RU), остальные — в разработке
@@ -8718,15 +8721,22 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   // Три строки отвечают на разные вопросы: из чего сложился уровень,
   // как он меняется, насколько широко расходится. Повторов между ними
   // быть не должно.
-  var l1='Оценка '+gri+' сложилась из '+n+' '+_plu_nom+' со средней остротой '
-        +avg+'/100. Наибольший вклад даёт контур «'+srcDom+'»: '
-        +drv.slice(0,2).join('; ')+'.';
-  var l2='Темп нарастания '+tempo+' (EWS '+ews+'). Доля сигналов с растущей '
-        +'оценкой — '+accelPct+'%.';
-  var l3='Связность '+criw+' (CRI '+cri+'): давление затрагивает '+active
-        +' из пяти доменов'+(active>1?', цепочка распространения — '+chain:'')+'.';
+  // TASK-216: блок объясняет, из чего складывается оценка, и только это.
+  // Примеры отдельных сигналов убраны: они относятся к доказательной базе
+  // и живут во вкладке СОБЫТИЯ, а не в объяснении индекса.
+  //
+  //   GRI  уровень текущего давления
+  //   EWS  скорость изменения
+  //   CRI  ширина и связанность распространения
+  var l1='<b>GRI '+gri+'</b> — '+_griWord(gri)+' уровень давления.<br>'
+        +'Основной вклад сейчас даёт контур «'+srcDom+'».';
+  var l2='<b>EWS '+ews+'</b> — темп нарастания '+tempo+'.<br>'
+        +accelPct+'% сигналов имеют растущую оценку.';
+  var l3='<b>CRI '+cri+'</b> — '+criw+' системная связанность.<br>'
+        +'Давление затрагивает '+active+' из 5 доменов.'
+        +(active>1?('<br><br>Цепочка распространения:<br>'+chain+'.'):'');
   var lineStyle='font-size:12px;color:rgba(232,227,216,.82);line-height:1.55;margin-top:7px';
-  var hdr='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:4px">Почему такой риск</div>';
+  var hdr='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:4px">Что формирует оценку</div>';
   var body;
   if(isSig){
     body='<div style="'+lineStyle+'">'+l1+'</div><div style="'+lineStyle+'">'+l2+'</div><div style="'+lineStyle+'">'+l3+'</div>';
@@ -10738,7 +10748,7 @@ function grdfRenderCountryPanel(cc) {
     +   '<button class="ctab-btn" data-ctab="ri" onclick="_ctabGo(\'ri\')">Риски</button>'
     +   '<button class="ctab-btn" data-ctab="ev" onclick="_ctabGo(\'ev\')">События</button>'
     +   '<button class="ctab-btn" data-ctab="fc" onclick="_ctabGo(\'fc\')">Прогноз</button>'
-    +   '<button class="ctab-btn" data-ctab="re" onclick="_ctabGo(\'re\')">Исследования</button>'
+    +   '<button class="ctab-btn" data-ctab="re" onclick="_ctabGo(\'re\')">Архив</button>'
     + '</div>'
     + '<div class="ctab-pane on" data-ctab="ov">' + _T.ovBody + '</div>'
     + '<div class="ctab-pane" data-ctab="ri">' + _T.ri + '</div>'
