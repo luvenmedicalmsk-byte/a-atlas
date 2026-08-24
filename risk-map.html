@@ -1126,15 +1126,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
    переключение меняет только display. Асинхронные загрузчики находят
    элементы через getElementById и работают в скрытых контейнерах:
    проверено, ни один не измеряет размеры. */
-.ctab-nav{display:flex;gap:2px;padding:0 14px 10px;position:sticky;top:0;z-index:6;
-  background:linear-gradient(180deg,#06050A 72%,rgba(6,5,10,0));overflow-x:auto;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+/* Ряд вкладок это навигационная полоса, а не строка текста: своя
+   верхняя и нижняя линия отделяют её от метрик выше и содержимого
+   ниже. Без этого при прокрутке вкладки читались как ещё один блок. */
+.ctab-nav{display:flex;gap:5px;padding:9px 12px 0;position:sticky;top:0;z-index:6;
+  background:#06050A;border-top:0.5px solid rgba(184,151,58,.14);
+  border-bottom:0.5px solid rgba(184,151,58,.16);margin-bottom:14px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .ctab-nav::-webkit-scrollbar{display:none}
-.ctab-btn{flex:0 0 auto;padding:7px 12px;font-family:Montserrat,sans-serif;
-  font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-  color:rgba(148,163,184,.62);background:transparent;border:0;border-bottom:1.5px solid transparent;
-  cursor:pointer;white-space:nowrap;transition:color .15s,border-color .15s}
-.ctab-btn.on{color:#B8973A;border-bottom-color:#B8973A}
+/* Неактивные читаемы: прежние .62 сливались с подписями метрик,
+   и ряд не опознавался как управляющий элемент. */
+.ctab-btn{flex:0 0 auto;padding:10px 13px 9px;font-family:Montserrat,sans-serif;
+  font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+  color:rgba(203,213,225,.78);background:transparent;border:0;
+  border-bottom:2px solid transparent;border-radius:5px 5px 0 0;
+  cursor:pointer;white-space:nowrap;transition:color .16s,background .16s,border-color .16s}
+.ctab-btn:active{color:#D4AF5A}
+/* Активная опознаётся тремя признаками сразу: цвет, фон и линия.
+   Одной линии мало: на прокрутке она уходит из поля зрения. */
+.ctab-btn.on{color:#D4AF5A;background:rgba(184,151,58,.09);
+  border-bottom-color:#B8973A}
 .ctab-pane{display:none}
 .ctab-pane.on{display:block}
 #grdf-cs-content{
