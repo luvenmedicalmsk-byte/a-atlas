@@ -8675,6 +8675,9 @@ function _nowSummary(c, gri, ews, cri, dom, isSig){ try{
 // Словесная форма уровня GRI. Пороги те же, что в _sevColor: цифра
 // и слово не должны расходиться.
 function _griWord(v){ v=+v||0; return v>=80?'критический':(v>=60?'повышенный':(v>=40?'умеренный':'низкий')); }
+// Пороги шапки и вывода отличаются: 26/51/71 против 40/60/80. Первое
+// число видно пользователю раньше, поэтому словесная форма берётся
+// из него, а числовые пороги моделей не трогаются.
 function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   var cc=String(c.country||'').toUpperCase(), cnLc=String(c.country_name||'').toLowerCase();
   // статус анализа страны: завершён только для готовых стран (_GRDF_READY, сейчас RU), остальные — в разработке
@@ -8963,7 +8966,11 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
 
   if(part!=='rest'){
   // ── Section: Ключевой вывод ─────────────────────────────────────
-  var statusRuMap = {CRITICAL:'Критично',ESCALATING:'Высокий риск',ELEVATED:'Повышенный риск',STABLE:'Умеренный риск'};
+  // Словарь выровнен по шкале шапки карточки: при GRI 62 шапка
+    // говорит «Повышенное давление», и вывод не должен спорить с ней,
+    // называя тот же уровень высоким. Слова прежней шкалы были сдвинуты
+    // на ступень вверх относительно порогов 40, 60, 80.
+    var statusRuMap = {CRITICAL:'Критический риск',ESCALATING:'Повышенный риск',ELEVATED:'Умеренный риск',STABLE:'Низкий риск'};
   var statusColMap = {CRITICAL:'#ef4444',ESCALATING:'#f97316',ELEVATED:'#eab308',STABLE:'#10b981'};
   var sCol = statusColMap[status] || '#10b981';
 
@@ -9392,7 +9399,7 @@ function _grdfContextHtml(c){
     if(m!=null&&m>0&&nt!=null){ var wk=Math.max(0.5,Math.round((nt-gri)/m*10)/10), lt=nt>=75?'критический':nt>=60?'высокий':'повышенный'; rows.push('Если рост продолжится темпом <b style="color:#f97316">+'+m+'/нед</b>, уровень «'+lt+'» (порог '+nt+') — ориентировочно через <b style="color:#cbd5e1">~'+wk+' нед</b>.'); }
     else if(m!=null&&m<=0){ rows.push('Риск <b style="color:#10b981">не растёт</b> ('+(m>0?'+':'')+m+'/нед) — порог не приближается.'); }
     var ina=_AD.filter(function(d){return (ds[d]||0)<60;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});
-    if(ina.length && (ds[ina[0]]||0)>=35){ var nd=ina[0], scn=Math.round(ds[nd]||0); rows.push('Ближе всего к порогу риска: <b style="color:'+(DOM_COLORS[nd]||'#888')+'">'+(DOM_LABELS[nd]||nd)+'</b> — '+scn+'/100, до порога 60 осталось <b style="color:#cbd5e1">'+(60-scn)+'</b> п.'); }
+    if(ina.length && (ds[ina[0]]||0)>=35){ var nd=ina[0], scn=Math.round(ds[nd]||0); rows.push('Ближе всего к следующему уровню риска: <b style="color:'+(DOM_COLORS[nd]||'#888')+'">'+(DOM_LABELS[nd]||nd)+'</b> — '+scn+'/100, до порога 60 осталось <b style="color:#cbd5e1">'+(60-scn)+'</b> п.'); }
     var f7=c.forecast_7d, f30=c.forecast_30d, fs='';
     if(f7&&f7.score_min!=null) fs+='7д '+Math.round(f7.score_min)+'–'+Math.round(f7.score_max);
     if(f30&&f30.base_case!=null){ fs+=(fs?' · ':'')+'30д '+Math.round(f30.base_case)+(f30.best_case!=null?' ('+Math.round(f30.best_case)+'–'+Math.round(f30.worst_case)+')':''); }
@@ -10706,7 +10713,7 @@ function grdfRenderCountryPanel(cc) {
   try{ _T.ovBody += _nowSummary(c, gri, ews, cri, dom, isSig); }catch(_e){}
   try{ _T.ovBody += _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig); }catch(_e){}
   if(isSig){
-  _T.ovBody += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Ближе всего к порогу риска — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:rgba(232,224,208,0.9)">'+s+'</div>';})();
+  _T.ovBody += (function(){function _dl(x){return ({climate:'климатическом',geopolitics:'геополитическом',economy:'экономическом',technology:'технологическом',social:'социальном'})[x]||x;}function _dn(x){return ({climate:'климат',geopolitics:'геополитика',economy:'экономика',technology:'технологии',social:'социум'})[x]||x;}var topD=(top3&&top3[0])?top3[0].d:dom;var d7=c.gri_delta_7d,tr;if(d7==null)tr='динамика пока накапливается';else if(d7>=4)tr='за последние 7 дней — заметное усиление риска';else if(d7>0)tr='за 7 дней риск умеренно растёт';else if(d7<0)tr='за 7 дней риск снижается';else tr='за 7 дней риск стабилен';var ds=c.domain_scores||{},ina=['climate','geopolitics','economy','technology','social'].filter(function(x){return (ds[x]||0)<60&&x!==topD;}).sort(function(a,b){return (ds[b]||0)-(ds[a]||0);});var nextD=(ina.length&&(ds[ina[0]]||0)>=30)?ina[0]:null;var s='Основное давление формируется в '+_dl(topD)+' контуре. '+tr.charAt(0).toUpperCase()+tr.slice(1)+'.'+(nextD?(' Ближе всего к следующему уровню риска — '+_dn(nextD)+'.'):'');return '<div style="margin:0 14px 13px;padding:11px 13px;background:rgba(184,151,58,.05);border-left:2px solid #b8973a;border-radius:0 6px 6px 0;font-size:12.5px;line-height:1.55;color:rgba(232,224,208,0.9)">'+s+'</div>';})();
 
 
   // GRI formation — index is assembled from 5 domain models (V1–V34)
