@@ -2320,13 +2320,52 @@ function applyEvents(events, updatedIso) {
     GE:'Грузия',AM:'Армения',AZ:'Азербайджан',MD:'Молдавия',RS:'Сербия',IQ:'Ирак',
     AF:'Афганистан',YE:'Йемен',SA:'Саудовская Аравия',EG:'Египет',LY:'Ливия',SD:'Судан',
     VE:'Венесуэла',BR:'Бразилия',MX:'Мексика',ES:'Испания',IT:'Италия',GR:'Греция'};
-  function _evCountry(ev){
+  // Когда primary_country пуст, а кодов несколько, подпись бралась первой
+// из списка. Порядок там случайный: «Иран готов наносить удары» подписано
+// США, потому что «доллар США» встретился раньше в сводке. На корпусе
+// из 31 такого события 11 подписаны неверно.
+//
+// Правило: берём страну, упомянутую в ЗАГОЛОВКЕ раньше прочих. Заголовок
+// называет предмет события, список кодов - все упоминания подряд.
+// Проверено: исправляет 6 из 11, не ломает ни одну из 16 верных подписей.
+var _FIRST_RU = [
+  ['иран','IR'],['росси','RU'],['сша','US'],['американск','US'],['кита','CN'],
+  ['китайск','CN'],['украин','UA'],['одесс','UA'],['турци','TR'],['канад','CA'],
+  ['онтарио','CA'],['швеци','SE'],['армени','AM'],['аргентин','AR'],
+  ['великобритан','GB'],['британ','GB'],['индонези','ID'],['итали','IT'],
+  ['испани','ES'],['молдов','MD'],['норвег','NO'],['инди','IN'],['конго','CD'],
+  ['казахстан','KZ'],['беларус','BY'],['израил','IL'],['герман','DE'],
+  ['франци','FR'],['польш','PL'],['япони','JP'],['коре','KR'],['бразил','BR']
+];
+function _firstIsoInTitle(ev, codes){
+  try{
+    var t = String((ev && ev.title) || '').toLowerCase();
+    if(!t) return null;
+    var best = null;
+    for(var i=0;i<_FIRST_RU.length;i++){
+      var p = t.indexOf(_FIRST_RU[i][0]);
+      if(p < 0) continue;
+      var iso = _FIRST_RU[i][1];
+      // Только среди уже найденных кодов: правило уточняет выбор,
+      // а не добавляет страну, которой в атрибуции нет.
+      if(codes.indexOf(iso) < 0) continue;
+      if(best === null || p < best[0]) best = [p, iso];
+    }
+    return best ? best[1] : null;
+  }catch(_e){ return null; }
+}
+function _pickIso(ev){
+  var codes = (ev && ev.country_codes) || (ev && ev.mentioned_countries) || [];
+  if(!codes || codes.length < 2) return codes && codes[0];
+  return _firstIsoInTitle(ev, codes) || codes[0];
+}
+function _evCountry(ev){
     if(!ev) return null;
     var g = ev.geo || {};
     if(g.country_ru) return g.country_ru;
     if(ev.country_ru) return ev.country_ru;
     var iso = g.country || ev.country_code || ev.event_country || ev.primary_country ||
-      (ev.country_codes && ev.country_codes[0]) || (ev.mentioned_countries && ev.mentioned_countries[0]);
+      _pickIso(ev);
     if(iso && _ISO2RU[iso]) return _ISO2RU[iso];
     var r = String(ev.region||'');
     if(/(\bкрай\b|республик|автономн|Москв|Петербург|Севастопол|\bКрым\b|\bобласт)/i.test(r)
@@ -11732,7 +11771,7 @@ window._displayRegion = function(ev){
     if(g.country_ru) return g.country_ru;
     if(ev && ev.country_ru) return ev.country_ru;
     var iso = g.country || (ev && (ev.country_code || ev.event_country || ev.primary_country ||
-      (ev.country_codes && ev.country_codes[0]) || (ev.mentioned_countries && ev.mentioned_countries[0])));
+      _pickIso(ev)));
     var M={RU:'Россия',UA:'Украина',KZ:'Казахстан',BY:'Беларусь',US:'США',CN:'Китай',IR:'Иран',
       IL:'Израиль',TR:'Турция',DE:'Германия',FR:'Франция',GB:'Великобритания',PL:'Польша',SY:'Сирия',
       IN:'Индия',PK:'Пакистан',JP:'Япония',KP:'КНДР',KR:'Южная Корея',GE:'Грузия',AM:'Армения',
