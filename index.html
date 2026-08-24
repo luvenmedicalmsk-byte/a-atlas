@@ -8563,7 +8563,7 @@ window.grdfOnDataLoad = function(data) {
   var warnN = countries.filter(function(c){ return c.risk_score>=60; }).length;
   grdfUpdateStatusBar(activeCountries, critN);
   // 3-й счётчик — GRI первой страны (топ по risk_score = первая во вкладке «Страны»), обновляется при каждой загрузке
-  (function(){ var top=countries.slice().sort(function(a,b){return (b.risk_score||0)-(a.risk_score||0);})[0];
+  (function(){ var top=countries.slice().sort(window._ctryCmp || function(a,b){return (b.risk_score||0)-(a.risk_score||0);})[0];
     var gv=document.getElementById('s-gri'), gl=document.getElementById('s-gri-l');
     if(top&&gv) gv.textContent=Math.round(top.risk_score||0);
     if(top&&gl) gl.textContent='GRI · '+(top.country_name||top.country||''); })();
@@ -10738,10 +10738,40 @@ function grdfRenderCountryPanel(cc) {
   function _miniDelta(v){ if(v==null) return '<div style="font-size:9px;color:#6f88ab;margin-top:3px">накапл.</div>'; var cl=v>0?'#f97316':v<0?'#10b981':'#6f88ab',ar=v>0?'▲':v<0?'▼':'→'; return '<div style="font-size:9px;color:'+cl+';margin-top:3px">'+ar+' '+(v>0?'+':'')+v+'</div>'; }
   var _adN=['climate','geopolitics','economy','technology','social'].filter(function(d){return ((c.domain_scores||{})[d]||0)>=60;}).length;
   var _miniCri='<div style="font-size:9px;color:#6f88ab;margin-top:3px">'+_adN+'/5 доменов</div>';
-  html += '<div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#E8E0D0;padding:0 14px 0 26px;margin:0 0 7px">Текущая оценка риска</div>';
+  // TASK-217 · три состояния страны. GRI существует только при
+  // доказанном территориальном наблюдении. PROCESS и NO_OBSERVATIONS
+  // это самостоятельные состояния, а не «страны без индекса»:
+  // компонент выбирается по состоянию, а не по наличию числа.
+  var _evN = (c.event_count != null) ? (+c.event_count || 0)
+           : (c.territorial_events != null ? (+c.territorial_events || 0) : null);
+  var _prN = +(c.process_count || 0);
+  var _cstate = (_evN != null && _evN > 0) ? 'EVENT'
+              : (_evN === 0 ? (_prN > 0 ? 'PROCESS' : 'NO_OBSERVATIONS') : 'EVENT');
+  html += '<div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#E8E0D0;padding:0 14px 0 26px;margin:0 0 7px">'
+       + (_cstate === 'EVENT' ? 'Текущая оценка риска'
+          : _cstate === 'PROCESS' ? 'Процессный слой' : 'Наблюдений нет')
+       + '</div>';
+  if(_cstate === 'NO_OBSERVATIONS'){
+    // Ни территориальных событий, ни процессов. Baseline не подставляется:
+    // отсутствие наблюдения не равно наблюдению низкого риска.
+    html += '<div style="margin:0 14px 14px;padding:13px;border:0.5px solid rgba(184,151,58,.16);'
+         +  'border-radius:9px;font-size:12px;color:rgba(203,213,225,.72);line-height:1.5">'
+         +  'По стране нет ни территориальных событий, ни активных процессов. '
+         +  'Индекс не рассчитывается: отсутствие наблюдения не означает низкий риск.'
+         +  '</div>';
+  }
   var _lvl=function(v){ v=+v||0; if(v>=71)return 'Высокое давление'; if(v>=51)return 'Повышенное давление'; if(v>=26)return 'Умеренное давление'; return 'Низкое давление'; };
   html += '<div class="grdf-metrics">';
-  html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'GRI\')"><div class="grdf-metric-val" style="color:'+statusCol+'">'+gri+'</div><div class="grdf-metric-lbl">GRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(gri)+'</div>'+_miniDelta(c.gri_delta_7d)+'</div>';
+  // GRI показывается только в состоянии EVENT. В PROCESS его место
+  // занимает число процессов: это наблюдаемая величина, тогда как
+  // индекс там строился бы на baseline.
+  if(_cstate === 'EVENT'){
+    html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'GRI\')"><div class="grdf-metric-val" style="color:'+statusCol+'">'+gri+'</div><div class="grdf-metric-lbl">GRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+_lvl(gri)+'</div>'+_miniDelta(c.gri_delta_7d)+'</div>';
+  } else if(_cstate === 'PROCESS'){
+    html += '<div class="grdf-metric"><div class="grdf-metric-val" style="color:#B8973A">'+_prN+'</div>'
+         +  '<div class="grdf-metric-lbl">Процессы</div>'
+         +  '<div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">территориальных событий нет</div></div>';
+  }
   html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'EWS\')"><div class="grdf-metric-val" style="color:'+(_ewsNA?'rgba(232,224,208,0.35)':ews>=80?'#ef4444':ews>=65?'#f97316':'#eab308')+'">'+_ewsDisp+'</div><div class="grdf-metric-lbl">EWS <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+(_ewsNA?'нет данных':_lvl(ews))+'</div>'+(_ewsNA?'':_miniDelta(c.ews_delta_7d))+'</div>';
   html += '<div class="grdf-metric" onclick="_grdfIdxInfo(\'CRI\')"><div class="grdf-metric-val" style="color:'+(_criNA?'rgba(232,224,208,0.35)':'#f59e0b')+'">'+_criDisp+'</div><div class="grdf-metric-lbl">CRI <span class="grdf-idx-i">i</span></div><div style="font-size:8px;color:rgba(232,224,208,0.6);margin-top:3px;line-height:1.15;text-align:center">'+(_criNA?'нет данных':_lvl(cri))+'</div>'+(_criNA?'':_miniCri)+'</div>';
   html += '</div>';
@@ -10838,7 +10868,7 @@ function grdfPopulateDrawer(countries) {
     body.innerHTML='<div style="padding:10px 13px;font-size:11px;color:#6f88ab">Загрузка данных...</div>';
     return;
   }
-  var topCountries = countries.slice().sort(function(a,b){ return (b.risk_score||0)-(a.risk_score||0); }).slice(0,5);
+  var topCountries = countries.slice().sort(window._ctryCmp || function(a,b){ return (b.risk_score||0)-(a.risk_score||0); }).slice(0,5);
   var FREE_LIMIT = 2; // первые 2 видны, остальные размыты
   var html = '<div class="grdf-section-head" style="padding-top:4px">Горячие точки</div>';
   // Wrapper — relative для позиционирования lock-overlay
@@ -12452,7 +12482,34 @@ function grdfPopulateCountriesList(countries) {
     return;
   }
   var READY = (typeof _GRDF_READY!=='undefined') ? _GRDF_READY : {RU:1};
-  var sorted = countries.slice().sort(function(a,b){ return (b.risk_score||0)-(a.risk_score||0); });
+  // TASK-199 · порядок по состоянию. Прежняя сортировка ставила первой
+  // Турцию с индексом 62 при нуле территориальных событий: baseline
+  // и лексика поднимали страны без наблюдений выше стран с ними.
+  //
+  //   EVENT             GRI, затем число событий
+  //   PROCESS           CRI, затем EWS
+  //   NO_OBSERVATIONS   в конце
+  //
+  // Ключ PROCESS это CRI, а не EWS: за семь дней средний сдвиг позиции
+  // составил 0.95 против 2.69, потому что EWS содержит velocity
+  // и чувствителен к отдельному прогону.
+  window._ctryOrd = window._ctryOrd || function(x){
+    var ev = (x && x.event_count != null) ? (+x.event_count || 0)
+           : (x && x.territorial_events != null ? (+x.territorial_events || 0) : null);
+    var pr = +((x && x.process_count) || 0);
+    if(ev == null) return 0;
+    return ev > 0 ? 0 : (pr > 0 ? 1 : 2);
+  };
+  window._ctryCmp = window._ctryCmp || function(a,b){
+    var sa = _ctryOrd(a), sb = _ctryOrd(b);
+    if(sa !== sb) return sa - sb;
+    if(sa === 0) return (b.risk_score||0)-(a.risk_score||0)
+              || (+b.event_count||0)-(+a.event_count||0);
+    if(sa === 1) return (b.cri_score||0)-(a.cri_score||0)
+              || (b.ews_score||0)-(a.ews_score||0);
+    return String(a.country||'').localeCompare(String(b.country||''));
+  };
+  var sorted = countries.slice().sort(_ctryCmp);
   // Sprint1-fix: реальное число событий страны из ленты (честный признак "нет событий")
   var _evCount = {};
   try {
