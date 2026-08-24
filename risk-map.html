@@ -1132,15 +1132,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
 /* Вкладки страны повторяют переключатель «Хронология · Процессы»
    из ленты событий: та же золотая рамка, тот же радиус и заливка
    активной. Пользователь узнаёт элемент, а не изучает новый. */
-.ctab-nav{display:flex;gap:5px;padding:10px 12px 12px;position:sticky;top:0;z-index:6;
-  background:#06050A;border-bottom:0.5px solid rgba(184,151,58,.16);
-  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.ctab-nav::-webkit-scrollbar{display:none}
-.ctab-btn{flex:0 0 auto;background:transparent;
+/* Кнопки занимают всю ширину, как переключатель в ленте событий.
+   flex:1 с min-width:0 даёт равные доли: пять кнопок делят строку
+   без прокрутки. Разрядка и отступы уменьшены, иначе «События»
+   и «Прогноз» не помещаются на узком экране. */
+.ctab-nav{display:flex;gap:4px;padding:10px 12px 12px;position:sticky;top:0;z-index:6;
+  background:#06050A;border-bottom:0.5px solid rgba(184,151,58,.16)}
+.ctab-btn{flex:1 1 0;min-width:0;background:transparent;
   border:0.5px solid rgba(184,151,58,0.3);color:rgba(148,163,184,0.75);
-  font-family:Montserrat,sans-serif;font-size:11px;font-weight:500;
-  letter-spacing:0.06em;padding:8px 12px;border-radius:6px;
-  cursor:pointer;white-space:nowrap;transition:.15s}
+  font-family:Montserrat,sans-serif;font-size:10px;font-weight:500;
+  letter-spacing:0.02em;padding:8px 2px;border-radius:6px;
+  cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:.15s}
 .ctab-btn.on{background:rgba(184,151,58,0.14);border-color:#D4AF5A;color:#D4AF5A}
 .ctab-pane{display:none}
 .ctab-pane.on{display:block}
