@@ -3037,7 +3037,7 @@ function _renderOaf(container){
        событий: очаг примерно до 70 км. Глубокофокусные землетрясения
        в зонах субдукции афтершоковых последовательностей почти
        не порождают, и прогноз для них не публикуется. */
-    box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз</div>'
+    box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз USGS</div>'
       + '<div class="qk-exp-note">Прогноз не выпущен. Для глубокофокусных '
       + 'событий и толчков вне населённых зон USGS его не публикует.</div>';
     return;
@@ -3051,7 +3051,7 @@ function _renderOaf(container){
         + '<span class="qk-exp-n"'+(pct>=50?' style="color:#FF7A1A"':'')+'>'+pct+'%'
         + (cnt?(' \u00b7 '+cnt):'')+'</span></div>';
   });
-  box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз</div>'+rows
+  box.innerHTML='<div class="qk-cities-h">Афтершоки \u00b7 прогноз USGS</div>'+rows
     + '<div class="qk-exp-note">Статистика затухания последовательности. '
     + 'Не прогноз нового землетрясения.</div>';
 }
@@ -14040,7 +14040,7 @@ function _scenIntel(s){
               +'<span style="width:7px;height:7px;border-radius:50%;background:'+(_on?'rgba(127,176,105,0.85)':'rgba(148,163,184,0.35)')+';margin-top:5px;flex-shrink:0"></span>'
               +'<div style="flex:1;min-width:0"><div style="font-size:12px;color:'+(_on?'#e8e4dc':'#c8d0da')+'">'+esc(o.name)
               +(o.rank?' <span style="font-size:10px;color:rgba(148,163,184,0.6)">· '+esc(o.rank)+'</span>':'')
-              +(_on?' <span style="font-size:10px;color:rgba(127,176,105,0.85)">· в процессе'+(o.mentions?' ('+o.mentions+')':'')+'</span>':'')+'</div>'
+              +(_on?' <span style="font-size:10px;color:rgba(127,176,105,0.85)">\u00b7 поражений'+(o.hits?' ('+o.hits+')':'')+'</span>':'')+'</div>'
               +(o.note?'<div style="font-size:10px;color:rgba(148,163,184,0.6);margin-top:1px">'+esc(o.note)+'</div>':'')
               +'</div></div>';
           });
