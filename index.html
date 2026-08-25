@@ -9023,7 +9023,9 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
     var statusRuMap = {CRITICAL:'Критическое давление',ESCALATING:'Повышенное давление',ELEVATED:'Умеренное давление',STABLE:'Низкое давление'};
     // Связанность выше 70 меняет прочтение: локальное давление
     // и давление, расходящееся по всем доменам, не одно и то же.
-    var _criHi = (+cri || 0) >= 70;
+    // cri в параметрах этой функции нет: берём из объекта страны.
+    var _criV = +((c && (c.cri_score != null ? c.cri_score : c.cri)) || 0);
+    var _criHi = _criV >= 70;
     var _verdict = _criHi
       ? (status === 'STABLE' || status === 'ELEVATED'
            ? 'Высокое системное давление'
