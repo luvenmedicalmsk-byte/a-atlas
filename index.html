@@ -8534,7 +8534,10 @@ var DOM_LABELS = {
   geopolitics:'Геополитика', technology:'Технологии', social:'Социум', infrastructure:'Инфраструктура'
 };
 var STATUS_COLORS = {STABLE:'#10B981',ELEVATED:'#EAB308',ESCALATING:'#F97316',CRITICAL:'#EF4444'};
-var STATUS_RU = {STABLE:'Умеренный риск',ELEVATED:'Повышенный риск',ESCALATING:'Высокий риск',CRITICAL:'Критично'};
+// Тот же сдвиг, что был у statusRuMap: слова стояли на ступень выше
+  // собственных порогов. STABLE при GRI ниже 40 называлось умеренным,
+  // ESCALATING при 60 - высоким. Приведено к порогам 40, 60, 80.
+  var STATUS_RU = {STABLE:'Низкое давление',ELEVATED:'Умеренное давление',ESCALATING:'Повышенное давление',CRITICAL:'Критическое давление'};
 var LEVEL_C = {RED:'#EF4444',ORANGE:'#F97316',YELLOW:'#EAB308',GREEN:'#10B981'};
 
 function getStatus(gri){ return gri>=80?'CRITICAL':gri>=60?'ESCALATING':gri>=40?'ELEVATED':'STABLE'; }
@@ -8777,7 +8780,7 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
         +'Давление затрагивает '+active+' из 5 доменов.'
         +(active>1?('<br><br>Цепочка распространения:<br>'+chain+'.'):'');
   var lineStyle='font-size:12px;color:rgba(232,227,216,.82);line-height:1.55;margin-top:7px';
-  var hdr='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:4px">Что формирует оценку</div>';
+  var hdr='<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#b8973a;font-family:Montserrat,sans-serif;margin-bottom:4px">Что формирует текущее давление</div>';
   var body;
   if(isSig){
     body='<div style="'+lineStyle+'">'+l1+'</div><div style="'+lineStyle+'">'+l2+'</div><div style="'+lineStyle+'">'+l3+'</div>';
@@ -9009,7 +9012,23 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
     // говорит «Повышенное давление», и вывод не должен спорить с ней,
     // называя тот же уровень высоким. Слова прежней шкалы были сдвинуты
     // на ступень вверх относительно порогов 40, 60, 80.
-    var statusRuMap = {CRITICAL:'Критический риск',ESCALATING:'Повышенный риск',ELEVATED:'Умеренный риск',STABLE:'Низкий риск'};
+    // TASK-225A · вывод синтезирует три измерения, а не переводит одно.
+    // Прежде «Умеренный риск» при GRI 58 читалось как утверждение
+    // о состоянии страны целиком, тогда как рядом стояли CRI 85
+    // и пять доменов из пяти. Уровень давления это не общий риск.
+    //
+    //   GRI  уровень давления
+    //   EWS  темп изменения
+    //   CRI  системная связанность
+    var statusRuMap = {CRITICAL:'Критическое давление',ESCALATING:'Повышенное давление',ELEVATED:'Умеренное давление',STABLE:'Низкое давление'};
+    // Связанность выше 70 меняет прочтение: локальное давление
+    // и давление, расходящееся по всем доменам, не одно и то же.
+    var _criHi = (+cri || 0) >= 70;
+    var _verdict = _criHi
+      ? (status === 'STABLE' || status === 'ELEVATED'
+           ? 'Высокое системное давление'
+           : statusRuMap[status] + ' · системное')
+      : statusRuMap[status];
   var statusColMap = {CRITICAL:'#ef4444',ESCALATING:'#f97316',ELEVATED:'#eab308',STABLE:'#10b981'};
   var sCol = statusColMap[status] || '#10b981';
 
@@ -9017,7 +9036,7 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
   out += '<div style="font-size:9px;color:#f1f5f9;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">Ключевой вывод</div>';
   out += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">';
   out += '<span style="width:10px;height:10px;border-radius:50%;background:'+sCol+';flex-shrink:0"></span>';
-  out += '<span style="font-size:11px;color:'+sCol+';font-weight:600">'+statusRuMap[status]+'</span>';
+  out += '<span style="font-size:11px;color:'+sCol+';font-weight:600">'+_verdict+'</span>';
   out += '<span style="font-size:10px;color:#6f88ab">· '+domName+'</span>';
   out += '</div>';
   out += '<div style="font-size:11px;color:#cbd5e1;line-height:1.6">'+keyInsight+'</div>';
