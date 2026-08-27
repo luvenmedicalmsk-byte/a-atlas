@@ -4386,7 +4386,24 @@ window.CC = {
 function _tierRank(t){ return ({free:0,signal:1,strategic:2,elite:3,admin:4})[t]||0; }
 window.addEventListener('message',function(ev){ if(ev&&ev.data&&ev.data.t==='atlas-need-tier'){ var _pro=false; try{ _pro=_tierRank(CC.tier())>=1; }catch(e){} if(ev.source){ try{ ev.source.postMessage({t:'atlas-tier',pro:_pro,rank:_tierRank(CC.tier())},'*'); }catch(e){} } } });
 // Никогда не понижаем тариф из ответов отдельных эндпоинтов — только повышаем.
-function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _clientCaps=_getClientCaps(t); try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} } try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }
+// Матрица рисков живёт в iframe и спрашивает тариф трижды в первые
+// 1,6 секунды после загрузки. Авторизация приходит позже, поэтому
+// горизонты 5 и 10 лет оставались закрытыми даже у владельца:
+// на момент опроса тариф ещё был free.
+//
+// Здесь тариф отправляется САМ при повышении, без запроса.
+function _pushTierToFrames(){
+  try{
+    var r = _tierRank(_clientCaps.tier);
+    var msg = { t:'atlas-tier', pro: r >= 1, rank: r };
+    var fr = document.getElementById('conn-frame');
+    if(fr && fr.contentWindow) fr.contentWindow.postMessage(msg, '*');
+    document.querySelectorAll('iframe').forEach(function(f){
+      try{ if(f !== fr && f.contentWindow) f.contentWindow.postMessage(msg, '*'); }catch(_e){}
+    });
+  }catch(_e){}
+}
+function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _clientCaps=_getClientCaps(t); try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} try{ _pushTierToFrames(); }catch(e){} } try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }
 // Авторитетный тариф из сессии — не зависит от того, какой эндпоинт ответил первым.
 async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} if(d&&d.customer_type){localStorage.setItem('cc_ctype',String(d.customer_type));}else{localStorage.removeItem('cc_ctype');}
         // Срок и продукт для кабинета: сервер считает days_left и expired,
@@ -11562,7 +11579,9 @@ function connSetMode(m){
     try{ grdfRenderSystemState(); }catch(e){}
   } else {
     if(aw) aw.style.display='none';
-    if(fr){ fr.style.display='block'; try{ if(fr.contentWindow) fr.contentWindow.postMessage({t:'atlas-set-mode', mode:m}, '*'); }catch(e){} }
+    if(fr){ fr.style.display='block'; try{ if(fr.contentWindow) fr.contentWindow.postMessage({t:'atlas-set-mode', mode:m}, '*'); }catch(e){}
+      // Тариф вместе с режимом: iframe мог загрузиться до авторизации.
+      try{ _pushTierToFrames(); setTimeout(_pushTierToFrames, 400); }catch(e){} }
   }
 }
 window.connSetMode=connSetMode;
