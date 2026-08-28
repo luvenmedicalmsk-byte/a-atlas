@@ -9037,35 +9037,46 @@ function _ruProfileHtml(c, isSig){
       +  'Главный риск это сцепление региональной специализации, домена и триггера в единый каскад.'
       +  '</div>';
     // ── матрица округов ──────────────────────────────────────────────
+    // Таблица развёрнута: домены строками, округа колонками. Иначе пять
+    // доменов не помещаются в заголовки колонок и приходится сокращать до
+    // «Без. Эко. Дем.». Коды округов сокращения не требуют: ЦФО и СЗФО это
+    // и есть их официальные обозначения, расшифровка стоит под таблицей.
     o += '<div style="margin-top:13px;font-size:10px;font-weight:600;letter-spacing:.06em;'
       +  'text-transform:uppercase;color:rgba(184,151,58,.9);margin-bottom:6px">'
       +  'Федеральные округа</div>'
       +  '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'
-      +  '<table style="width:100%;border-collapse:collapse;font-size:11px;min-width:420px">'
-      +  '<tr style="color:rgba(148,163,184,.75);font-size:9.5px;text-transform:uppercase;letter-spacing:.04em">'
-      +  '<th style="text-align:left;padding:4px 5px;font-weight:500">Округ</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Без.</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Эко.</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Дем.</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Инф.</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Клим.</th>'
-      +  '<th style="padding:4px 5px;font-weight:600;color:#E8E0D0">Индекс</th></tr>';
-    // Столбец индекса показывает значение из ста: подпись под таблицей.
+      +  '<table style="width:100%;border-collapse:collapse;font-size:11px;min-width:470px">'
+      +  '<tr style="color:rgba(148,163,184,.75);font-size:9.5px;letter-spacing:.04em">'
+      +  '<th style="text-align:left;padding:4px 5px;font-weight:500"></th>';
     _RU_OKR.forEach(function(r, ix){
       var last = ix === _RU_OKR.length-1;
-      o += '<tr style="border-top:0.5px solid rgba(184,151,58,.10)'
-        +  (last?';background:rgba(184,151,58,.05)':'')+'">'
-        +  '<td style="padding:5px;color:#cbd5e1'+(last?';font-weight:600':'')+'">'
-        +  _ruEsc(r[0])+'<div style="font-size:9px;color:rgba(148,163,184,.6)">'+_ruEsc(r[1])+'</div></td>';
-      for(var i=2;i<=6;i++){
-        o += '<td style="padding:5px 3px;text-align:center;color:'+_ruCol(r[i])+'">'+r[i]+'</td>';
-      }
-      o += '<td style="padding:5px;text-align:center;font-weight:600;font-size:13px;color:'+_ruCol(r[7])+'">'
-        +  r[7]+' <span style="font-size:9px;color:rgba(148,163,184,.7)">\u2191</span></td></tr>';
+      o += '<th style="padding:4px 2px;font-weight:'+(last?'700;color:#E8E0D0':'500')
+        +  (last?';background:rgba(184,151,58,.05)':'')+'">'+_ruEsc(r[0])+'</th>';
     });
-    o += '</table></div>'
-      +  '<div style="font-size:9.5px;color:rgba(148,163,184,.6);margin-top:5px;line-height:1.4">'
-      +  'Колонки: безопасность, экономика, демография, инфраструктура, климат. '
+    o += '</tr>';
+    [['Безопасность',2],['Экономика',3],['Демография',4],['Инфраструктура',5],['Климат',6]].forEach(function(d){
+      o += '<tr style="border-top:0.5px solid rgba(184,151,58,.10)">'
+        +  '<td style="padding:5px;color:#cbd5e1;white-space:nowrap">'+_ruEsc(d[0])+'</td>';
+      _RU_OKR.forEach(function(r, ix){
+        var last = ix === _RU_OKR.length-1;
+        o += '<td style="padding:5px 2px;text-align:center;color:'+_ruCol(r[d[1]])
+          +  (last?';background:rgba(184,151,58,.05);font-weight:600':'')+'">'+r[d[1]]+'</td>';
+      });
+      o += '</tr>';
+    });
+    // Индекс отдельной строкой: у него своя размерность и своя подпись ниже.
+    o += '<tr style="border-top:0.5px solid rgba(184,151,58,.22)">'
+      +  '<td style="padding:6px 5px;color:#E8E0D0;font-weight:600;white-space:nowrap">Индекс</td>';
+    _RU_OKR.forEach(function(r, ix){
+      var last = ix === _RU_OKR.length-1;
+      o += '<td style="padding:6px 2px;text-align:center;font-weight:600;font-size:13px;color:'+_ruCol(r[7])
+        +  (last?';background:rgba(184,151,58,.05)':'')+'">'+r[7]
+        +  '<div style="font-size:8px;font-weight:400;color:rgba(148,163,184,.7);line-height:1">\u2191</div></td>';
+    });
+    o += '</tr></table></div>'
+      +  '<div style="font-size:9.5px;color:rgba(148,163,184,.6);margin-top:5px;line-height:1.45">'
+      +  'Округа: ЦФО Центральный, СЗФО Северо-Западный, ЮФО Южный, СКФО Северо-Кавказский, '
+      +  'ПФО Приволжский, УФО Уральский, СФО Сибирский, ДФО Дальневосточный, РФ Россия в целом. '
       +  'Индекс округа это средневзвешенное по доменам с множителями: безопасность 1,2 · '
       +  'экономика 1,0 · инфраструктура 1,1 · климат 0,9 · демография 0,8. '
       +  'Стрелка это тренд за 30 дней.</div>';
