@@ -9044,11 +9044,11 @@ function _ruProfileHtml(c, isSig){
       +  '<table style="width:100%;border-collapse:collapse;font-size:11px;min-width:420px">'
       +  '<tr style="color:rgba(148,163,184,.75);font-size:9.5px;text-transform:uppercase;letter-spacing:.04em">'
       +  '<th style="text-align:left;padding:4px 5px;font-weight:500">Округ</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Без</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Эко</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Дем</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Инф</th>'
-      +  '<th style="padding:4px 3px;font-weight:500">Кли</th>'
+      +  '<th style="padding:4px 3px;font-weight:500">Без.</th>'
+      +  '<th style="padding:4px 3px;font-weight:500">Эко.</th>'
+      +  '<th style="padding:4px 3px;font-weight:500">Дем.</th>'
+      +  '<th style="padding:4px 3px;font-weight:500">Инф.</th>'
+      +  '<th style="padding:4px 3px;font-weight:500">Клим.</th>'
       +  '<th style="padding:4px 5px;font-weight:600;color:#E8E0D0">Индекс</th></tr>';
     // Столбец индекса показывает значение из ста: подпись под таблицей.
     _RU_OKR.forEach(function(r, ix){
@@ -9065,6 +9065,7 @@ function _ruProfileHtml(c, isSig){
     });
     o += '</table></div>'
       +  '<div style="font-size:9.5px;color:rgba(148,163,184,.6);margin-top:5px;line-height:1.4">'
+      +  'Колонки: безопасность, экономика, демография, инфраструктура, климат. '
       +  'Индекс округа это средневзвешенное по доменам с множителями: безопасность 1,2 · '
       +  'экономика 1,0 · инфраструктура 1,1 · климат 0,9 · демография 0,8. '
       +  'Стрелка это тренд за 30 дней.</div>';
