@@ -10950,7 +10950,18 @@ function _zoneDownload(z, btn){
   if(_ak) u += '&key=' + encodeURIComponent(_ak);
   else if(_t || _ct) u += '&t=' + encodeURIComponent(_t || _ct);
   fetch(u, { headers: hd, credentials: 'include' })
-    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.blob(); })
+    .then(function(r){
+      if(!r.ok){
+        // Причина отказа приходит в ответе: доступ, токен хранилища или
+        // ещё не собранный документ (02.09.2026).
+        return r.json().catch(function(){ return null; }).then(function(j){
+          var er = new Error(r.status);
+          er.__atlasMsg = (j && j.message) || 'Документ ещё готовится';
+          throw er;
+        });
+      }
+      return r.blob();
+    })
     .then(function(b){
       var u = URL.createObjectURL(b);
       var a = document.createElement('a');
@@ -10959,8 +10970,14 @@ function _zoneDownload(z, btn){
       setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 1200);
       if(btn){ btn.textContent = t0; btn.disabled = false; }
     })
-    .catch(function(){
-      if(btn){ btn.textContent = 'Документ ещё готовится'; btn.disabled = false; }
+    .catch(function(e){
+      // Раньше все три случая показывали «документ ещё готовится», и
+      // настоящую причину увидеть было нельзя.
+      if(btn){
+        btn.textContent = (e && e.__atlasMsg) || 'Документ ещё готовится';
+        btn.disabled = false;
+        setTimeout(function(){ btn.textContent = t0; }, 4000);
+      }
     });
 }
 
