@@ -15348,16 +15348,29 @@ function _scenIntel(s){
     }
 
     function riskColor(n){
+      // Цвет по той же шкале, что и подпись (08.09.2026): здесь были
+      // границы 80/60/40, из-за чего запись с индексом 76 красилась как
+      // повышенная, а подпись говорила «высокий». Делегирует в _sevColor.
+      if(typeof window._sevColor === 'function') return window._sevColor(n);
       n = n==null ? 0 : n;
-      if(n >= 80) return '#e0574f';
-      if(n >= 60) return '#e08a3c';
-      if(n >= 40) return '#d4af5a';
-      return '#6f88ab';
+      if(n >= 90) return '#E24A3B';
+      if(n >= 75) return '#FFD700';
+      if(n >= 60) return '#FFA07A';
+      if(n >= 40) return '#A89150';
+      return '#D8D8D8';
     }
     function riskLabel(n){
+      // ШКАЛА ПРИВЕДЕНА К ЕДИНОЙ (08.09.2026). Здесь была своя шкала из
+      // четырёх уровней с границами 80/60/40, из-за чего запись с индексом
+      // 60 подписывалась «Высокий риск», хотя по шкале Atlas это
+      // повышенный. Рядом в этом же файле живёт _sevLabel с верными
+      // границами 90/75/60/40, но карточка записи её не вызывала.
+      // Теперь функция делегирует в _sevLabel: одна шкала на весь интерфейс.
+      if(typeof window._sevLabel === 'function') return window._sevLabel(n);
       n = n==null ? 0 : n;
-      if(n >= 80) return 'Критический риск';
-      if(n >= 60) return 'Высокий риск';
+      if(n >= 90) return 'Критический';
+      if(n >= 75) return 'Высокий риск';
+      if(n >= 60) return 'Повышенный риск';
       if(n >= 40) return 'Средний риск';
       return 'Низкий риск';
     }
