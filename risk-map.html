@@ -11089,6 +11089,17 @@ window.grdfRenderZones = function(cc){
     .then(function(r){ return r.json(); })
     .then(function(d){
       _ZONE_EXPORT = !!(d && d.can_export);
+      /* ПУСТО ПО ТАРИФУ ОТЛИЧАЕТСЯ ОТ ПУСТО ВООБЩЕ (13.09.2026).
+         Сервер теперь сообщает hidden_by_tier: сколько зон существует, но
+         не отдано из-за уровня доступа. Раньше клиент получал пустой список
+         и показывал пустоту — снаружи это выглядело как пропажа данных. */
+      if (d && d.hidden_by_tier > 0) {
+        host.innerHTML = '<div style="padding:18px 14px;color:#6f88ab;font-size:12px;line-height:1.6">'
+          + 'Разборы зон риска доступны по подписке.<br>'
+          + 'Для этой страны подготовлено: ' + d.hidden_by_tier + '.'
+          + '</div>';
+        return;
+      }
       done((d && d.zones) || []);
     })
     .catch(function(){ host.innerHTML = ''; });
