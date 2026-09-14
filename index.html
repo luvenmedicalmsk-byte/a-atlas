@@ -1885,15 +1885,11 @@ const _mt = function(style){ return 'https://api.maptiler.com/maps/'+style+'/{z}
    CARTO без ключа отдаёт светлую заглушку с водяным знаком
    «API KEY REQUIRED». Ключ MapTiler в проекте есть и вносился владельцем.
    Стиль darkmatter — тёмная карта С подписями стран, как на лендинге.
-   При отсутствии ключа остаётся прежний путь через CARTO. */
-const _baseDark    = MAPTILER_KEY
-  ? L.tileLayer('https://api.maptiler.com/maps/darkmatter/{z}/{x}/{y}.png?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler © OpenStreetMap' })
-  : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 });
+   CARTO удалён полностью 15.09.2026: подложка идёт только от MapTiler. */
+const _baseDark    = L.tileLayer('https://api.maptiler.com/maps/darkmatter/{z}/{x}/{y}.png?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler © OpenStreetMap' });
 /* Подписи входят в стиль darkmatter, отдельный слой не нужен: подключается
    пустой, чтобы код переключения режимов работал без изменений. */
-const _labelsDark  = MAPTILER_KEY
-  ? L.layerGroup([])
-  : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19, pane:'labels' });
+const _labelsDark  = L.layerGroup([]);
 const _baseSat = MAPTILER_KEY
   ? L.tileLayer('https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler © OpenStreetMap' })
   : L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom:19, attribution:'© Esri, Maxar, Earthstar Geographics' });
@@ -1901,7 +1897,7 @@ const _satHasLabels = !!MAPTILER_KEY;
 const _labelsSat   = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom:19, pane:'labels' });
 function setBaseMap(kind){
   [_baseDark,_labelsDark,_baseSat,_labelsSat].forEach(function(l){ if(map.hasLayer(l)) map.removeLayer(l); });
-  var attr = MAPTILER_KEY ? '© MapTiler · © OpenStreetMap' : '© CARTO · © OpenStreetMap';
+  var attr = '© MapTiler · © OpenStreetMap';
   if(kind==='sat'){ _baseSat.addTo(map); if(!_satHasLabels) _labelsSat.addTo(map); attr=MAPTILER_KEY?'© MapTiler · © OpenStreetMap, Maxar':'© Esri · Maxar'; }
   else { kind='dark'; _baseDark.addTo(map); _labelsDark.addTo(map); }
   var at=document.getElementById('map-attr-text'); if(at) at.textContent=attr;
