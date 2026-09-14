@@ -1886,7 +1886,7 @@ const _mt = function(style){ return 'https://api.maptiler.com/maps/'+style+'/{z}
    «API KEY REQUIRED». Ключ MapTiler в проекте есть и вносился владельцем.
    Стиль darkmatter — тёмная карта С подписями стран, как на лендинге.
    CARTO удалён полностью 15.09.2026: подложка идёт только от MapTiler. */
-const _baseDark    = L.tileLayer('https://api.maptiler.com/maps/darkmatter/{z}/{x}/{y}.png?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler © OpenStreetMap' });
+const _baseDark    = L.tileLayer('https://api.maptiler.com/maps/darkmatter/{z}/{x}/{y}.png?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler' });
 /* Подписи входят в стиль darkmatter, отдельный слой не нужен: подключается
    пустой, чтобы код переключения режимов работал без изменений. */
 const _labelsDark  = L.layerGroup([]);
@@ -1897,7 +1897,7 @@ const _satHasLabels = !!MAPTILER_KEY;
 const _labelsSat   = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom:19, pane:'labels' });
 function setBaseMap(kind){
   [_baseDark,_labelsDark,_baseSat,_labelsSat].forEach(function(l){ if(map.hasLayer(l)) map.removeLayer(l); });
-  var attr = '© MapTiler · © OpenStreetMap';
+  var attr = '© MapTiler';
   if(kind==='sat'){ _baseSat.addTo(map); if(!_satHasLabels) _labelsSat.addTo(map); attr=MAPTILER_KEY?'© MapTiler · © OpenStreetMap, Maxar':'© Esri · Maxar'; }
   else { kind='dark'; _baseDark.addTo(map); _labelsDark.addTo(map); }
   var at=document.getElementById('map-attr-text'); if(at) at.textContent=attr;
