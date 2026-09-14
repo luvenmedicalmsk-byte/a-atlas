@@ -1869,24 +1869,8 @@ map.getPane('labels').style.zIndex = 650;
 map.getPane('labels').style.pointerEvents = 'none';
 
 // ── Переключаемые подложки: Тёмная / Рельеф / Спутник ──────────────────────
-/* ТЁМНАЯ ПОДЛОЖКА ПЕРЕВЕДЕНА НА MAPTILER (15.09.2026). CARTO с 2026 года
-   отдаёт тайлы без ключа как светлую заглушку с водяным знаком
-   «API KEY REQUIRED». Регистрации в CARTO у проекта нет и не было: это
-   открытые тайлы, к которым обращалась библиотека карт.
-   Ключ MapTiler в проекте есть и использовался спутниковым слоем.
-   Стиль dataviz-dark — тёмная подложка БЕЗ подписей стран, как прежний
-   dark_nolabels у CARTO.
-   При отсутствии ключа остаётся прежний путь через CARTO. */
-const _baseDark    = MAPTILER_KEY
-  ? L.tileLayer('https://api.maptiler.com/maps/dataviz-dark/{z}/{x}/{y}.png?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler © OpenStreetMap' })
-  : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 });
-/* Слой надписей: у MapTiler отдельного слоя только с подписями нет,
-   поэтому при наличии ключа подключается пустой слой — остальной код,
-   который его добавляет и убирает при переключении режимов, работает без
-   изменений. */
-const _labelsDark  = MAPTILER_KEY
-  ? L.layerGroup([])
-  : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19, pane:'labels' });
+const _baseDark    = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 });
+const _labelsDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19, pane:'labels' });
 // MapTiler-ключ (бесплатный). Вставь ключ ниже и ОБЯЗАТЕЛЬНО ограничь его доменом secrett-archive.com в кабинете MapTiler.
 // Пока пусто — автоматически используется бесплатный фолбэк (OpenTopoMap / Esri).
 const MAPTILER_KEY = 'f28lYOjwuWqhkNv6LQ2Y';
@@ -1898,7 +1882,7 @@ const _satHasLabels = !!MAPTILER_KEY;
 const _labelsSat   = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom:19, pane:'labels' });
 function setBaseMap(kind){
   [_baseDark,_labelsDark,_baseSat,_labelsSat].forEach(function(l){ if(map.hasLayer(l)) map.removeLayer(l); });
-  var attr = MAPTILER_KEY ? '© MapTiler · © OpenStreetMap' : '© CARTO · © OpenStreetMap';
+  var attr='© CARTO · © OpenStreetMap';
   if(kind==='sat'){ _baseSat.addTo(map); if(!_satHasLabels) _labelsSat.addTo(map); attr=MAPTILER_KEY?'© MapTiler · © OpenStreetMap, Maxar':'© Esri · Maxar'; }
   else { kind='dark'; _baseDark.addTo(map); _labelsDark.addTo(map); }
   var at=document.getElementById('map-attr-text'); if(at) at.textContent=attr;
@@ -11105,17 +11089,6 @@ window.grdfRenderZones = function(cc){
     .then(function(r){ return r.json(); })
     .then(function(d){
       _ZONE_EXPORT = !!(d && d.can_export);
-      /* ПУСТО ПО ТАРИФУ ОТЛИЧАЕТСЯ ОТ ПУСТО ВООБЩЕ (13.09.2026).
-         Сервер теперь сообщает hidden_by_tier: сколько зон существует, но
-         не отдано из-за уровня доступа. Раньше клиент получал пустой список
-         и показывал пустоту — снаружи это выглядело как пропажа данных. */
-      if (d && d.hidden_by_tier > 0) {
-        host.innerHTML = '<div style="padding:18px 14px;color:#6f88ab;font-size:12px;line-height:1.6">'
-          + 'Разборы зон риска доступны по подписке.<br>'
-          + 'Для этой страны подготовлено: ' + d.hidden_by_tier + '.'
-          + '</div>';
-        return;
-      }
       done((d && d.zones) || []);
     })
     .catch(function(){ host.innerHTML = ''; });
