@@ -1869,12 +1869,31 @@ map.getPane('labels').style.zIndex = 650;
 map.getPane('labels').style.pointerEvents = 'none';
 
 // ── Переключаемые подложки: Тёмная / Рельеф / Спутник ──────────────────────
-const _baseDark    = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 });
-const _labelsDark  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19, pane:'labels' });
-// MapTiler-ключ (бесплатный). Вставь ключ ниже и ОБЯЗАТЕЛЬНО ограничь его доменом secrett-archive.com в кабинете MapTiler.
-// Пока пусто — автоматически используется бесплатный фолбэк (OpenTopoMap / Esri).
+/* КЛЮЧ ОБЪЯВЛЕН ВЫШЕ ПЕРВОГО ИСПОЛЬЗОВАНИЯ (15.09.2026). Раньше он стоял
+   ПОСЛЕ строки с тёмной подложкой. Объявление через const не действует до
+   своего места в коде: обращение к переменной раньше роняет весь скрипт
+   с ошибкой. Из-за этого при двух предыдущих попытках подключить MapTiler
+   страница отрисовывалась наполовину — пустая карта, прочерки вместо
+   счётчиков, лишние элементы интерфейса. Падала не подложка, а весь код.
+
+   MapTiler-ключ. В кабинете MapTiler его следует ограничить доменами
+   a-atlas.com и secrett-archive.com. */
 const MAPTILER_KEY = 'f28lYOjwuWqhkNv6LQ2Y';
 const _mt = function(style){ return 'https://api.maptiler.com/maps/'+style+'/{z}/{x}/{y}.png?key='+MAPTILER_KEY; };
+
+/* ТЁМНАЯ ПОДЛОЖКА: MAPTILER, стиль darkmatter (15.09.2026).
+   CARTO без ключа отдаёт светлую заглушку с водяным знаком
+   «API KEY REQUIRED». Ключ MapTiler в проекте есть и вносился владельцем.
+   Стиль darkmatter — тёмная карта С подписями стран, как на лендинге.
+   При отсутствии ключа остаётся прежний путь через CARTO. */
+const _baseDark    = MAPTILER_KEY
+  ? L.tileLayer('https://api.maptiler.com/maps/darkmatter/{z}/{x}/{y}.png?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler © OpenStreetMap' })
+  : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 });
+/* Подписи входят в стиль darkmatter, отдельный слой не нужен: подключается
+   пустой, чтобы код переключения режимов работал без изменений. */
+const _labelsDark  = MAPTILER_KEY
+  ? L.layerGroup([])
+  : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19, pane:'labels' });
 const _baseSat = MAPTILER_KEY
   ? L.tileLayer('https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg?key='+MAPTILER_KEY, { maxZoom:20, attribution:'© MapTiler © OpenStreetMap' })
   : L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom:19, attribution:'© Esri, Maxar, Earthstar Geographics' });
@@ -1882,7 +1901,7 @@ const _satHasLabels = !!MAPTILER_KEY;
 const _labelsSat   = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom:19, pane:'labels' });
 function setBaseMap(kind){
   [_baseDark,_labelsDark,_baseSat,_labelsSat].forEach(function(l){ if(map.hasLayer(l)) map.removeLayer(l); });
-  var attr='© CARTO · © OpenStreetMap';
+  var attr = MAPTILER_KEY ? '© MapTiler · © OpenStreetMap' : '© CARTO · © OpenStreetMap';
   if(kind==='sat'){ _baseSat.addTo(map); if(!_satHasLabels) _labelsSat.addTo(map); attr=MAPTILER_KEY?'© MapTiler · © OpenStreetMap, Maxar':'© Esri · Maxar'; }
   else { kind='dark'; _baseDark.addTo(map); _labelsDark.addTo(map); }
   var at=document.getElementById('map-attr-text'); if(at) at.textContent=attr;
