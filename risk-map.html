@@ -9048,13 +9048,17 @@ function _ruProfileHtml(c, isSig){
     }
     var o='';
     // ── шапка ────────────────────────────────────────────────────────
+    // TASK-241: значение в шапке выводится из строки «Россия в целом», а не
+    // вбито числом. До правки 67 стояло литералом в трёх местах подряд и не
+    // было связано ни со строкой РФ, ни с округами.
+    var _ruTop = _ruOkrIdx(_RU_OKR[_RU_OKR.length-1]);
     o += '<div style="'+W+'">'
       +  '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:7px">'
       +  '<div style="flex:1"><div style="'+H+';margin-bottom:4px">Комплексный профиль риска</div>'
       +  '<div style="font-size:11px;color:rgba(148,163,184,.8)">Пять доменов · восемь федеральных округов</div></div>'
       +  '<div style="text-align:right;flex-shrink:0">'
-      +  '<div style="font-size:26px;font-weight:300;line-height:1;color:'+_ruCol(67)+'">67<span style="font-size:14px;color:rgba(148,163,184,.65)">/100</span></div>'
-      +  '<div style="font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:'+_ruCol(67)+';margin-top:3px">'+_ruLvl(67)+'</div>'
+      +  '<div style="font-size:26px;font-weight:300;line-height:1;color:'+_ruCol(_ruTop)+'">'+_ruTop+'<span style="font-size:14px;color:rgba(148,163,184,.65)">/100</span></div>'
+      +  '<div style="font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:'+_ruCol(_ruTop)+';margin-top:3px">'+_ruLvl(_ruTop)+'</div>'
       +  '</div></div>'
       +  '<div style="font-size:12px;color:rgba(203,213,225,.8);line-height:1.55">'
       +  'Многоконтурное наложение пяти доменов на восемь федеральных округов. '
