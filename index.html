@@ -5016,6 +5016,10 @@ const LEVEL_COLORS = {
 function _cIdx(c) {
   return Number.isFinite(c && c.domain_index) ? c.domain_index : ((c && c.risk_score) || 0);
 }
+// Верхний счётчик живёт в другом блоке скрипта и до этой функции не достаёт.
+// Без общей точки он считал бы свой топ по risk_score, и наверху висела бы
+// цифра, расходящаяся с первой строкой списка.
+window._cIdx = _cIdx;
 
 async function openCountriesPanel() {
   const panel = document.getElementById('countries-panel');
@@ -8610,13 +8614,23 @@ window.grdfOnDataLoad = function(data) {
     data = data||{}; data.countries = countries; _grdfData = data;
   }
   var activeCountries = countries.length; // FIX: это страны, не события
+  var _ci = window._cIdx || function(c){ return (c&&c.risk_score)||0; };
+  // Счётчики оставлены на risk_score СОЗНАТЕЛЬНО. Пороги 75 и 60 калибровались
+  // под его шкалу; на доменном индексе, который систематически ниже, они дают
+  // 0 критических и 2 повышенных вместо 5 и 15. Пересмотр порогов — отдельное
+  // решение. Верхний показатель ниже переведён на индекс, потому что он должен
+  // совпадать с первой строкой списка стран.
   var critN = countries.filter(function(c){ return c.risk_score>=75; }).length;
   var warnN = countries.filter(function(c){ return c.risk_score>=60; }).length;
   grdfUpdateStatusBar(activeCountries, critN);
-  // 3-й счётчик — GRI первой страны (топ по risk_score = первая во вкладке «Страны»), обновляется при каждой загрузке
-  (function(){ var top=countries.slice().sort(window._ctryCmp || function(a,b){return (b.risk_score||0)-(a.risk_score||0);})[0];
+  // 3-й счётчик — индекс первой страны (та же, что первая во вкладке «Страны»)
+  (function(){ var top=countries.slice().sort(window._ctryCmp || function(a,b){
+      return _ci(b) - _ci(a) ||
+        ((b.domain_scores&&b.domain_scores.geopolitics)||0) -
+        ((a.domain_scores&&a.domain_scores.geopolitics)||0) ||
+        (b.risk_score||0)-(a.risk_score||0); })[0];
     var gv=document.getElementById('s-gri'), gl=document.getElementById('s-gri-l');
-    if(top&&gv) gv.textContent=Math.round(top.risk_score||0);
+    if(top&&gv) gv.textContent=Math.round(_ci(top));
     if(top&&gl) gl.textContent='GRI · '+(top.country_name||top.country||''); })();
 
   // Sprint 4: Drawer counts
