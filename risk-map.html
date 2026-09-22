@@ -2856,6 +2856,21 @@ const MY_CARD_XY={'RU':[55.75,37.6],'UA':[50.4,30.5],'US':[38.9,-77.0],'CN':[39.
    разборов. */
 function _myCardsAllowed(){ return true; }
 
+/* Цвет и подпись индекса — по шкале Atlas, а не по собственным порогам.
+   Было: 75 и выше красным, и разбор с индексом 78 («Высокий») выглядел как
+   критический. Красный оставлен только для 90 и выше.
+     90-100  Критический   красный
+     75-89   Высокий       оранжевый
+     60-74   Повышенный    янтарный
+     40-59   Средний       золотой
+      0-39   Низкий        приглушённый                                    */
+function _mcRiskCol(v){
+  return v>=90?'#E85A5A':v>=75?'#E8862D':v>=60?'#E8A33D':v>=40?'#D4AF5A':'#9a9486';
+}
+function _mcRiskLbl(v){
+  return v>=90?'Критический':v>=75?'Высокий':v>=60?'Повышенный':v>=40?'Средний':'Низкий';
+}
+
 /* Локальное экранирование: _esc живёт в другом блоке скрипта, и обращение к
    ней отсюда падало молча внутри try — слой просто не появлялся. */
 function _mcEsc(x){ return String(x==null?'':x)
@@ -2887,8 +2902,8 @@ async function loadMyCards(){
           +'Мой разбор'+(a.date?' · '+a.date:'')+'</div>'
           +'<div style="color:#e8e8f0;line-height:1.35;margin-bottom:5px">'+_mcEsc(a.title||'')+'</div>'
           +(a.object?'<div style="color:rgba(148,163,184,.75);font-size:10px;line-height:1.35">'+_mcEsc(a.object)+'</div>':'')
-          +(risk?'<div style="color:'+(risk>=75?'#E85A5A':(risk>=60?'#E8A33D':'#D4AF5A'))
-              +';font-size:10px;margin-top:5px">Индекс '+risk+'/100</div>':'')
+          +(risk?'<div style="color:'+_mcRiskCol(risk)
+              +';font-size:10px;margin-top:5px">Индекс '+risk+'/100 · '+_mcRiskLbl(risk)+'</div>':'')
           +'</div>');
       m.addTo(map); myCardsMarkers.push(m);
     });
