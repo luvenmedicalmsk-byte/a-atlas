@@ -10028,7 +10028,11 @@ function _grdfContextHtml(c){
   evs.forEach(function(e){
     var _ec=String(e.country_code||e.iso||'').toUpperCase();
     if(cc && _ec && _ec!==String(cc).toUpperCase()) return;   // событие другой страны
-    var _raw=String(e.region||'').trim();
+    /* region_adm1 — регион первого уровня, вычисленный движком по координатам.
+       Он есть у любой страны, тогда как region для большинства стран равен
+       названию самой страны. Берётся первым; region остаётся запасным, потому
+       что для России ru_subject даёт более точное название. */
+    var _raw=String(e.region_adm1||e.region||'').trim();
     if(!_raw) return;
     var r=_raw.replace(/,?\s*(Россия|Russia|Турция|Turkey)\s*$/i,'').trim();
     if(!r) return;
