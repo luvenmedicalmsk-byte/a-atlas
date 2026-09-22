@@ -2822,6 +2822,70 @@ const outageIcon= L.divIcon({html:'<div style="width:10px;height:10px;border-rad
 
 function clearLayer(arr){arr.forEach(m=>map.removeLayer(m));arr.length=0;}
 
+/* МОИ РАЗБОРЫ НА КАРТЕ (22.09.2026).
+   Карточки из консоли — ручная работа владельца, а не поток движка, поэтому
+   слой виден ТОЛЬКО при тарифе admin и данные приходят с эндпоинта, который
+   отвечает 403 всем остальным. Двойная проверка намеренная: тариф на фронте
+   можно подделать, доступ к данным — нет.
+
+   Свежесть 3 дня: разбор живёт на карте трое суток от ДАТЫ СОБЫТИЯ, потом
+   уходит сам. Чистить вручную не нужно.
+
+   Координат у разбора нет, есть страна: точка ставится в центр страны, как у
+   события без точных координат. Пульсация — тот же класс, что у свежих
+   землетрясений, чтобы ручная отметка отличалась от потока. */
+let myCardsMarkers=[], myCardsTimer=null;
+const MY_CARD_XY={'RU':[55.75,37.6],'UA':[50.4,30.5],'US':[38.9,-77.0],'CN':[39.9,116.4],
+  'PL':[52.2,21.0],'LV':[56.9,24.1],'LT':[54.7,25.3],'BY':[53.9,27.6],'TR':[39.9,32.9],
+  'IR':[35.7,51.4],'IL':[31.8,35.2],'IN':[28.6,77.2],'DE':[52.5,13.4],'FR':[48.9,2.3],
+  'GB':[51.5,-0.1],'JP':[35.7,139.7],'KR':[37.6,127.0],'KP':[39.0,125.8],'SA':[24.7,46.7],
+  'AE':[24.5,54.4],'QA':[25.3,51.5],'EG':[30.1,31.2],'SY':[33.5,36.3],'IQ':[33.3,44.4],
+  'YE':[15.4,44.2],'SD':[15.6,32.5],'LY':[32.9,13.2],'PK':[33.7,73.1],'AF':[34.5,69.2],
+  'BR':[-15.8,-47.9],'MX':[19.4,-99.1],'AR':[-34.6,-58.4],'VE':[10.5,-66.9],
+  'ID':[-6.2,106.8],'NG':[9.1,7.4],'ET':[9.0,38.7],'KZ':[51.2,71.4],'FI':[60.2,24.9],
+  'SE':[59.3,18.1],'NO':[59.9,10.8],'EE':[59.4,24.8],'MD':[47.0,28.9],'RO':[44.4,26.1],
+  'IT':[41.9,12.5],'ES':[40.4,-3.7],'CH':[46.9,7.4],'LU':[49.6,6.1],'GH':[5.6,-0.2],
+  'CA':[45.4,-75.7],'AU':[-35.3,149.1],'ZA':[-25.7,28.2],'TW':[25.0,121.5]};
+
+function _myCardsAllowed(){
+  try{ return String((window.CC&&CC.tier&&CC.tier())||'free').toLowerCase()==='admin'; }
+  catch(e){ return false; }
+}
+
+async function loadMyCards(){
+  if(!_myCardsAllowed()){ clearLayer(myCardsMarkers); return; }
+  try{
+    const r=await fetch(API_BASE+'/api/annotations-recent?days=3',
+      {credentials:'include',signal:AbortSignal.timeout(10000)});
+    if(!r.ok){ clearLayer(myCardsMarkers); return; }   // 403 у не-владельца
+    const data=await r.json();
+    clearLayer(myCardsMarkers);
+    (data.annotations||[]).forEach(a=>{
+      const xy=MY_CARD_XY[String(a.country||'').toUpperCase()];
+      if(!xy) return;
+      const risk=+a.risk||0;
+      const col=risk>=75?'#E85A5A':(risk>=60?'#E8A33D':'#D4AF5A');
+      const m=L.circleMarker(xy,{radius:9,color:col,weight:2.2,fillColor:col,
+        fillOpacity:0.22,className:'quake-pulse'})
+        .bindPopup('<div style="font-family:Montserrat,sans-serif;font-size:11px;max-width:260px">'
+          +'<div style="color:#D4AF5A;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">'
+          +'Мой разбор'+(a.date?' · '+a.date:'')+'</div>'
+          +'<div style="color:#e8e8f0;line-height:1.35;margin-bottom:5px">'+_esc(a.title||'')+'</div>'
+          +(a.object?'<div style="color:rgba(148,163,184,.75);font-size:10px;line-height:1.35">'+_esc(a.object)+'</div>':'')
+          +(risk?'<div style="color:'+col+';font-size:10px;margin-top:5px">Индекс '+risk+'/100</div>':'')
+          +'</div>');
+      m.addTo(map); myCardsMarkers.push(m);
+    });
+  }catch(e){}
+}
+
+function startMyCards(){
+  if(!_myCardsAllowed()) return;
+  loadMyCards();
+  if(myCardsTimer) clearInterval(myCardsTimer);
+  myCardsTimer=setInterval(loadMyCards,300000);   // раз в 5 минут
+}
+
 // ── САМОЛЁТЫ через Worker прокси ─────────────────────────────
 async function loadPlanes(){
   try{
@@ -4418,7 +4482,7 @@ function _pushTierToFrames(){
     });
   }catch(_e){}
 }
-function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _clientCaps=_getClientCaps(t); try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} try{ _pushTierToFrames(); }catch(e){} } try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){} }
+function _applyTier(t){ if(t && _tierRank(t) >= _tierRank(_clientCaps.tier)){ _clientCaps=_getClientCaps(t); try{ if(window.__grdfProcTierRefresh) window.__grdfProcTierRefresh(); }catch(e){} try{ _pushTierToFrames(); }catch(e){} } try{ if(window._grdfSyncSicSwitch) window._grdfSyncSicSwitch(); }catch(e){}  try{ if(typeof startMyCards==='function') startMyCards(); }catch(e){} }
 // Авторитетный тариф из сессии — не зависит от того, какой эндпоинт ответил первым.
 async function _ccEstablishTier(){ if(!_clientToken) return; try{ var r=await fetch(API+'/api/auth/me',{headers:{'X-Snapshot-Token':_clientToken}}); if(r.ok){ var d=await r.json(); if(d&&d.tier) _applyTier(d.tier); try{ localStorage.setItem('cc_arch_life',(d&&d.archive_lifetime)?'1':'0'); if(d&&d.signal_pro_expires_at){localStorage.setItem('cc_sp_exp',d.signal_pro_expires_at);}else{localStorage.removeItem('cc_sp_exp');} if(d&&d.customer_type){localStorage.setItem('cc_ctype',String(d.customer_type));}else{localStorage.removeItem('cc_ctype');}
         // Срок и продукт для кабинета: сервер считает days_left и expired,
