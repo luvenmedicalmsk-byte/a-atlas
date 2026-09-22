@@ -10013,8 +10013,29 @@ function _grdfContextHtml(c){
     +'<div>Траектория: '+_traj+'</div></div>');
   try{var _v2cH=_cascadeV2C(c);if(_v2cH)_R+=card('Каскадное распространение давления',_v2cH);}catch(_e){}
   // ── 7. Горячие регионы ──
+  /* ГОРЯЧИЕ РЕГИОНЫ · исправлено 22.09.2026.
+     Блок был пуст даже у России, где событий больше всех. Условие требовало,
+     чтобы строка региона СОДЕРЖАЛА название страны — то есть ждало формат
+     «Москва, Россия». Движок пишет просто «Москва», поэтому все настоящие
+     субрегионы отсекались первой же проверкой, а проходили только записи с
+     регионом «Россия», у которых после снятия суффикса не оставалось ничего.
+     Итог: показать было нечего ни при каких данных.
+     Теперь принадлежность к стране берётся из country_code — это факт, а не
+     совпадение подстроки в тексте. */
   var rc={};
-  evs.forEach(function(e){ var _raw=String(e.region||''); if(cnLc && _raw.toLowerCase().indexOf(cnLc)<0) return; var r=_raw.replace(/,?\s*(Россия|Russia|Турция|Turkey)\s*$/i,'').trim(); if(r && r.toLowerCase()!==cnLc) rc[r]=(rc[r]||0)+1; });
+  var _FOREIGN={'сша':1,'ес':1,'европа':1,'украина':1,'китай':1,'турция':1,'израиль':1,
+                'иран':1,'ближний восток':1,'азия':1,'африка':1,'арктика':1,'глобально':1,'мир':1};
+  evs.forEach(function(e){
+    var _ec=String(e.country_code||e.iso||'').toUpperCase();
+    if(cc && _ec && _ec!==String(cc).toUpperCase()) return;   // событие другой страны
+    var _raw=String(e.region||'').trim();
+    if(!_raw) return;
+    var r=_raw.replace(/,?\s*(Россия|Russia|Турция|Turkey)\s*$/i,'').trim();
+    if(!r) return;
+    if(r.toLowerCase()===cnLc) return;                        // регион = страна, не субрегион
+    if(_FOREIGN[r.toLowerCase()]) return;                     // чужая или наднациональная зона
+    rc[r]=(rc[r]||0)+1;
+  });
   var regs=Object.keys(rc).sort(function(a,b){ return rc[b]-rc[a]; }).slice(0,8);
   if(regs.length){
     var _mx=rc[regs[0]]||1;
