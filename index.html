@@ -2847,18 +2847,31 @@ const MY_CARD_XY={'RU':[55.75,37.6],'UA':[50.4,30.5],'US':[38.9,-77.0],'CN':[39.
   'IT':[41.9,12.5],'ES':[40.4,-3.7],'CH':[46.9,7.4],'LU':[49.6,6.1],'GH':[5.6,-0.2],
   'CA':[45.4,-75.7],'AU':[-35.3,149.1],'ZA':[-25.7,28.2],'TW':[25.0,121.5]};
 
-function _myCardsAllowed(){
-  try{ return String((window.CC&&CC.tier&&CC.tier())||'free').toLowerCase()==='admin'; }
-  catch(e){ return false; }
-}
+/* Право решает СЕРВЕР, а не фронт.
+   Сначала слой включался только при тарифе admin. Но владелец опознаётся по
+   сессии, а не по тарифу: если тариф платформы у владельца не «admin», слой
+   не появлялся вовсе, хотя данные ему доступны. Теперь запрос уходит всегда,
+   а эндпоинт отвечает 403 всем, кроме владельца, и слой остаётся пустым.
+   Ничего лишнего это не открывает: проверка на сервере та же, что на запись
+   разборов. */
+function _myCardsAllowed(){ return true; }
+
+/* Локальное экранирование: _esc живёт в другом блоке скрипта, и обращение к
+   ней отсюда падало молча внутри try — слой просто не появлялся. */
+function _mcEsc(x){ return String(x==null?'':x)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 async function loadMyCards(){
-  if(!_myCardsAllowed()){ clearLayer(myCardsMarkers); return; }
   try{
     const r=await fetch(API_BASE+'/api/annotations-recent?days=3',
       {credentials:'include',signal:AbortSignal.timeout(10000)});
-    if(!r.ok){ clearLayer(myCardsMarkers); return; }   // 403 у не-владельца
+    if(!r.ok){
+      clearLayer(myCardsMarkers);
+      console.log('[МОИ РАЗБОРЫ] ответ сервера '+r.status+' — точек не будет');
+      return;
+    }
     const data=await r.json();
+    console.log('[МОИ РАЗБОРЫ] получено карточек: '+((data.annotations||[]).length));
     clearLayer(myCardsMarkers);
     (data.annotations||[]).forEach(a=>{
       const xy=MY_CARD_XY[String(a.country||'').toUpperCase()];
@@ -2870,21 +2883,33 @@ async function loadMyCards(){
         .bindPopup('<div style="font-family:Montserrat,sans-serif;font-size:11px;max-width:260px">'
           +'<div style="color:#D4AF5A;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">'
           +'Мой разбор'+(a.date?' · '+a.date:'')+'</div>'
-          +'<div style="color:#e8e8f0;line-height:1.35;margin-bottom:5px">'+_esc(a.title||'')+'</div>'
-          +(a.object?'<div style="color:rgba(148,163,184,.75);font-size:10px;line-height:1.35">'+_esc(a.object)+'</div>':'')
+          +'<div style="color:#e8e8f0;line-height:1.35;margin-bottom:5px">'+_mcEsc(a.title||'')+'</div>'
+          +(a.object?'<div style="color:rgba(148,163,184,.75);font-size:10px;line-height:1.35">'+_mcEsc(a.object)+'</div>':'')
           +(risk?'<div style="color:'+col+';font-size:10px;margin-top:5px">Индекс '+risk+'/100</div>':'')
           +'</div>');
       m.addTo(map); myCardsMarkers.push(m);
     });
-  }catch(e){}
+    const skipped=(data.annotations||[]).length-myCardsMarkers.length;
+    if(skipped>0) console.log('[МОИ РАЗБОРЫ] без точки (страны нет в таблице координат): '+skipped);
+    console.log('[МОИ РАЗБОРЫ] на карте: '+myCardsMarkers.length);
+  }catch(e){ console.log('[МОИ РАЗБОРЫ] сбой: '+(e&&e.message||e)); }
 }
 
 function startMyCards(){
-  if(!_myCardsAllowed()) return;
   loadMyCards();
   if(myCardsTimer) clearInterval(myCardsTimer);
   myCardsTimer=setInterval(loadMyCards,300000);   // раз в 5 минут
 }
+
+/* Запуск при загрузке страницы, а не только при смене тарифа. Раньше слой
+   стартовал из _applyTier, и когда тариф не менялся (например, уже был
+   установлен), он не запускался ни разу. Небольшая задержка — чтобы карта
+   успела создаться. */
+(function(){
+  function _mcBoot(){ setTimeout(function(){ try{ startMyCards(); }catch(e){} }, 2500); }
+  if(document.readyState!=='loading') _mcBoot();
+  else document.addEventListener('DOMContentLoaded', _mcBoot);
+})();
 
 // ── САМОЛЁТЫ через Worker прокси ─────────────────────────────
 async function loadPlanes(){
@@ -8102,7 +8127,7 @@ function renderGlobalRisks(data,caps){
       var vd=a.velocity_score||50; var vCol=vd>=70?'#ef4444':vd>=50?'#f59e0b':'rgba(203,213,225,.5)';
       html+='<div class="cc-grie-vel">'
         +'<span class="cc-grie-vel-icon" style="color:'+vCol+'">'+(_GRIE_VEL_ICON[a.acceleration>=0?'accelerating':'declining']||'→')+'</span>'
-        +'<span style="color:rgba(203,213,225,.8)">'+_esc(a.title||'')+'</span>'
+        +'<span style="color:rgba(203,213,225,.8)">'+_mcEsc(a.title||'')+'</span>'
         +'<span style="color:'+vCol+';font-size:8px;margin-left:4px">vel='+vd+'</span>'
         +'</div>';});}
   if(emrg.length){html+='<div class="cc-grie-section">C · Новые риски</div>';
