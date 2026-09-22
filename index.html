@@ -12527,14 +12527,16 @@ window._radarMetrics = function(ded){
   var DOMS=['climate','geopolitics','economy','technology','social'];
   var DAY=86400000, now=Date.now();
   var total=ded.length, active=0, systemic=0, critical=0, sevSum=0, new24=0;
-  var perDom={}; DOMS.forEach(function(d){ perDom[d]={n:0,sev:0,sys:0,crit:0,rec:0,old:0}; });
+  var perDom={}; DOMS.forEach(function(d){ perDom[d]={n:0,sev:0,sys:0,crit:0,rec:0,old:0,nrec:0,nold:0}; });
   ded.forEach(function(e){
     var s=e._sev||0; sevSum+=s;
     if(s>=40) active++; if(s>=60) systemic++; if(s>=75) critical++;
     var t=Date.parse(e.date||'')||0;
     if(t && (now-t)<=DAY) new24++;
     var pd=perDom[e.domain]; if(pd){ pd.n++; pd.sev+=s; if(s>=60) pd.sys++; if(s>=75) pd.crit++;
-      if(t){ var age=now-t; if(age<=3.5*DAY) pd.rec+=s; else if(age<=7*DAY) pd.old+=s; } }
+      /* nrec/nold добавлены 22.09.2026: суммы rec/old оставлены как есть, их
+         читает payload signal-pro и воркер. Счётчики нужны для тренда. */
+      if(t){ var age=now-t; if(age<=3.5*DAY){ pd.rec+=s; pd.nrec++; } else if(age<=7*DAY){ pd.old+=s; pd.nold++; } } }
   });
   var avgSev= total? sevSum/total : 0;
   var pairs=[];
@@ -12543,12 +12545,48 @@ window._radarMetrics = function(ded){
     if(n>0) pairs.push({a:a,b:b,n:n}); } }
   pairs.sort(function(x,y){ return y.n-x.n; });
   var crossLinks=pairs.length;
-  var intensity=avgSev/100, sysShare= total?(systemic+critical)/total:0;
-  var critW=Math.min(critical/5,1), volW=Math.min(total/50,1), crossW=Math.min(crossLinks/8,1);
+  /* ДАВЛЕНИЕ · исправлено 22.09.2026. Откат: PRESSURE_V2=false.
+     Дефект 1 — двойной счёт. Было sysShare=(systemic+critical)/total, но
+     critical (>=75) это ПОДМНОЖЕСТВО systemic (>=60): событие тяжестью 80
+     попадало в оба счётчика, а потом третий раз в critW. На срезе 23
+     критических завышали долю с 0.424 до 0.514, давление 73 -> 75.
+     Дефект 2 — мёртвые потолки. При 257 событиях min(total/50,1), при 23
+     критических min(critical/5,1) и при 10 парах min(crossLinks/8,1) все
+     давали ровно 1.0. Это 45% формулы, которые были КОНСТАНТОЙ: давление
+     физически не могло опуститься ниже 45 и не реагировало на обстановку.
+     Делители подняты до реальных масштабов ленты: объём 300, критические 20,
+     связи 10 (это максимум пар при пяти доменах: C(5,2)=10).
+     На срезе: 75 -> 71, при этом индикатор снова умеет падать. */
+  var PRESSURE_V2=true;
+  var intensity=avgSev/100;
+  var sysShare= total? (PRESSURE_V2 ? systemic/total : (systemic+critical)/total) : 0;
+  var critW  = Math.min(critical/(PRESSURE_V2?20:5),1),
+      volW   = Math.min(total/(PRESSURE_V2?300:50),1),
+      crossW = Math.min(crossLinks/(PRESSURE_V2?10:8),1);
   var pressure=Math.round(100*(0.30*intensity+0.25*sysShare+0.20*critW+0.15*volW+0.10*crossW));
   pressure=Math.max(0,Math.min(100,pressure));
+  /* ТРЕНД · исправлен 22.09.2026. Откат: TREND_V2=false.
+     Подпись под легендой гласит «ИЗМЕНЕНИЕ ИНТЕНСИВНОСТИ СИГНАЛОВ», а
+     сравнивались СУММЫ тяжести за 0-3.5 и 3.5-7 дней. Сумма растёт от числа
+     событий, а свежее окно всегда полнее старого: лента копит новое и чистит
+     старое по retention. На срезе свежее окно содержало 160 событий против
+     65, и стрелка вверх стояла у четырёх доменов из пяти.
+     Технологии показывали рост при средней тяжести 58.4 против 58.4 — она не
+     изменилась вообще, выросло только количество.
+     Теперь сравниваются СРЕДНИЕ. Суммы rec/old оставлены нетронутыми: их
+     читает payload signal-pro. */
+  var TREND_V2=true;
   var dyn={}, contrib={}; DOMS.forEach(function(d){ var pd=perDom[d];
-    dyn[d]=(pd.rec>pd.old*1.15)?'up':(pd.rec<pd.old*0.85?'down':'flat'); if(pd.rec===0&&pd.old===0) dyn[d]='flat';
+    var _r = TREND_V2 ? (pd.nrec ? pd.rec/pd.nrec : 0) : pd.rec;
+    var _o = TREND_V2 ? (pd.nold ? pd.old/pd.nold : 0) : pd.old;
+    /* Порог перекалиброван вместе с метрикой. 15% легко набегали на СУММАХ,
+       но для СРЕДНЕЙ тяжести это сдвиг на 8-9 пунктов — при нём индикатор
+       замирал: на срезе все пять доменов показывали «ровно», хотя климат
+       прибавил 11.9%, а экономика потеряла 7.3%.
+       8% средней тяжести это примерно 4-5 пунктов — заметное изменение
+       обстановки, но не шум. */
+    var _th = TREND_V2 ? 0.08 : 0.15;
+    dyn[d]=(_r>_o*(1+_th))?'up':(_r<_o*(1-_th)?'down':'flat'); if(_r===0&&_o===0) dyn[d]='flat';
     contrib[d]= sevSum? Math.round(100*pd.sev/sevSum):0; });
   var drivers=DOMS.slice().sort(function(a,b){ return perDom[b].n-perDom[a].n; }).filter(function(d){ return perDom[d].n>0; }).slice(0,3);
   return {total:total,active:active,systemic:systemic,critical:critical,avgSev:Math.round(avgSev),new24:new24,
