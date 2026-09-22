@@ -12642,7 +12642,15 @@ window._signalMetrics = function(){
   return M;
 };
 window._radarLevel = function(lvl){
-  var mp={all:0,active:40,systemic:60,critical:75};
+  /* Пороги фильтра ОБЯЗАНЫ совпадать со счётчиками в _signalMetrics:
+       active    s>=40
+       systemic  s>=60
+       critical  s>=85
+     22.09.2026: счётчик критических переведён с 75 на 85 (шкала приведена к
+     движку), а этот порог остался 75. Плашка показывала «3 критических», но
+     по нажатию радар оставлял 23 точки — те самые 75..84, которые счётчик уже
+     критическими не считал. */
+  var mp={all:0,active:40,systemic:60,critical:85};
   window._radarLvlMin=(lvl!=='all' && window._radarLvlMin===mp[lvl])?0:mp[lvl];
   window._radarLvlKey=(window._radarLvlMin===0)?'all':lvl;
   if(window.grdfRenderRadar) window.grdfRenderRadar(true);
@@ -12979,7 +12987,23 @@ window.grdfRenderRadar = function(force){
   svg += '</svg>';
   canvas.innerHTML = svg;
   canvas.querySelectorAll('.grdf-radar-dot').forEach(function(el){ el.addEventListener('click', function(){ if(window._radarPick) window._radarPick(el.getAttribute('data-rid')); }); });
-  var cnt=document.getElementById('grdf-radar-count'); if(cnt){ var _h=new Date(); var _t=('0'+_h.getHours()).slice(-2)+':'+('0'+_h.getMinutes()).slice(-2); cnt.textContent = (M&&M.total!=null?M.total:total)+' сигналов · '+_t; }
+  /* Радар рисует топ-12 по тяжести НА ДОМЕН, то есть максимум 60 точек, а
+     плашки над ним считают весь корпус. При фильтре «системные» плашка
+     показывала 111, а на радаре оставалось 50 точек, и понять причину было
+     невозможно. Теперь при активном фильтре счётчик честно говорит, сколько
+     из отобранных попало на экран. */
+  var cnt=document.getElementById('grdf-radar-count');
+  if(cnt){
+    var _h=new Date(), _t=('0'+_h.getHours()).slice(-2)+':'+('0'+_h.getMinutes()).slice(-2);
+    var _lv=window._radarLvlMin||0, _all=(M&&M.total!=null?M.total:total);
+    if(_lv>0){
+      var _match=0;
+      try{ ded.forEach(function(e){ if((e._sev||0)>=_lv) _match++; }); }catch(_e){ _match=total; }
+      cnt.textContent = (_match>total ? 'показаны '+total+' из '+_match : total+' сигналов') + ' · '+_t;
+    } else {
+      cnt.textContent = _all+' сигналов · '+_t;
+    }
+  }
 };
 
 // ATLAS UI RULEBOOK: source/канал/редакционные теги НЕ живут в тексте — только в мета-блоке.
