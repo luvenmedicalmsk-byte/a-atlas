@@ -2856,32 +2856,6 @@ const MY_CARD_XY={'RU':[55.75,37.6],'UA':[50.4,30.5],'US':[38.9,-77.0],'CN':[39.
    разборов. */
 function _myCardsAllowed(){ return true; }
 
-/* СТАТУС СЛОЯ ВИДЕН НА ЭКРАНЕ, А НЕ В КОНСОЛИ БРАУЗЕРА.
-   Первая версия писала диагностику через console.log, но платформу смотрят с
-   телефона, где консоли нет: причина «почему нет точек» оставалась невидимой.
-   Плашка показывается только владельцу (сервер ответил 200) и только когда
-   есть что сказать; при успехе исчезает через 6 секунд, при отказе висит. */
-function _mcNote(text, bad){
-  var el=document.getElementById('my-cards-note');
-  if(!el){
-    el=document.createElement('div');
-    el.id='my-cards-note';
-    // fixed и в body: внутри #map плашку перекрывали бы слои Leaflet,
-    // а нижнее меню занимает 56 пикселей — отступ снизу считает и его.
-    el.style.cssText='position:fixed;left:12px;bottom:74px;z-index:4000;'
-      +'padding:7px 11px;border-radius:9px;max-width:72vw;'
-      +'background:rgba(6,5,10,0.94);border:0.5px solid rgba(184,151,58,0.35);'
-      +'font-family:Montserrat,sans-serif;font-size:10.5px;letter-spacing:.02em;'
-      +'line-height:1.35;color:#D4AF5A;pointer-events:none';
-    document.body.appendChild(el);
-  }
-  el.style.color = bad ? '#E8A33D' : '#D4AF5A';
-  el.textContent = text;
-  el.style.display='block';
-  if(el._t) clearTimeout(el._t);
-  if(!bad) el._t=setTimeout(function(){ el.style.display='none'; }, 6000);
-}
-
 /* Локальное экранирование: _esc живёт в другом блоке скрипта, и обращение к
    ней отсюда падало молча внутри try — слой просто не появлялся. */
 function _mcEsc(x){ return String(x==null?'':x)
@@ -2893,11 +2867,9 @@ async function loadMyCards(){
       {credentials:'include',signal:AbortSignal.timeout(10000)});
     if(!r.ok){
       clearLayer(myCardsMarkers);
-      if(r.status!==403) _mcNote('Мои разборы: сервер ответил '+r.status, true);
       return;
     }
     const data=await r.json();
-    const _got=(data.annotations||[]).length;
     clearLayer(myCardsMarkers);
     (data.annotations||[]).forEach(a=>{
       const xy=MY_CARD_XY[String(a.country||'').toUpperCase()];
@@ -2920,12 +2892,7 @@ async function loadMyCards(){
           +'</div>');
       m.addTo(map); myCardsMarkers.push(m);
     });
-    const _skip=_got-myCardsMarkers.length;
-    if(_got===0) _mcNote('Мои разборы: свежих за 3 дня нет', true);
-    else if(_skip>0) _mcNote('Мои разборы: '+myCardsMarkers.length+' на карте, '
-                             +_skip+' без точки (страна не в таблице)', true);
-    else _mcNote('Мои разборы на карте: '+myCardsMarkers.length);
-  }catch(e){ _mcNote('Мои разборы: сбой загрузки', true); }
+  }catch(e){}
 }
 
 function startMyCards(){
