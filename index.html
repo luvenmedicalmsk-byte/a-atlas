@@ -11174,7 +11174,7 @@ function grdfRenderCountryPanel(cc) {
   var c = countries.find(function(x){ return x.country===cc; });
   if(!c){ document.getElementById('grdf-cs-content').innerHTML='<div style="padding:14px;color:#6f88ab;font-size:12px">Данные не найдены</div>'; return; }
 
-  var gri = fr(c.risk_score);
+  var gri = fr((window._cIdx || function(x){return (x&&x.risk_score)||0;})(c));
   var cri = fr((c.cri_score!=null)?c.cri_score:gri*0.85);
   // Risk level label helpers (local)
   function _riskLabel(v){ return window._sevLabel(v); }
@@ -11359,13 +11359,13 @@ function grdfPopulateDrawer(countries) {
     body.innerHTML='<div style="padding:10px 13px;font-size:11px;color:#6f88ab">Загрузка данных...</div>';
     return;
   }
-  var topCountries = countries.slice().sort(window._ctryCmp || function(a,b){ return (b.risk_score||0)-(a.risk_score||0); }).slice(0,5);
+  var topCountries = countries.slice().sort(window._ctryCmp || function(a,b){ var _i = window._cIdx || function(c){ return (c&&c.risk_score)||0; }; return _i(b)-_i(a); }).slice(0,5);
   var FREE_LIMIT = 2; // первые 2 видны, остальные размыты
   var html = '<div class="grdf-section-head" style="padding-top:4px">Горячие точки</div>';
   // Wrapper — relative для позиционирования lock-overlay
   html += '<div style="position:relative">';
   topCountries.forEach(function(c, idx){
-    var gri = fr(c.risk_score);
+    var gri = fr((window._cIdx || function(x){return (x&&x.risk_score)||0;})(c));
     var sc = STATUS_COLORS[getStatus(gri)]||'#888';
     var blurStyle = idx >= FREE_LIMIT ? 'filter:blur(3px);opacity:0.45;pointer-events:none;user-select:none;' : '';
     html += '<div class="grdf-sig-row" style="'+blurStyle+'" '+(idx < FREE_LIMIT ? 'data-grdf-cc="'+esc(c.country)+'" data-grdf-nav="map" onclick="grdfOpenCountryNav(this)"' : '')+' >';
@@ -12052,7 +12052,7 @@ function grdfPopulateWarnings(countries) {
   if(cnt) cnt.textContent = warned.length + ' активных';
   var html = '';
   warned.forEach(function(c){
-    var gri = fr(c.risk_score);
+    var gri = fr((window._cIdx || function(x){return (x&&x.risk_score)||0;})(c));
     var lv = gri>=80?'RED':gri>=60?'ORANGE':gri>=40?'YELLOW':'GREEN';
     var lc = LEVEL_C[lv]||'#888';
     html += '<div class="grdf-warn-row">';
@@ -13034,10 +13034,15 @@ function grdfPopulateCountriesList(countries) {
     if(ev == null) return 0;
     return ev > 0 ? 0 : (pr > 0 ? 1 : 2);
   };
+  // Ключ ранжирования стран — доменный индекс, тот же, что в списке стран и
+  // в верхнем показателе карты. Пока он сортировал по risk_score, а цифра
+  // выводилась по индексу, карта показывала «GRI · США 57», а вкладка
+  // «Страны» — 90 у тех же США: два разных числа об одной стране.
   window._ctryCmp = window._ctryCmp || function(a,b){
+    var _i = window._cIdx || function(c){ return (c&&c.risk_score)||0; };
     var sa = _ctryOrd(a), sb = _ctryOrd(b);
     if(sa !== sb) return sa - sb;
-    if(sa === 0) return (b.risk_score||0)-(a.risk_score||0)
+    if(sa === 0) return _i(b)-_i(a)
               || (+b.event_count||0)-(+a.event_count||0);
     if(sa === 1) return (b.cri_score||0)-(a.cri_score||0)
               || (b.ews_score||0)-(a.ews_score||0);
@@ -13054,7 +13059,7 @@ function grdfPopulateCountriesList(countries) {
     });
   } catch(_e){}
   function row(c, dev){
-    var gri = fr(c.risk_score);
+    var gri = fr((window._cIdx || function(x){return (x&&x.risk_score)||0;})(c));
     var sc  = STATUS_COLORS[getStatus(gri)]||'#888';
     var delta = parseFloat(c.gri_delta_7d); if(isNaN(delta)) delta=0;  // изменение GRI за 7д — как в карточке (было c.delta, расходилось)
     // Строки «в разработке» показываются той же яркостью, что готовые: приглушение
