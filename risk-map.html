@@ -2903,7 +2903,11 @@ async function loadMyCards(){
       const xy=MY_CARD_XY[String(a.country||'').toUpperCase()];
       if(!xy) return;
       const risk=+a.risk||0;
-      const col=risk>=75?'#E85A5A':(risk>=60?'#E8A33D':'#D4AF5A');
+      /* Цвет кольца — по ДОМЕНУ разбора, из той же палитры DC, которой
+         красятся маркеры событий: геополитический разбор должен читаться
+         оранжевым, как домен в легенде, а не красным по уровню риска.
+         Уровень риска и так виден в подсказке цифрой. */
+      const col=DC[String(a.domain||'').toLowerCase()]||'#B8973A';
       const m=L.circleMarker(xy,{radius:9,color:col,weight:2.2,fillColor:col,
         fillOpacity:0.22,className:'quake-pulse'})
         .bindPopup('<div style="font-family:Montserrat,sans-serif;font-size:11px;max-width:260px">'
@@ -2911,7 +2915,8 @@ async function loadMyCards(){
           +'Мой разбор'+(a.date?' · '+a.date:'')+'</div>'
           +'<div style="color:#e8e8f0;line-height:1.35;margin-bottom:5px">'+_mcEsc(a.title||'')+'</div>'
           +(a.object?'<div style="color:rgba(148,163,184,.75);font-size:10px;line-height:1.35">'+_mcEsc(a.object)+'</div>':'')
-          +(risk?'<div style="color:'+col+';font-size:10px;margin-top:5px">Индекс '+risk+'/100</div>':'')
+          +(risk?'<div style="color:'+(risk>=75?'#E85A5A':(risk>=60?'#E8A33D':'#D4AF5A'))
+              +';font-size:10px;margin-top:5px">Индекс '+risk+'/100</div>':'')
           +'</div>');
       m.addTo(map); myCardsMarkers.push(m);
     });
