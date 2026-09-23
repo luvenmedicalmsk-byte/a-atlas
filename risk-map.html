@@ -11048,6 +11048,15 @@ function _zoneCard(z, i){
   if(z.country) _pass.push(['Локация', z.country + (_rg ? (', ' + _rg) : '')]);
   if(z.date)        _pass.push(['Дата',     _zRuDate(z.date)]);
   _pass.push(['Риск', (z.index || 0) + '/100 · ' + (lbl || z.index_label || '')]);
+  /* ZONE_MAP_RING 23.09.2026. Признак кольца выводится в паспорт, а не
+     остаётся скрытым в записи. Причина: когда зона сохранена, а кольца на
+     карте нет, отличить «галочка не стоит» от «слой не работает» было
+     невозможно ни владельцу, ни мне — поле нигде не показывалось, а из
+     рабочей сессии живые данные недоступны. Теперь состояние видно сразу
+     в карточке. */
+  _pass.push(['Кольцо на карте', (z.map_ring ? 'да' : 'нет')
+    + (z.map_ring && z.map_cc && z.map_cc !== z.cc ? (' · рисуется в ' + _zEsc(z.map_cc)) : '')
+    + (z.map_ring && z.map_domain ? (' · цвет по домену «' + _zEsc(z.map_domain) + '»') : '')]);
   if(z.index_adj && z.index_adj !== z.index)
     _pass.push(['С поправкой', z.index_adj + '/100']);
   if((z.domains||[]).length) _pass.push(['Домены', z.domains.join(' · ')]);
