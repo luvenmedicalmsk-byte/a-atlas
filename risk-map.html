@@ -2995,11 +2995,23 @@ async function loadZoneRings(){
     const data=await r.json();
     clearLayer(zoneRingMarkers);
     (data.zones||[]).forEach(z=>{
+      /* ZONE_MAP_CC 23.09.2026. Одна зона — одно кольцо. Первая редакция
+         рисовала кольцо в каждой стране, где сохранена запись: у перелома
+         AMOC это 31 страна, и Европа на карте закрылась кругами одного и
+         того же риска. Воркер уже отсеивает копии, здесь та же проверка на
+         случай ответа из старого кэша. Пусто — кольцо у своей страны. */
+      const _mcc=String(z.map_cc||'').toUpperCase();
+      if(_mcc && _mcc!==String(z.cc||'').toUpperCase()) return;
       const xy=MY_CARD_XY[String(z.cc||'').toUpperCase()];
       if(!xy) return;
       const col=DC[_ZDOM[String(z.domain||'').toLowerCase()]]||'#B8973A';
       const risk=+z.index||0;
-      const m=L.circleMarker(xy,{radius:13,color:col,weight:2.4,opacity:0.85,
+      /* Радиус 8, а не 13: кольцо зоны стоит рядом с маркерами событий и не
+         должно перекрывать их. Пульсация своя, медленная (3 с, обводка
+         0.85 -> 0.45), а не quakePulse: тот сделан для свежего толчка и
+         мигает раз в 1,4 с с провалом до 0.2 — для постоянного слоя это
+         мельтешение. */
+      const m=L.circleMarker(xy,{radius:8,color:col,weight:2.2,opacity:0.85,
         fill:false,className:'zone-ring'})
         .bindPopup('<div style="font-family:Montserrat,sans-serif;font-size:11px;max-width:260px">'
           +'<div style="color:'+col+';font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">'
@@ -3021,6 +3033,16 @@ function startZoneRings(){
   if(zoneRingTimer) clearInterval(zoneRingTimer);
   zoneRingTimer=setInterval(loadZoneRings,300000);   // раз в 5 минут
 }
+
+/* Медленная пульсация обводки. Отдельная от quakePulse намеренно: тот мигает
+   раз в 1,4 секунды с провалом до 0.2 и сделан для свежего сейсмособытия.
+   Зона висит на карте постоянно, и такая частота превращается в мельтешение. */
+(function(){
+  var s=document.createElement('style');
+  s.textContent='@keyframes zoneRingPulse{0%,100%{stroke-opacity:.85}50%{stroke-opacity:.45}}'
+    + '.zone-ring{animation:zoneRingPulse 3s ease-in-out infinite}';
+  document.head.appendChild(s);
+})();
 
 (function(){
   function _zrBoot(){ setTimeout(function(){ try{ startZoneRings(); }catch(e){} }, 2800); }
