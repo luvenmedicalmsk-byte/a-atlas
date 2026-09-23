@@ -2914,6 +2914,14 @@ async function loadMyCards(){
     const r=await fetch(API_BASE+'/api/annotations-recent?days=3',
       {credentials:'include',signal:AbortSignal.timeout(10000)});
     if(!r.ok){
+      /* MYCARDS_DIAG 23.09.2026. Слой молчал при любой неудаче: пустая карта
+         при отказе доступа выглядела ровно так же, как пустая карта при
+         отсутствии записей. Разбор сохранён или нет — отличить было нельзя,
+         и на это ушло несколько заходов. Эндпоинт отвечает 403 всем, кроме
+         владельца, поэтому 403 на телефоне означает не «нет разборов», а
+         «сессия владельца не опознана». */
+      console.warn('[Разборы] слой пуст: ответ '+r.status
+        +(r.status===403?' — сессия владельца не опознана, это не значит что разборов нет':''));
       clearLayer(myCardsMarkers);
       return;
     }
@@ -2940,7 +2948,11 @@ async function loadMyCards(){
           +'</div>');
       m.addTo(map); myCardsMarkers.push(m);
     });
-  }catch(e){}
+    console.info('[Разборы] получено '+((data.annotations||[]).length)
+      +', нарисовано колец '+myCardsMarkers.length
+      +((data.annotations||[]).length && !myCardsMarkers.length
+        ? ' — у записей нет точки на карте: проверьте код страны' : ''));
+  }catch(e){ console.warn('[Разборы] сбой слоя: '+(e&&e.message||e)); }
 }
 
 function startMyCards(){
