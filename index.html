@@ -9635,14 +9635,33 @@ function _ruProfileHtml(c, isSig){
 }
 
 
-/* ── Free: реальные числа архива (приоритет — воркер, fallback — coverage) ── */
+/* ── Число материалов Архива ───────────────────────────────────────────────
+   ВРЕМЕННОЕ РУЧНОЕ ЗНАЧЕНИЕ, поставлено 23.09.2026 по указанию владельца.
+
+   Счётчик должен приходить из docs/archive/context.json через
+   /api/archive-context. Этого файла не существует: на raw.githubusercontent
+   он отдаёт 404, в истории репозитория его нет, и ни один скрипт конвейера
+   его не собирает. Пока сборщик не написан, карточка показывает это число.
+
+   Значение используется ТОЛЬКО как запасное: как только API начнёт отдавать
+   archive_total, победит он, и эту константу можно удалить вместе с обеими
+   подстановками ниже. Менять число здесь, в одном месте.
+
+   Откат: поставить 0 — вернётся прежнее поведение, счётчик не выводится. */
+window.ARCHIVE_TOTAL_MANUAL = 3300;
+
+/* ── Free: реальные числа архива (приоритет — воркер, fallback — ручное) ── */
 function _fmLoadArch(cc){ try{
   var el=document.getElementById('grdf-fm-arch-num'); if(!el) return;
   var _GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'}; var _gn=_GEN[String(cc).toUpperCase()]||'стране';
   function plM(n){ var m=n%100,x=n%10; if(m>=11&&m<=14)return 'материалов'; if(x===1)return 'материал'; if(x>=2&&x<=4)return 'материала'; return 'материалов'; }
   function plR(n){ var m=n%100,x=n%10; if(m>=11&&m<=14)return 'исследований'; if(x===1)return 'исследование'; if(x>=2&&x<=4)return 'исследования'; return 'исследований'; }
   function paint(total,ct){ if(!total) return; el.innerHTML='<span style="font-weight:600;color:#e2e8f0">'+total+'</span> <span style="font-size:13px;font-family:inherit;color:rgba(148,163,184,.8);font-weight:400">аналитических '+plM(total)+'</span>'+(ct?('<div style="font-size:11px;color:rgba(184,151,58,.9);margin-top:3px;font-weight:500">'+ct+' профильных '+plR(ct)+' по '+_gn+'</div>'):''); }
-  function _cov(){ try{ var T=window._COV_TOTALS; if(T){ var tot=T.total||0; var cs=(T.countries&&T.countries[cc])||null; var ct=0; if(cs){ if(typeof cs==='number')ct=cs; else for(var k in cs)ct+=(cs[k]||0); } paint(tot,ct); } }catch(e){} }
+  // Запасной путь. Раньше здесь подставлялись счётчики из coverage_totals.json,
+  // но это события ленты, а не материалы Архива: в поле «аналитических
+  // материалов» попадали десятки тысяч сигналов. Теперь то же ручное
+  // значение, что и в карточке вкладки «Архив», чтобы число было одно.
+  function _cov(){ try{ paint(window.ARCHIVE_TOTAL_MANUAL||0, 0); }catch(e){} }
   var base=(typeof API_BASE!=='undefined'&&API_BASE)?API_BASE:'https://api.a-atlas.com';
   var tok=''; try{ tok=localStorage.getItem('cc_token')||''; }catch(e){}
   var h={'Content-Type':'application/json'}; if(tok) h['X-Snapshot-Token']=tok;
@@ -10607,7 +10626,8 @@ window._renderCountryArchive = function(el, cc, cname, ds){
       var GEN={US:'США',RU:'России',CN:'Китая',GB:'Великобритании',UA:'Украины',EU:'Евросоюза',FR:'Франции',TR:'Турции',DE:'Германии',IN:'Индии',JP:'Японии',IR:'Ирана',IL:'Израиля',BR:'Бразилии',PL:'Польши',SA:'Саудовской Аравии',TW:'Тайваня',KR:'Кореи',KP:'КНДР',CA:'Канады'};
       var gname=GEN[cc]||_CNRU[cc]||(cname||cc);
       function plr(n,f){ n=Math.abs(n)%100; var n1=n%10; if(n>10&&n<20)return f[2]; if(n1>1&&n1<5)return f[1]; if(n1===1)return f[0]; return f[2]; }
-      var total=a.archive_total||0;
+      // Ручное значение подставляется, только если API ничего не дал.
+      var total=a.archive_total||window.ARCHIVE_TOTAL_MANUAL||0;
       var ct=a.country_total||0;
       var MO=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
       function ruDate(d){ if(!d)return ''; var p=String(d).split('-'); return p.length===3?(parseInt(p[2],10)+' '+MO[parseInt(p[1],10)-1]+' '+p[0]):d; }
