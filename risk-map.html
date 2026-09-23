@@ -2959,6 +2959,75 @@ function startMyCards(){
   else document.addEventListener('DOMContentLoaded', _mcBoot);
 })();
 
+/* ══ ZONES_MAP 23.09.2026 · кольца страновых зон риска ══════════════════
+   До этой правки кольца на карте рисовали ТОЛЬКО разборы, и только за
+   последние трое суток (/api/annotations-recent?days=3). Зона риска на
+   карту не попадала вообще, хотя именно она описывает состояние страны,
+   а не отдельное событие. Разбор про удар по НПЗ гаснет через трое суток
+   и правильно делает; риск перелома AMOC живёт годами и гаснуть не должен.
+
+   Поэтому слой отдельный и постоянный: окна по дате здесь нет, кольцо
+   держится, пока зона существует в хранилище.
+
+   ОТЛИЧИЕ ОТ КОЛЕЦ РАЗБОРОВ — намеренное, иначе два слоя читались бы как
+   один: кольцо зоны крупнее, без пульсации и БЕЗ ЗАЛИВКИ. Отсутствие
+   заливки здесь не украшение: залитый круг радиусом 13 пикселей над
+   столицей перехватывал бы клики по маркерам событий в том же месте.
+   С fill:false кликается только сама линия кольца.
+
+   Цвет — по первому домену зоны, из той же палитры DC, что и маркеры
+   событий: климат зелёный, экономика синяя, геополитика оранжевая.
+   Откат: не вызывать startZoneRings(). */
+let zoneRingMarkers=[], zoneRingTimer=null;
+
+/* Домены зоны вводятся в консоли словами и хранятся по-русски, а палитра
+   DC ключуется по-английски. Без этой таблицы каждое кольцо получало бы
+   запасной золотой цвет и климат не отличался бы от экономики. */
+const _ZDOM={'климат':'climate','экономика':'economy','геополитика':'geopolitics',
+             'технологии':'technology','социум':'social','геология':'geological',
+             'геополитический':'geopolitics','экология':'climate'};
+
+async function loadZoneRings(){
+  try{
+    const r=await fetch(API_BASE+'/api/country-zones?map=1',
+      {credentials:'include',signal:AbortSignal.timeout(10000)});
+    if(!r.ok){ clearLayer(zoneRingMarkers); return; }
+    const data=await r.json();
+    clearLayer(zoneRingMarkers);
+    (data.zones||[]).forEach(z=>{
+      const xy=MY_CARD_XY[String(z.cc||'').toUpperCase()];
+      if(!xy) return;
+      const col=DC[_ZDOM[String(z.domain||'').toLowerCase()]]||'#B8973A';
+      const risk=+z.index||0;
+      const m=L.circleMarker(xy,{radius:13,color:col,weight:2.4,opacity:0.85,
+        fill:false,className:'zone-ring'})
+        .bindPopup('<div style="font-family:Montserrat,sans-serif;font-size:11px;max-width:260px">'
+          +'<div style="color:'+col+';font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">'
+          +'Зона риска'+(z.date?' · '+z.date:'')+'</div>'
+          +'<div style="color:#e8e8f0;line-height:1.35;margin-bottom:5px">'+_mcEsc(z.zone||'')+'</div>'
+          +'<div style="color:rgba(148,163,184,.75);font-size:10px;line-height:1.35">'
+          +_mcEsc(z.region||z.country||'')+'</div>'
+          +(risk?'<div style="color:'+_mcRiskCol(risk)
+              +';font-size:10px;margin-top:5px">Индекс '+risk+'/100 · '
+              +_mcEsc(z.index_label||_mcRiskLbl(risk))+'</div>':'')
+          +'</div>');
+      m.addTo(map); zoneRingMarkers.push(m);
+    });
+  }catch(e){}
+}
+
+function startZoneRings(){
+  loadZoneRings();
+  if(zoneRingTimer) clearInterval(zoneRingTimer);
+  zoneRingTimer=setInterval(loadZoneRings,300000);   // раз в 5 минут
+}
+
+(function(){
+  function _zrBoot(){ setTimeout(function(){ try{ startZoneRings(); }catch(e){} }, 2800); }
+  if(document.readyState!=='loading') _zrBoot();
+  else document.addEventListener('DOMContentLoaded', _zrBoot);
+})();
+
 // ── САМОЛЁТЫ через Worker прокси ─────────────────────────────
 async function loadPlanes(){
   try{
