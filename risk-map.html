@@ -13646,7 +13646,21 @@ function grdfRenderSignals(dom){
   // _signalDataset уже применил NEWS + _fixDomain + блок-лист + clickbait + шум + дедуп
   // НО _signalDataset — ANALYTIC LAYER (полный поток для карты/радара), feed_visible=false НЕ убран.
   // Лента событий ДОЛЖНА скрывать feed_visible=false (шум-классы, редакционные скрытия).
-  src = src.filter(function(e){ return e && e.feed_visible !== false; });
+  // 24.09.2026. ИСКЛЮЧЕНИЕ для контекста. Пайплайн прячет из ленты записи, которые
+  // интент отнёс к комментариям и справке (context_only). Но у ленты есть своя
+  // вкладка «Контекст», и строится она из этого же списка — поэтому записи
+  // отсеивались ещё до разделения, и вкладка показывала ноль в каждом домене.
+  // Пропускаем их дальше: _sicLane2 всё равно уводит их из оперативной ленты в
+  // «Контекст», так что оперативная лента не меняется, а вкладка оживает.
+  // Предупреждений это не касается: у них context_only нет, они остаются скрытыми.
+  // Возвращаются ТОЛЬКО те, кого вкладка «Контекст» действительно принимает.
+  // Гейт относит к контексту и классы PROCESS с REPORT, а _sicLane2 отправляет
+  // их в оперативную ленту: без этой проверки они втекли бы обратно в неё.
+  src = src.filter(function(e){
+    if(!e) return false;
+    if(e.feed_visible !== false) return true;
+    return e.context_only === true && window._sicLane2(e) === 'context';
+  });
   var items = (dom==='all') ? src.slice() : src.filter(function(e){ return e.domain===dom; });
   // Source curation — hide items whose source label is on the blocklist (exact match, география не трогается)
   items = items.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
