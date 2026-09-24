@@ -3903,8 +3903,26 @@ window._grdfDisasterEnsure=function(){
     box.innerHTML=rgCache.map(function(it){
       var s=it.severity||0, col=rgCol(s);
       var t=String(it.title||'');
-      var typ=(t.indexOf(':')>0?t.split(':')[0]:t).trim();
       var reg=String(it.region||'').replace(/,\s*Россия/,'').trim();
+      /* Вид предупреждения стоит до двоеточия: «Наводнение: Хабаровский край».
+         24.09.2026: у европейских записей заголовок начинался со страны, и в
+         обеих строках карточки выходила страна — «ГЕРМАНИЯ / Германия», а вид
+         пропадал. Заголовки приведены к общей грамматике, но записи со старым
+         заголовком живут в ленте ещё несколько суток, поэтому разбор их тоже
+         понимает: если до двоеточия оказалось место, вид берётся после него. */
+      var typ=(t.indexOf(':')>0?t.split(':')[0]:t).trim();
+      if(reg && typ.toLowerCase()===reg.toLowerCase()){
+        var tail=t.slice(t.indexOf(':')+1).split(/[,(]/)[0].trim();
+        typ = tail || 'Метеопредупреждение';
+      }
+      /* У части записей Росгидромета в поле региона стоит «Россия» — субъект
+         не распознался. Замер 24.09: 6 карточек из 23. Сам субъект при этом
+         есть в заголовке: «Гроза: Республика Адыгея (Россия)». Берём его
+         оттуда, иначе карточка сообщает только страну. */
+      if(/^(Россия|Russia)$/i.test(reg) && t.indexOf(':')>0){
+        var place=t.slice(t.indexOf(':')+1).replace(/\s*\([^)]*\)\s*$/,'').trim();
+        if(place && place.toLowerCase()!==typ.toLowerCase()) reg=place;
+      }
       return '<div class="dn-card" style="cursor:default">'+
         '<span class="qk-dot" style="background:'+col+';margin-top:6px"></span>'+
         '<div class="qk-main">'+
