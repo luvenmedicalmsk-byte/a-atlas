@@ -3870,6 +3870,60 @@ window._grdfDisasterEnsure=function(){
   var rgInterval=null, rgCache=[], _rgShown=false, _rgLoaded=false;
   function rgCol(s){ return s>=85?'#C0392B':s>=70?'#FF7A1A':s>=56?'#E0A82E':'#3CB371'; }
   function rgLbl(s){ return window._sevLabel(s); }
+  /* Явление и место карточки. Вынесено в функции, потому что по ним же идёт
+     склейка одинаковых предупреждений: отрисовка и склейка обязаны читать
+     запись одинаково, иначе склеится одно, а покажется другое. */
+  var _RG_KIND=[[/наводнен|паводок|половодь|подтоплен/i,'Наводнение'],
+    [/пожарн\w*\s+опасност/i,'Пожарная опасность'],[/пожар|возгоран/i,'Пожар'],
+    [/засух/i,'Засуха'],[/маловодь|низк\w*\s+водност/i,'Маловодье'],
+    [/гроз/i,'Гроза'],[/ливн|ливень|сильн\w*\s+дожд|дожд/i,'Сильный дождь'],
+    [/шквал|сильн\w*\s+ветр|ураган|тайфун|шторм/i,'Сильный ветер'],
+    [/снегопад|сильн\w*\s+снег|метел|пург/i,'Снегопад'],
+    [/гололёд|гололед/i,'Гололёд'],[/аномальн\w*\s+жар|сильн\w*\s+жар/i,'Аномальная жара'],
+    [/заморозк/i,'Заморозки'],[/туман/i,'Туман'],[/лавин/i,'Лавинная опасность'],
+    [/землетрясен/i,'Землетрясение'],[/цунами/i,'Цунами'],[/извержен|вулкан/i,'Извержение'],
+    [/град\b/i,'Град']];
+  function _rgKind(it){
+    var t=String(it.title||''), reg=_rgPlace(it);
+    var head=(t.indexOf(':')>0?t.split(':')[0]:'').trim();
+    if(head && head.toLowerCase()!==reg.toLowerCase()) return head;
+    for(var i=0;i<_RG_KIND.length;i++) if(_RG_KIND[i][0].test(t)) return _RG_KIND[i][1];
+    if(t.indexOf(':')>0){
+      var tail=t.slice(t.indexOf(':')+1).split(/[,(]/)[0].trim();
+      if(tail) return tail;
+    }
+    return 'Предупреждение';
+  }
+  function _rgPlace(it){
+    var t=String(it.title||''), reg=String(it.region||'').replace(/,\s*Россия/,'').trim();
+    if(reg && !/^(Россия|Russia)$/i.test(reg)) return reg;
+    /* Субъект не распознался, но он есть в заголовке: «Гроза: Республика
+       Адыгея (Россия)». Берём оттуда — иначе карточка сообщает только страну
+       либо не сообщает ничего. */
+    var cut=t.search(/[:—]/);
+    if(cut>0){
+      var place=t.slice(cut+1).replace(/\s*\([^)]*\)\s*$/,'').trim();
+      if(place && !/^\d/.test(place)) return place;
+    }
+    return reg;
+  }
+  /* Одно и то же наводнение приходит из двух лент GDACS с разными
+     заголовками, и общая дедупликация их не сводит. Склеиваем по паре
+     «явление + место», оставляя запись с большим индексом: список уже
+     отсортирован по убыванию, поэтому первая встреченная и есть сильнейшая.
+     Записи без места и без координат не показываем вовсе: предупреждение,
+     которое некуда поставить, ничего не сообщает. */
+  function _rgDedup(list){
+    var seen={}, out=[];
+    for(var i=0;i<list.length;i++){
+      var it=list[i], place=_rgPlace(it);
+      if(!place && it.lat==null && it.lng==null) continue;
+      var k=(_rgKind(it)+'|'+place).toLowerCase();
+      if(seen[k]) continue;
+      seen[k]=1; out.push(it);
+    }
+    return out;
+  }
   function rgDate(d){ try{ return new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }catch(e){ return ''; } }
   function renderRosgidromet(){
     var box=document.getElementById('rosgidromet-list'); if(!box) return;
@@ -3894,7 +3948,10 @@ window._grdfDisasterEnsure=function(){
       return;
     }
     _rgShown=true;
-    var _srcs={}; rgCache.forEach(function(x){ _srcs[String(x.source||'').replace(/\s*CAP$/,'')]=1; });
+    /* Две ленты GDACS в подписи сводятся в одно имя: для читателя это один
+       источник, а «GDACS Floods · GDACS/Copernicus» выглядит как два. */
+    var _srcs={}; rgCache.forEach(function(x){
+      _srcs[String(x.source||'').replace(/\s*CAP$/,'').replace(/^GDACS.*/i,'GDACS')]=1; });
     // Пояснение про стандарт и источники стоит ПОД списком: это сноска, а не
     // заголовок, и над карточками она отодвигала сами предупреждения вниз.
     var note='<div style="padding:12px 14px 4px;margin-top:4px;border-top:0.5px solid rgba(184,151,58,0.12);font-size:10px;color:rgba(148,163,184,.6);line-height:1.45">'
@@ -3903,26 +3960,10 @@ window._grdfDisasterEnsure=function(){
     box.innerHTML=rgCache.map(function(it){
       var s=it.severity||0, col=rgCol(s);
       var t=String(it.title||'');
-      var reg=String(it.region||'').replace(/,\s*Россия/,'').trim();
-      /* Вид предупреждения стоит до двоеточия: «Наводнение: Хабаровский край».
-         24.09.2026: у европейских записей заголовок начинался со страны, и в
-         обеих строках карточки выходила страна — «ГЕРМАНИЯ / Германия», а вид
-         пропадал. Заголовки приведены к общей грамматике, но записи со старым
-         заголовком живут в ленте ещё несколько суток, поэтому разбор их тоже
-         понимает: если до двоеточия оказалось место, вид берётся после него. */
-      var typ=(t.indexOf(':')>0?t.split(':')[0]:t).trim();
-      if(reg && typ.toLowerCase()===reg.toLowerCase()){
-        var tail=t.slice(t.indexOf(':')+1).split(/[,(]/)[0].trim();
-        typ = tail || 'Метеопредупреждение';
-      }
-      /* У части записей Росгидромета в поле региона стоит «Россия» — субъект
-         не распознался. Замер 24.09: 6 карточек из 23. Сам субъект при этом
-         есть в заголовке: «Гроза: Республика Адыгея (Россия)». Берём его
-         оттуда, иначе карточка сообщает только страну. */
-      if(/^(Россия|Russia)$/i.test(reg) && t.indexOf(':')>0){
-        var place=t.slice(t.indexOf(':')+1).replace(/\s*\([^)]*\)\s*$/,'').trim();
-        if(place && place.toLowerCase()!==typ.toLowerCase()) reg=place;
-      }
+      /* Явление и место читаются теми же функциями, что и при склейке
+         одинаковых предупреждений: разойдись они, склеилось бы одно, а
+         показалось другое. */
+      var typ=_rgKind(it), reg=_rgPlace(it);
       /* Формулировка службы целиком. В ней самое ценное: «почвенная засуха НА
          ПАСТБИЩАХ», «ветер С ПОРЫВАМИ 20-25 м/с». Отрезаем только служебный
          хвост «· Росгидромет, область, Россия» — источник и так подписан внизу
@@ -3959,8 +4000,16 @@ window._grdfDisasterEnsure=function(){
       // у них несколько: Росгидромет по России, MeteoAlarm по Европе.
       // Признак — пометка CAP в названии источника, чтобы новый поставщик
       // подхватывался без правки интерфейса.
-      rgCache=evs.filter(function(e){ return /\bCAP\b/.test(String(e.source||'')); })
+      // 24.09.2026. Добавлены GDACS, Copernicus EMS и MGM Турции: это такие же
+      // машинные детекторы официальных служб. Перечнем, а не по вхождению
+      // слова: под «Copernicus» иначе попадают Copernicus/ESA и C3S, а это
+      // новостные и аналитические ленты. Перечень обязан совпадать с гейтом
+      // CAP_FEED_GATE в пайплайне: иначе скрытая из ленты запись не попадёт и
+      // сюда, то есть пропадёт отовсюду.
+      var SRC=/\bCAP\b|^GDACS(?:\/|\s|$)|^Copernicus\s+EMS$|^MGM\b/i;
+      rgCache=evs.filter(function(e){ return SRC.test(String(e.source||'')); })
                  .sort(function(a,b){ return (b.severity||0)-(a.severity||0); });
+      rgCache=_rgDedup(rgCache);
       _rgLoaded=true;
       renderRosgidromet();
       console.info('[Rosgidromet]',rgCache.length,'предупреждений');
