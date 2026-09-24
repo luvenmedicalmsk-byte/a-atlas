@@ -3873,8 +3873,13 @@ window._grdfDisasterEnsure=function(){
   function rgDate(d){ try{ return new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }catch(e){ return ''; } }
   function renderRosgidromet(){
     var box=document.getElementById('rosgidromet-list'); if(!box) return;
-    if(!rgCache.length){ box.innerHTML='<div class="qk-empty">Нет активных предупреждений Росгидромета.</div>'; return; }
-    var hdr='<div style="padding:12px 14px 6px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#B8973A">Росгидромет · официальные предупреждения ('+rgCache.length+')</div>';
+    if(!rgCache.length){ box.innerHTML='<div class="qk-empty">Нет активных официальных предупреждений.</div>'; return; }
+    var _srcs={}; rgCache.forEach(function(x){ _srcs[String(x.source||'').replace(/\s*CAP$/,'')]=1; });
+    var hdr='<div style="padding:12px 14px 6px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#B8973A">'
+      + 'Официальные предупреждения ('+rgCache.length+')</div>'
+      + '<div style="padding:0 14px 8px;font-size:10px;color:rgba(148,163,184,.6);line-height:1.45">'
+      + 'Стандарт CAP, источники: '+Object.keys(_srcs).join(' · ')+'. '
+      + 'Это предупреждения официальных служб, а не сигналы ленты.</div>';
     box.innerHTML=hdr+rgCache.map(function(it){
       var s=it.severity||0, col=rgCol(s);
       var t=String(it.title||'');
@@ -3895,7 +3900,12 @@ window._grdfDisasterEnsure=function(){
       if(!r.ok) return;
       var j=await r.json();
       var evs=(j&&(j.events||j))||[];
-      rgCache=evs.filter(function(e){ return String(e.source||'')==='Росгидромет CAP'; })
+      // 24.09.2026. Было жёстко привязано к одному источнику. Панель
+      // собирает официальные предупреждения по стандарту CAP, и источников
+      // у них несколько: Росгидромет по России, MeteoAlarm по Европе.
+      // Признак — пометка CAP в названии источника, чтобы новый поставщик
+      // подхватывался без правки интерфейса.
+      rgCache=evs.filter(function(e){ return /\bCAP\b/.test(String(e.source||'')); })
                  .sort(function(a,b){ return (b.severity||0)-(a.severity||0); });
       renderRosgidromet();
       console.info('[Rosgidromet]',rgCache.length,'предупреждений');
@@ -8777,6 +8787,11 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
     <button class="ga-tab active" data-tab="weather" onclick="grdfAlertsTab('weather')">Экстремальная погода</button>
     <button class="ga-tab" data-tab="quakes" onclick="grdfAlertsTab('quakes')">Землетрясения</button>
     <button class="ga-tab" data-tab="cryo" onclick="grdfAlertsTab('cryo')">Криосфера</button>
+    <!-- 24.09.2026. Кнопки не было вовсе: блок ga-russia, его загрузчик и
+         переключатель существовали и работали, но открыть вкладку из
+         интерфейса было нельзя. Проверено в браузере: вызов
+         grdfAlertsTab('russia') показывает блок правильно. -->
+    <button class="ga-tab" data-tab="russia" onclick="grdfAlertsTab('russia')">Предупреждения</button>
   </div>
   <div id="ga-quakes">
     <div id="quake-list"></div>
