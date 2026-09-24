@@ -2053,8 +2053,8 @@ function renderMarkers() {
 }
 
 // ── СТАТИСТИКА И СПИСОК ──────────────────────────────────────────────────────
-window._sevLabel = function(v){ v=+v||0; return v>=85?'Критический':v>=75?'Высокий риск':v>=60?'Повышенный риск':v>=40?'Средний риск':'Низкий риск'; };
-window._sevColor = function(v){ v=+v||0; return v>=85?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8'; };
+window._sevLabel = function(v){ v=+v||0; return v>=90?'Критический':v>=75?'Высокий риск':v>=60?'Повышенный риск':v>=40?'Средний риск':'Низкий риск'; };
+window._sevColor = function(v){ v=+v||0; return v>=90?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8'; };
 function sc(s){ return window._sevColor(s); }
 function fd(iso){ var _t=Date.parse(iso); if(isNaN(_t)) return ''; return new Date(_t).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}) }
 
@@ -2898,10 +2898,10 @@ function _myCardsAllowed(){ return true; }
      40-59   Средний       золотой
       0-39   Низкий        приглушённый                                    */
 function _mcRiskCol(v){
-  return v>=85?'#E85A5A':v>=75?'#E8862D':v>=60?'#E8A33D':v>=40?'#D4AF5A':'#9a9486';
+  return v>=90?'#E85A5A':v>=75?'#E8862D':v>=60?'#E8A33D':v>=40?'#D4AF5A':'#9a9486';
 }
 function _mcRiskLbl(v){
-  return v>=85?'Критический':v>=75?'Высокий':v>=60?'Повышенный':v>=40?'Средний':'Низкий';
+  return v>=90?'Критический':v>=75?'Высокий':v>=60?'Повышенный':v>=40?'Средний':'Низкий';
 }
 
 /* Локальное экранирование: _esc живёт в другом блоке скрипта, и обращение к
@@ -9522,9 +9522,9 @@ var _RU_WATCH = [
    раньше, чем определится window._sevColor. */
 function _ruCol(v){
   try{ if(window._sevColor) return window._sevColor(v); }catch(_e){}
-  v=+v||0; return v>=85?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8';
+  v=+v||0; return v>=90?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8';
 }
-function _ruLvl(v){ return v>=85?'Критический':v>=75?'Высокий':v>=60?'Повышенный':v>=40?'Средний':'Низкий'; }
+function _ruLvl(v){ return v>=90?'Критический':v>=75?'Высокий':v>=60?'Повышенный':v>=40?'Средний':'Низкий'; }
 function _ruEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function _ruProfileHtml(c, isSig){
@@ -12976,10 +12976,10 @@ window._radarMetrics = function(ded){
   var perDom={}; DOMS.forEach(function(d){ perDom[d]={n:0,sev:0,sys:0,crit:0,rec:0,old:0,nrec:0,nold:0}; });
   ded.forEach(function(e){
     var s=e._sev||0; sevSum+=s;
-    if(s>=40) active++; if(s>=60) systemic++; if(s>=85) critical++;
+    if(s>=40) active++; if(s>=60) systemic++; if(s>=90) critical++;
     var t=Date.parse(e.date||'')||0;
     if(t && (now-t)<=DAY) new24++;
-    var pd=perDom[e.domain]; if(pd){ pd.n++; pd.sev+=s; if(s>=60) pd.sys++; if(s>=85) pd.crit++;
+    var pd=perDom[e.domain]; if(pd){ pd.n++; pd.sev+=s; if(s>=60) pd.sys++; if(s>=90) pd.crit++;
       /* nrec/nold добавлены 22.09.2026: суммы rec/old оставлены как есть, их
          читает payload signal-pro и воркер. Счётчики нужны для тренда. */
       if(t){ var age=now-t; if(age<=3.5*DAY){ pd.rec+=s; pd.nrec++; } else if(age<=7*DAY){ pd.old+=s; pd.nold++; } } }
@@ -13091,12 +13091,15 @@ window._radarLevel = function(lvl){
   /* Пороги фильтра ОБЯЗАНЫ совпадать со счётчиками в _signalMetrics:
        active    s>=40
        systemic  s>=60
-       critical  s>=85
+       critical  s>=90
+     24.09.2026: порог «Критический» приведён к шкале Атласа: 90 и выше.
+     Прежде интерфейс ставил 85, счётчик на витрине 80, а легенда говорила 90 —
+     три разных ответа на один вопрос. Счётчик и фильтр правятся вместе.
      22.09.2026: счётчик критических переведён с 75 на 85 (шкала приведена к
      движку), а этот порог остался 75. Плашка показывала «3 критических», но
      по нажатию радар оставлял 23 точки — те самые 75..84, которые счётчик уже
      критическими не считал. */
-  var mp={all:0,active:40,systemic:60,critical:85};
+  var mp={all:0,active:40,systemic:60,critical:90};
   window._radarLvlMin=(lvl!=='all' && window._radarLvlMin===mp[lvl])?0:mp[lvl];
   window._radarLvlKey=(window._radarLvlMin===0)?'all':lvl;
   if(window.grdfRenderRadar) window.grdfRenderRadar(true);
@@ -14557,7 +14560,7 @@ function _fGeoPending(s){ var f=_fSt(s); return f.geo_resolution==='pending'||_f
     var map={bbbreaking:'Breaking',breaking:'Breaking'};
     if(map[l]) return map[l];
     return src.charAt(0).toUpperCase()+src.slice(1); }
-  function scol(v){ try{ if(window._sevColor) return window._sevColor(v); }catch(e){} v=+v||0; return v>=85?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8'; }
+  function scol(v){ try{ if(window._sevColor) return window._sevColor(v); }catch(e){} v=+v||0; return v>=90?'#E24A3B':v>=75?'#FFD700':v>=60?'#FFA07A':v>=40?'#A89150':'#D8D8D8'; }
   function lcColor(x){ return {'Обнаружение':'#6b9bb3','Наблюдение':'#e0a458','Развитие':'#FFA07A','Пик':'#E24A3B','Стабилизация':'#D4AF5A','Ослабление':'#A89150','Завершён':'#6b7280'}[x]||'#A89150'; }
   /* ACTIVITY · интенсивность движения давления, п/ч.
      ADR-047: окно N=10 последних наблюдений не старше MAXAGE=72ч,
