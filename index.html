@@ -4818,7 +4818,7 @@ const FLAGS = {
   RU:'🇷🇺', US:'🇺🇸', CN:'🇨🇳', DE:'🇩🇪', GB:'🇬🇧', FR:'🇫🇷',
   TR:'🇹🇷', KZ:'🇰🇿', AE:'🇦🇪', UA:'🇺🇦', BY:'🇧🇾', IN:'🇮🇳',
   JP:'🇯🇵', SA:'🇸🇦', EG:'🇪🇬', PL:'🇵🇱', IL:'🇮🇱', IR:'🇮🇷',
-  IT:'🇮🇹', AR:'🇦🇷', CA:'🇨🇦', ES:'🇪🇸', ID:'🇮🇩', MX:'🇲🇽', CH:'🇨🇭',
+  IT:'🇮🇹', AR:'🇦🇷', CA:'🇨🇦', ES:'🇪🇸', ID:'🇮🇩', MX:'🇲🇽', CH:'🇨🇭', DK:'🇩🇰',
 };
 
 const DOMAIN_RU = {
@@ -5472,7 +5472,10 @@ document.addEventListener('keydown', e => {
 const CC_COUNTRIES = new Set([
   'RU','US','CN','DE','GB','FR','TR','KZ','AE','UA',
   'BY','IN','JP','SA','EG','PL','IL','IR','IT','AR',
-  'CA','ES','ID','MX','CH'
+  'CA','ES','ID','MX','CH',
+  // DK добавлена 25.09.2026 вместе с реестром стран в воркере: списки
+  // обязаны совпадать, иначе карточка страны с карты не откроется.
+  'DK'
 ]);
 
 // Expose for external use (e.g. from marker click in existing code)
@@ -9013,7 +9016,7 @@ var _FLAGS = window.FLAGS || {
   TR:'🇹🇷',KZ:'🇰🇿',AE:'🇦🇪',UA:'🇺🇦',BY:'🇧🇾',IN:'🇮🇳',
   JP:'🇯🇵',SA:'🇸🇦',EG:'🇪🇬',PL:'🇵🇱',IL:'🇮🇱',IR:'🇮🇷',
   IT:'🇮🇹',AR:'🇦🇷',CA:'🇨🇦',ES:'🇪🇸',ID:'🇮🇩',MX:'🇲🇽',
-  CH:'🇨🇭',BR:'🇧🇷',ZA:'🇿🇦',NG:'🇳🇬',ET:'🇪🇹',PK:'🇵🇰',
+  CH:'🇨🇭',BR:'🇧🇷',ZA:'🇿🇦',NG:'🇳🇬',ET:'🇪🇹',PK:'🇵🇰',DK:'🇩🇰',
   BD:'🇧🇩',VN:'🇻🇳',TH:'🇹🇭',MY:'🇲🇾',PH:'🇵🇭',AU:'🇦🇺',
   KR:'🇰🇷',KP:'🇰🇵',TW:'🇹🇼',HK:'🇭🇰',SG:'🇸🇬',NZ:'🇳🇿',
   QA:'🇶🇦',KW:'🇰🇼',BH:'🇧🇭',OM:'🇴🇲',YE:'🇾🇪',LB:'🇱🇧',
