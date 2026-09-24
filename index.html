@@ -3884,10 +3884,12 @@ window._grdfDisasterEnsure=function(){
     // его не трогает.
     if(!_rgShown){ _rgShown=true; try{ window.grdfAlertsTab(''); }catch(_){} }
     var _srcs={}; rgCache.forEach(function(x){ _srcs[String(x.source||'').replace(/\s*CAP$/,'')]=1; });
-    var hdr='<div style="padding:10px 14px 8px;font-size:10px;color:rgba(148,163,184,.6);line-height:1.45">'
+    // Пояснение про стандарт и источники стоит ПОД списком: это сноска, а не
+    // заголовок, и над карточками она отодвигала сами предупреждения вниз.
+    var note='<div style="padding:12px 14px 4px;margin-top:4px;border-top:0.5px solid rgba(184,151,58,0.12);font-size:10px;color:rgba(148,163,184,.6);line-height:1.45">'
       + 'Стандарт CAP, источники: '+Object.keys(_srcs).join(' · ')+'. '
       + 'Это предупреждения официальных служб, а не сигналы ленты.</div>';
-    box.innerHTML=hdr+rgCache.map(function(it){
+    box.innerHTML=rgCache.map(function(it){
       var s=it.severity||0, col=rgCol(s);
       var t=String(it.title||'');
       var typ=(t.indexOf(':')>0?t.split(':')[0]:t).trim();
@@ -3899,7 +3901,7 @@ window._grdfDisasterEnsure=function(){
           '<div class="dn-text" style="-webkit-line-clamp:unset">'+qkEsc(reg)+'</div>'+
           '<div class="qk-meta"><span>'+rgLbl(s)+' · '+rgDate(it.date)+'</span></div>'+
         '</div></div>';
-    }).join('');
+    }).join('')+note;
   }
   async function loadRosgidromet(){
     try{
