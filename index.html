@@ -3867,7 +3867,7 @@ window._grdfDisasterEnsure=function(){
 // Росгидромет — официальные метеопредупреждения (CAP) в «Экстремальная погода»
 // ═══════════════════════════════════════════════════════════════════
 (function(){
-  var rgInterval=null, rgCache=[];
+  var rgInterval=null, rgCache=[], _rgShown=false;
   function rgCol(s){ return s>=85?'#C0392B':s>=70?'#FF7A1A':s>=56?'#E0A82E':'#3CB371'; }
   function rgLbl(s){ return window._sevLabel(s); }
   function rgDate(d){ try{ return new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }catch(e){ return ''; } }
@@ -3879,6 +3879,10 @@ window._grdfDisasterEnsure=function(){
     if(wrap) wrap.style.display = rgCache.length ? 'block' : 'none';
     if(num) num.textContent = '· ' + rgCache.length;
     if(!rgCache.length){ box.innerHTML=''; return; }
+    // Один раз при первом наполнении: раздел открывается на предупреждениях.
+    // Дальше состояние принадлежит пользователю, и обновление раз в минуту
+    // его не трогает.
+    if(!_rgShown){ _rgShown=true; try{ window.grdfAlertsTab(''); }catch(_){} }
     var _srcs={}; rgCache.forEach(function(x){ _srcs[String(x.source||'').replace(/\s*CAP$/,'')]=1; });
     var hdr='<div style="padding:10px 14px 8px;font-size:10px;color:rgba(148,163,184,.6);line-height:1.45">'
       + 'Стандарт CAP, источники: '+Object.keys(_srcs).join(' · ')+'. '
@@ -3919,18 +3923,45 @@ window._grdfDisasterEnsure=function(){
     else { renderRosgidromet(); }
   };
   var _o2=window.grdfAlertsTab;
-  // Предупреждения больше не вкладка: переключатель их не касается, а
-  // загрузка стартует вместе с панелью, а не по клику на вкладку.
-  window.grdfAlertsTab=function(name){ if(_o2) _o2(name); window._grdfRosgidrometEnsure(); };
+  // 24.09.2026. Предупреждения это то, что показывается при открытии раздела,
+  // а вкладки открываются нажатием. Раздел работает как одно исключающее
+  // переключение: открыты либо предупреждения, либо содержимое одной вкладки.
+  //
+  // Пустого имени достаточно, чтобы спрятать все вкладки разом: каждый модуль
+  // сравнивает имя со своим и при несовпадении прячет свой блок. Отдельный
+  // список блоков не нужен и не протухнет при добавлении новой вкладки.
+  function _warnOpen(on){
+    var box=document.getElementById('rosgidromet-list'), cv=document.getElementById('ga-warn-cv');
+    if(box) box.style.display = on ? 'block' : 'none';
+    if(cv) cv.style.transform = on ? 'rotate(90deg)' : '';
+  }
+  window._grdfWarnOpen=_warnOpen;
+
+  var _lastTab='weather';
+  window.grdfAlertsTab=function(name){
+    // Последняя вкладка запоминается здесь, а не по клику на кнопку: функцию
+    // вызывают и программно, и тогда отслеживание по DOM-клику промахивается.
+    if(name) _lastTab=name;
+    if(_o2) _o2(name);
+    window._grdfRosgidrometEnsure();
+    // Выбор вкладки закрывает предупреждения; пустое имя оставляет их открытыми.
+    _warnOpen(!name);
+  };
+
   document.addEventListener('click', function(e){
     var h = e.target.closest ? e.target.closest('#ga-warn-head') : null;
     if(!h) return;
-    var box=document.getElementById('rosgidromet-list'), cv=document.getElementById('ga-warn-cv');
+    var box=document.getElementById('rosgidromet-list');
     if(!box) return;
-    var open = box.style.display !== 'none';
-    box.style.display = open ? 'none' : 'block';
-    if(cv) cv.style.transform = open ? '' : 'rotate(90deg)';
+    if(box.style.display !== 'none'){
+      // Свернули предупреждения: возвращаем ту вкладку, что была выбрана
+      // последней, иначе экран остался бы вовсе без содержимого.
+      window.grdfAlertsTab(_lastTab || 'weather');
+    } else {
+      window.grdfAlertsTab('');
+    }
   });
+
 })();
 
 // === КРИОСФЕРА в «Рисках» ===
