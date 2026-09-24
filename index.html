@@ -3867,7 +3867,7 @@ window._grdfDisasterEnsure=function(){
 // Росгидромет — официальные метеопредупреждения (CAP) в «Экстремальная погода»
 // ═══════════════════════════════════════════════════════════════════
 (function(){
-  var rgInterval=null, rgCache=[], _rgShown=false;
+  var rgInterval=null, rgCache=[], _rgShown=false, _rgLoaded=false;
   function rgCol(s){ return s>=85?'#C0392B':s>=70?'#FF7A1A':s>=56?'#E0A82E':'#3CB371'; }
   function rgLbl(s){ return window._sevLabel(s); }
   function rgDate(d){ try{ return new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }catch(e){ return ''; } }
@@ -3878,11 +3878,22 @@ window._grdfDisasterEnsure=function(){
     // с нулём над карточками это шум, а не сигнал.
     if(wrap) wrap.style.display = rgCache.length ? 'block' : 'none';
     if(num) num.textContent = '· ' + rgCache.length;
-    if(!rgCache.length){ box.innerHTML=''; return; }
-    // Один раз при первом наполнении: раздел открывается на предупреждениях.
-    // Дальше состояние принадлежит пользователю, и обновление раз в минуту
-    // его не трогает.
-    if(!_rgShown){ _rgShown=true; try{ window.grdfAlertsTab(''); }catch(_){} }
+    if(!rgCache.length){
+      box.innerHTML='';
+      // Активных предупреждений нет. Если пользователь всё ещё на них, экран
+      // остался бы пустым, поэтому уводим на погоду. Если он уже выбрал
+      // вкладку сам, не трогаем: состояние принадлежит ему.
+      //
+      // Условие _rgLoaded обязательно: до первого успешного ответа кэш тоже
+      // пуст, и без него раздел уходил на погоду ещё до прихода данных —
+      // ровно то, что и требовалось убрать.
+      if(_rgLoaded && !_rgShown && !document.querySelector('#grdf-alerts-tabs .ga-tab.active')){
+        _rgShown=true;
+        try{ window.grdfAlertsTab('weather'); }catch(_){}
+      }
+      return;
+    }
+    _rgShown=true;
     var _srcs={}; rgCache.forEach(function(x){ _srcs[String(x.source||'').replace(/\s*CAP$/,'')]=1; });
     // Пояснение про стандарт и источники стоит ПОД списком: это сноска, а не
     // заголовок, и над карточками она отодвигала сами предупреждения вниз.
@@ -3916,6 +3927,7 @@ window._grdfDisasterEnsure=function(){
       // подхватывался без правки интерфейса.
       rgCache=evs.filter(function(e){ return /\bCAP\b/.test(String(e.source||'')); })
                  .sort(function(a,b){ return (b.severity||0)-(a.severity||0); });
+      _rgLoaded=true;
       renderRosgidromet();
       console.info('[Rosgidromet]',rgCache.length,'предупреждений');
     }catch(e){ console.warn('[Rosgidromet]',e.message); }
@@ -8831,7 +8843,7 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
   <div class="grdf-screen-head"><div class="grdf-screen-title">Риски</div></div>
   <div id="grdf-risk-pulse"></div>
   <div id="grdf-alerts-tabs">
-    <button class="ga-tab active" data-tab="weather" onclick="grdfAlertsTab('weather')">Экстремальная погода</button>
+    <button class="ga-tab" data-tab="weather" onclick="grdfAlertsTab('weather')">Экстремальная погода</button>
     <button class="ga-tab" data-tab="quakes" onclick="grdfAlertsTab('quakes')">Землетрясения</button>
     <button class="ga-tab" data-tab="cryo" onclick="grdfAlertsTab('cryo')">Криосфера</button>
   </div>
@@ -8841,16 +8853,16 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
        вкладки, и прятать его за переключателем неправильно. Полоса свёрнута,
        чтобы не отодвигать карточки вниз; раскрывается по нажатию. Когда
        активных предупреждений нет, блок не выводится вовсе. -->
-  <div id="ga-warn" style="display:none">
+  <div id="ga-warn">
     <div id="ga-warn-head" style="display:flex;align-items:center;gap:8px;padding:12px 14px 10px;cursor:pointer;border-bottom:0.5px solid rgba(184,151,58,0.15)">
       <span style="color:#C0392B;font-size:13px;line-height:1">&#9888;</span>
       <span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#D4AF5A">Предупреждения</span>
       <span id="ga-warn-n" style="font-family:Montserrat,sans-serif;font-size:10px;color:#D4AF5A">· 0</span>
-      <span id="ga-warn-cv" style="margin-left:auto;color:rgba(148,163,184,0.6);font-size:11px;transition:transform .15s">&#9656;</span>
+      <span id="ga-warn-cv" style="margin-left:auto;color:rgba(148,163,184,0.6);font-size:11px;transition:transform .15s;transform:rotate(90deg)">&#9656;</span>
     </div>
-    <div id="rosgidromet-list" style="display:none"></div>
+    <div id="rosgidromet-list"><div class="qk-empty">Загрузка предупреждений…</div></div>
   </div>
-  <div id="ga-quakes">
+  <div id="ga-quakes" style="display:none">
     <div id="quake-list"></div>
   </div>
   <div id="ga-cryo" style="display:none">
@@ -12532,7 +12544,10 @@ window.grdfNavTo = function(tab) {
     if(alertScreen) alertScreen.classList.add('visible');
     if(drawer) drawer.style.display='none';
     if(sheet) { sheet.className=''; _grdfSheetSnap=0; }
-    if(window.grdfAlertsTab) window.grdfAlertsTab('weather');
+    // 24.09.2026. Здесь жёстко открывалась «Экстремальная погода», и раздел
+    // каждый раз стартовал с неё, перебивая начальное состояние. Пустое имя
+    // означает «предупреждения», вкладки открываются нажатием.
+    if(window.grdfAlertsTab) window.grdfAlertsTab('');
     if(window.grdfRenderRiskPulse) window.grdfRenderRiskPulse();
     if(window._grdfQuakesEnsure) window._grdfQuakesEnsure();
     if(window._riskPulseTimer) clearInterval(window._riskPulseTimer);
