@@ -10811,12 +10811,21 @@ window._renderCountryArchive = function(el, cc, cname, ds){
         // читается клиентом как факт, поэтому строка со счётчиком в этом
         // случае не выводится, описание остаётся.
         +(total?('<div style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:600;color:#e2e8f0;line-height:1">'+total+' <span style="font-size:13px;font-family:inherit;color:rgba(148,163,184,.8);font-weight:400">'+plr(total,['материал','материала','материалов'])+'</span></div>'):'')+((ct&&ct!==total)?('<div style="font-size:11px;color:rgba(184,151,58,.9);margin-top:3px;font-weight:500">из них '+ct+' '+plr(ct,['материал','материала','материалов'])+' по стране</div>'):'')
-        +(lastUpd?('<div style="font-size:10px;color:rgba(148,163,184,.6);margin-top:4px">Последнее обновление: '+lastUpd+'</div>'):'')
+        // 25.09.2026. Здесь стояло «Последнее обновление: 19 мая 2026» рядом со
+        // счётчиком всего архива, и читалось как дата обновления всех 3300
+        // материалов. На деле это дата самого свежего материала в ручной
+        // выборке по стране: у России выборка из 32 материалов и не
+        // пополнялась с мая, у остальных стран дата приходит от API и даёт
+        // сентябрь. Даты обновления самого архива у клиента нет вовсе:
+        // docs/archive/context.json на сервере отдаёт 404. Ставить дату,
+        // которой нет, нельзя, поэтому строка из карточки архива убрана, а
+        // дата перенесена к самой выборке, где она и означает то, что значит.
         +'<div style="height:0.5px;background:rgba(255,255,255,.08);margin:12px 0"></div><div style="font-size:11px;line-height:1.5;color:rgba(148,163,184,.82)">Собрание исследований, сценариев, исторических параллелей и аналитических материалов по '+esc(gname)+'.</div><div style="font-size:10px;line-height:1.5;color:rgba(148,163,184,.6);margin-top:7px">Исследования Архива учитываются в сценариях и прогнозах для данной страны.</div></div>';
       var DADJ={geopolitics:'геополитического',economy:'финансового',climate:'ресурсного',technology:'технологического',social:'социального'};
       var dlist=top.map(function(x){return DADJ[x.d];}).filter(Boolean);
       var conclusion='На фоне усиления '+(dlist.length?(dlist.slice(0,-1).join(', ')+(dlist.length>1?' и ':'')+dlist[dlist.length-1]):'системного')+' давления наибольшую устойчивость сохраняют реальные активы, критическая инфраструктура, энергия, вода и человеческий капитал.';
-      var keyDesc='<div style="font-size:10px;color:rgba(148,163,184,.6);margin:-1px 0 8px;line-height:1.4">Ручная выборка наиболее значимых материалов из архива исследований по '+esc(gname)+'.</div>';
+      var keyDesc='<div style="font-size:10px;color:rgba(148,163,184,.6);margin:-1px 0 8px;line-height:1.4">Ручная выборка наиболее значимых материалов из архива исследований по '+esc(gname)+'.'
+        +(lastUpd?(' Последний материал в выборке: '+lastUpd+'.'):'')+'</div>';
       var html='<div class="sp-section" style="margin-top:4px;border-top:0.5px solid rgba(255,255,255,.08);padding-top:14px">'
         +'<div class="sp-head"><span class="sp-badge" style="color:#b8973a">СТРАТЕГИЧЕСКИЙ КОНТЕКСТ</span></div>'
         +'<div class="sp-sub" style="color:rgba(232,224,208,0.62)">Долгосрочные факторы и структурные причины давления</div>'
