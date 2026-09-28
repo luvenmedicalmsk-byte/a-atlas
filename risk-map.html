@@ -11,7 +11,7 @@
      «не задеплоилось» от «кэш» было нельзя ничем, кроме догадок.
      Метка видна в двух местах: здесь и внизу панели стран. Обновляется
      вручную при каждой правке этого файла. -->
-<meta name="atlas-build" content="2026-09-28 21:45 · GRI подписи">
+<meta name="atlas-build" content="2026-09-28 22:05 · GRI порядок">
 <title>Атлас · Карта сигналов</title>
 <meta name="description" content="Карта сигналов и системных рисков по 5 доменам: климат, экономика, геополитика, технологии, социум.">
 <meta property="og:type" content="website">
@@ -5608,7 +5608,10 @@ async function openCountriesPanel() {
   grid.innerHTML = '';
 
   const sorted = [...data.countries].sort((a,b) =>
-    _cIdx(b) - _cIdx(a) ||
+    // Тот же ключ, что и в общем компараторе: доменный индекс, запасной
+    // путь на отклонение. Иначе панель и вкладка «Страны» давали разный
+    // порядок одних и тех же стран.
+    ((_cGri(b)===null?_cIdx(b):_cGri(b)) - (_cGri(a)===null?_cIdx(a):_cGri(a))) ||
     ((b.domain_scores && b.domain_scores.geopolitics) || 0) -
     ((a.domain_scores && a.domain_scores.geopolitics) || 0) ||
     (b.risk_score || 0) - (a.risk_score || 0));
@@ -12135,7 +12138,9 @@ function grdfPopulateDrawer(countries) {
   html += '<div style="position:relative">';
   topCountries.forEach(function(c, idx){
     var gri = fr((window._cIdx || function(x){return (x&&x.risk_score)||0;})(c));
-    var sc = STATUS_COLORS[getStatus(gri)]||'#888';
+    var _sg0 = (window._cGri ? window._cGri(c) : null);
+    var _sst = getStatus(_sg0===null ? gri : _sg0);
+    var sc = STATUS_COLORS[_sst]||'#888';
     var blurStyle = idx >= FREE_LIMIT ? 'filter:blur(3px);opacity:0.45;pointer-events:none;user-select:none;' : '';
     html += '<div class="grdf-sig-row" style="'+blurStyle+'" '+(idx < FREE_LIMIT ? 'data-grdf-cc="'+esc(c.country)+'" data-grdf-nav="map" onclick="grdfOpenCountryNav(this)"' : '')+' >';
     html += '<span class="grdf-sig-dot" style="background:'+sc+'"></span>';
@@ -12143,7 +12148,7 @@ function grdfPopulateDrawer(countries) {
     var _sg = (window._cGri ? window._cGri(c) : null);
     html += '<div style="font-size:9px;color:#6f88ab;margin-top:1px">'
       + (_sg!==null ? 'GRI '+_sg+' · ' : '') + 'откл. '+gri+' · '+(c.dominant_domain||'')+'</div></div>';
-    html += '<span style="font-size:10px;color:'+sc+';font-weight:500">'+STATUS_RU[getStatus(gri)]+'</span>';
+    html += '<span style="font-size:10px;color:'+sc+';font-weight:500">'+STATUS_RU[_sst]+'</span>';
     html += '</div>';
   });
   // Lock overlay over blurred rows
@@ -13953,8 +13958,16 @@ function grdfPopulateCountriesList(countries) {
   // в верхнем показателе карты. Пока он сортировал по risk_score, а цифра
   // выводилась по индексу, карта показывала «GRI · США 57», а вкладка
   // «Страны» — 90 у тех же США: два разных числа об одной стране.
+  // ONE_LABEL 28.09.2026, вторая часть. Комментарий выше был верен по
+  // замыслу и неверен по коду: ключом стоял _cIdx, то есть risk_score.
+  // Из-за этого список читался наоборот — Украина с GRI 89 стояла седьмой,
+  // ниже Таиланда с GRI 60, потому что у Таиланда отклонение от его тихой
+  // нормы больше. Ключом становится доменный индекс, запасной путь на
+  // отклонение остаётся для стран, где индекс не посчитан.
   window._ctryCmp = window._ctryCmp || function(a,b){
-    var _i = window._cIdx || function(c){ return (c&&c.risk_score)||0; };
+    var _g = window._cGri || function(){ return null; };
+    var _d = window._cIdx || function(c){ return (c&&c.risk_score)||0; };
+    var _i = function(c){ var v=_g(c); return v===null ? _d(c) : v; };
     var sa = _ctryOrd(a), sb = _ctryOrd(b);
     if(sa !== sb) return sa - sb;
     if(sa === 0) return _i(b)-_i(a)
@@ -13986,7 +13999,10 @@ function grdfPopulateCountriesList(countries) {
     h += '<div style="flex:1"><div style="font-size:12px;font-weight:500;color:#e2e8f0">'+esc(c.country_name||c.country)
        + (dev?' <span style="font-size:7.5px;letter-spacing:.05em;text-transform:uppercase;color:#a78bfa;border:1px solid rgba(167,139,250,.4);border-radius:4px;padding:1px 5px;vertical-align:middle">в разработке</span>':'')
        + '</div>';
-    var _st = getStatus(gri);
+    // Статус и цвет точки берутся от того же числа, которое подписано GRI:
+    // иначе строка «GRI 60» могла бы гореть красным по отклонению 92.
+    var _rg0 = (window._cGri ? window._cGri(c) : null);
+    var _st = getStatus(_rg0===null ? gri : _rg0);
     var _nev = _evCount[(c.country||'').toUpperCase()]||0;
     var _modelOnly = (_st==='ELEVATED'||_st==='ESCALATING'||_st==='CRITICAL') && _nev===0;
     var _rg = (window._cGri ? window._cGri(c) : null);
