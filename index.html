@@ -6,6 +6,12 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<!-- МЕТКА СБОРКИ 28.09.2026. Заведена после случая, когда правка была в
+     origin, а на экране сорок минут висела прежняя страница, и отличить
+     «не задеплоилось» от «кэш» было нельзя ничем, кроме догадок.
+     Метка видна в двух местах: здесь и внизу панели стран. Обновляется
+     вручную при каждой правке этого файла. -->
+<meta name="atlas-build" content="2026-09-28 21:45 · GRI подписи">
 <title>Атлас · Карта сигналов</title>
 <meta name="description" content="Карта сигналов и системных рисков по 5 доменам: климат, экономика, геополитика, технологии, социум.">
 <meta property="og:type" content="website">
@@ -5594,7 +5600,9 @@ async function openCountriesPanel() {
   const data = await fetchToday();
   if (!data) return;
 
-  document.getElementById('cp-updated').textContent = 'Данные на ' + (data.date || '');
+  var _bm = document.querySelector('meta[name="atlas-build"]');
+  document.getElementById('cp-updated').textContent = 'Данные на ' + (data.date || '')
+    + (_bm ? ' · сборка ' + _bm.getAttribute('content') : '');
 
   const grid = document.getElementById('cp-grid');
   grid.innerHTML = '';
