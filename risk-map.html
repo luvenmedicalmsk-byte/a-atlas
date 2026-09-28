@@ -3076,7 +3076,25 @@ const ZONE_RING_XY={
   'BY':[53.5,28.0],'LT':[55.3,23.9],'LV':[56.9,25.0],'EE':[58.7,25.5],
   'MD':[47.2,28.5]};
 
-function _zoneRingXY(cc){ return ZONE_RING_XY[cc] || MY_CARD_XY[cc] || null; }
+/* ZONE_RING_ID_XY 28.09.2026. Точка зоны по её СОБСТВЕННОМУ коду, когда
+   страновой центр стоит не там, где риск.
+
+   Повод: прогноз тарифной нагрузки ЖКХ (RU-jkh-tariff-2029). По коду RU
+   кольцо встаёт в [60.0, 90.0] — центральная Сибирь, то есть посреди
+   Красноярского края, где предмет разбора ни при чём. Разбор про износ
+   сетей и опережающий рост тарифов, и по решению Мии точка ставится на
+   Республику Коми.
+
+   Почему таблицей по коду зоны, а не разбором поля region: region это
+   свободный текст («Россия, все регионы», «Шанхай»), и привязка к нему
+   сдвинула бы точку у всех существующих зон разом. Здесь же меняется
+   ровно одна запись, перечисленная поимённо.
+
+   Откат: убрать нужную строку из таблицы, кольцо вернётся в центр страны. */
+const ZONE_RING_ID_XY={
+  'RU-jkh-tariff-2029':[63.5,54.0],   // Республика Коми
+};
+function _zoneRingXY(cc,id){ return ZONE_RING_ID_XY[id] || ZONE_RING_XY[cc] || MY_CARD_XY[cc] || null; }
 
 async function loadZoneRings(){
   try{
@@ -3093,7 +3111,7 @@ async function loadZoneRings(){
          случай ответа из старого кэша. Пусто — кольцо у своей страны. */
       const _mcc=String(z.map_cc||'').toUpperCase();
       if(_mcc && _mcc!==String(z.cc||'').toUpperCase()) return;
-      const xy=_zoneRingXY(String(z.cc||'').toUpperCase());
+      const xy=_zoneRingXY(String(z.cc||'').toUpperCase(), String(z.id||''));
       if(!xy) return;
       const col=DC[_ZRING_DOM[String(z.domain||'').toLowerCase()]]||'#B8973A';
       const risk=+z.index||0;
