@@ -11,7 +11,7 @@
      «не задеплоилось» от «кэш» было нельзя ничем, кроме догадок.
      Метка видна в двух местах: здесь и внизу панели стран. Обновляется
      вручную при каждой правке этого файла. -->
-<meta name="atlas-build" content="2026-09-28 22:05 · GRI порядок">
+<meta name="atlas-build" content="2026-09-28 22:25 · GRI шапка">
 <title>Атлас · Карта сигналов</title>
 <meta name="description" content="Карта сигналов и системных рисков по 5 доменам: климат, экономика, геополитика, технологии, социум.">
 <meta property="og:type" content="website">
@@ -1702,7 +1702,7 @@ html[data-bright="max"] [style*="rgba(148,163,184,0.6)"]  { color: rgba(148,163,
   <div id="stats">
     <div><span class="sv" id="s-t">—</span><span class="sl">Сигналов</span></div>
     <div><span class="sv" id="s-c">—</span><span class="sl">Критичных</span></div>
-    <div><span class="sv" id="s-gri">—</span><span class="sl" id="s-gri-l" style="max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Откл.</span></div>
+    <div><span class="sv" id="s-gri">—</span><span class="sl" id="s-gri-l" style="max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">GRI</span></div>
   </div>
   <div id="layers">
   <button class="lb" id="countries-btn">◆ Страны</button>
@@ -9217,9 +9217,17 @@ window.grdfOnDataLoad = function(data) {
         ((b.domain_scores&&b.domain_scores.geopolitics)||0) -
         ((a.domain_scores&&a.domain_scores.geopolitics)||0) ||
         (b.risk_score||0)-(a.risk_score||0); })[0];
+    // ONE_LABEL 28.09.2026, третья часть. Комментарий выше уже утверждал, что
+    // верхний показатель переведён на доменный индекс и должен совпадать с
+    // первой строкой списка стран, а код брал _ci, то есть отклонение. Мия:
+    // «вверху gri не соответствует тому, что в странах» — в шапке стояло 85,
+    // а первой строкой списка шла Украина с GRI 89. Оба числа про одну страну.
+    // Теперь шапка берёт то же число и ту же подпись, что и первая строка;
+    // запасной путь на отклонение остаётся для стран без доменного индекса.
+    var _tg = (top && window._cGri) ? window._cGri(top) : null;
     var gv=document.getElementById('s-gri'), gl=document.getElementById('s-gri-l');
-    if(top&&gv) gv.textContent=Math.round(_ci(top));
-    if(top&&gl) gl.textContent='Откл. · '+(top.country_name||top.country||''); })();
+    if(top&&gv) gv.textContent=Math.round(_tg===null ? _ci(top) : _tg);
+    if(top&&gl) gl.textContent=(_tg===null ? 'Откл. · ' : 'GRI · ')+(top.country_name||top.country||''); })();
 
   // Sprint 4: Drawer counts
   var drSigs = document.getElementById('grdf-dr-sigs');
