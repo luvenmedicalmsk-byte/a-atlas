@@ -1696,7 +1696,7 @@ html[data-bright="max"] [style*="rgba(148,163,184,0.6)"]  { color: rgba(148,163,
   <div id="stats">
     <div><span class="sv" id="s-t">—</span><span class="sl">Сигналов</span></div>
     <div><span class="sv" id="s-c">—</span><span class="sl">Критичных</span></div>
-    <div><span class="sv" id="s-gri">—</span><span class="sl" id="s-gri-l" style="max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">GRI</span></div>
+    <div><span class="sv" id="s-gri">—</span><span class="sl" id="s-gri-l" style="max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Откл.</span></div>
   </div>
   <div id="layers">
   <button class="lb" id="countries-btn">◆ Страны</button>
@@ -5556,10 +5556,34 @@ const LEVEL_COLORS = {
 function _cIdx(c) {
   return (c && Number.isFinite(c.risk_score)) ? c.risk_score : 0;
 }
+// ONE_LABEL 28.09.2026. Мия: «Что у нас опять с GRI? Выше Украины?»
+// Под подписью GRI стоял risk_score, а он меряет ПРЕВЫШЕНИЕ над базовым
+// уровнем самой страны, не абсолютный риск. Базовые уровни: Таиланд 50,
+// Великобритания 50, США 52, Индия 55, Россия 72, Украина 85. У страны с
+// низкой базой обычный поток взлетает над ней; в воюющей стране война уже
+// входит в базу и добавить к ней нечего. Плюс потолок _RISK_CAP = 92 в
+// движке: на 28.09 в него упёрлись ровно четыре страны (RU, US, IN, TH),
+// 26.09 и 27.09 их было по три. Поэтому Таиланд равнялся России, а
+// Украина с её 85 стояла ниже обоих.
+//
+// Абсолютная оценка в данных ЕСТЬ: поле domain_index, посчитанное 21.09
+// именно для витрины (Украина 89, Россия 84, США 78, Индия 68, Таиланд 60).
+// Числа не меняются ни одно: правятся только ПОДПИСИ. Там, где показан
+// risk_score, теперь написано «откл.» или «отклонение от нормы», а подпись
+// GRI ушла к domain_index.
+//
+// Что СОЗНАТЕЛЬНО не тронуто: порядок списка, цвет статуса, дельты и оба
+// прогноза по-прежнему считаются от risk_score. Это решение CIDX_ONE_SCALE
+// от 26.09: перевод их на domain_index требует правки прогнозного слоя
+// движка, и делается отдельно, с замером по истории снапшотов.
+function _cGri(c) {
+  return (c && Number.isFinite(c.domain_index)) ? c.domain_index : null;
+}
 // Верхний счётчик живёт в другом блоке скрипта и до этой функции не достаёт.
 // Без общей точки он считал бы свой топ по risk_score, и наверху висела бы
 // цифра, расходящаяся с первой строкой списка.
 window._cIdx = _cIdx;
+window._cGri = _cGri;
 
 async function openCountriesPanel() {
   const panel = document.getElementById('countries-panel');
@@ -9184,7 +9208,7 @@ window.grdfOnDataLoad = function(data) {
         (b.risk_score||0)-(a.risk_score||0); })[0];
     var gv=document.getElementById('s-gri'), gl=document.getElementById('s-gri-l');
     if(top&&gv) gv.textContent=Math.round(_ci(top));
-    if(top&&gl) gl.textContent='GRI · '+(top.country_name||top.country||''); })();
+    if(top&&gl) gl.textContent='Откл. · '+(top.country_name||top.country||''); })();
 
   // Sprint 4: Drawer counts
   var drSigs = document.getElementById('grdf-dr-sigs');
@@ -9373,7 +9397,7 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   var criw=cri>=70?'высокая':cri>=45?'умеренная':'низкая';
   // ── микро-строки под индексами ──
   var micro='<div style="margin:2px 14px 0;display:flex;flex-direction:column;gap:3px">'
-    +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#cbd5e1">GRI '+gri+'</b> — '+n+' '+_plu_nom+' средней остроты '+avg+'/100.</div>'
+    +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#cbd5e1">Откл. '+gri+'</b> — '+n+' '+_plu_nom+' средней остроты '+avg+'/100.</div>'
     +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#1faacc">EWS '+ews+'</b> — большинство сигналов растут, темп '+tempo+'.</div>'
     +'<div style="font-size:10px;color:rgba(203,213,225,.62);line-height:1.4"><b style="color:#f59e0b">CRI '+cri+'</b> — давление охватывает '+active+' из 5 основных доменов.</div></div>';
   // ── нарратив ──
@@ -9387,7 +9411,7 @@ function _whyRiskHtml(c, gri, ews, cri, dom, top3, isSig){ try{
   //   GRI  уровень текущего давления
   //   EWS  скорость изменения
   //   CRI  ширина и связанность распространения
-  var l1='<b>GRI '+gri+'</b> — '+_griWord(gri)+' уровень давления.<br>'
+  var l1='<b>Отклонение '+gri+'</b> — '+_griWord(gri)+' уровень давления над базовым.<br>'
         +'Основной вклад сейчас даёт контур «'+srcDom+'».';
   var l2='<b>EWS '+ews+'</b> — темп нарастания '+tempo+'.<br>'
         +accelPct+'% сигналов имеют растущую оценку.';
@@ -10070,7 +10094,12 @@ function _grdfIntelHtml(c, gri, ews, delta, dom, top3, isSig, part) {
       var _klvl = gri>=80?'критический риск':gri>=60?'высокий риск':gri>=40?'умеренный риск':'низкий риск';
       var _kews = ews>=60?'сигналы быстро нарастают':ews>=35?'умеренная динамика нарастания':'резкого ускорения нет';
       var _kcri = cri>=60?'риск системный — затрагивает несколько доменов':cri>=35?'риск частично межсекторный':'риск сконцентрирован в одном домене';
-      var _kl1 = 'GRI '+gri+' — '+_klvl+'. '+_kews.charAt(0).toUpperCase()+_kews.slice(1)+' (EWS '+ews+'); '+_kcri+' (CRI '+cri+').';
+      // Уровень словами берётся от ТОГО ЖЕ числа, которое подписано GRI.
+      var _kg = (window._cGri ? window._cGri(c) : null);
+      var _kglvl = _kg===null ? null : (_kg>=80?'критический риск':_kg>=60?'высокий риск':_kg>=40?'умеренный риск':'низкий риск');
+      var _kl1 = (_kg!==null ? 'GRI '+_kg+' — '+_kglvl+'. Отклонение от нормы '+gri+' ('+_klvl+'). '
+                             : 'Отклонение от нормы '+gri+' — '+_klvl+'. ')
+               + _kews.charAt(0).toUpperCase()+_kews.slice(1)+' (EWS '+ews+'); '+_kcri+' (CRI '+cri+').';
       var _kwhy=function(_e){ if(!_e) return '';
         if(_e.event_country===_kcc) return 'Произошло в стране';
         if(_e.impact_countries && _e.impact_countries.indexOf(_kcc)>=0) return 'Влияет на страну';
@@ -10352,7 +10381,7 @@ function _grdfScenHtml(d){
   function row(lab,val,col,p){ return '<div style="display:flex;align-items:center;gap:8px;margin:5px 0">'
     +'<span style="width:96px;font-size:11px;color:'+col+'">'+lab+'</span>'
     +'<span style="flex:1;height:5px;background:transparent;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:'+(p!=null?p:50)+'%;background:'+col+';opacity:.7"></span></span>'
-    +'<span style="font-size:11px;color:#cbd5e1;width:48px;text-align:right">GRI '+val+'</span>'
+    +'<span style="font-size:11px;color:#cbd5e1;width:48px;text-align:right">откл. '+val+'</span>'
     +(p!=null?'<span style="font-size:10px;color:#6f88ab;width:30px;text-align:right">'+p+'%</span>':'')+'</div>'; }
   var H=row('Стабилизация',best,'#10b981',probs?probs.best:null)
     +row('Базовый',base,'#eab308',probs?probs.base:null)
@@ -10619,7 +10648,7 @@ function _grdfContextHtml(c){
       +'<span style="width:10px;height:10px;border-radius:50%;background:'+col+'"></span>'
       +'<b style="color:'+col+';font-size:14px">'+st+'</b></div>'
       +'<div style="display:flex;gap:16px;font-size:12px;color:#94a3b8">'
-      +'<div>GRI '+dt(c.gri_delta_7d)+'</div><div>EWS '+dt(c.ews_delta_7d)+'</div><div>CRI '+dt(c.cri_delta_7d)+'</div></div>'
+      +'<div>откл. '+dt(c.gri_delta_7d)+'</div><div>EWS '+dt(c.ews_delta_7d)+'</div><div>CRI '+dt(c.cri_delta_7d)+'</div></div>'
       +'<div style="font-size:10px;color:#6f88ab;margin-top:4px">за 7 дней</div>');
   })();
 
@@ -12103,7 +12132,9 @@ function grdfPopulateDrawer(countries) {
     html += '<div class="grdf-sig-row" style="'+blurStyle+'" '+(idx < FREE_LIMIT ? 'data-grdf-cc="'+esc(c.country)+'" data-grdf-nav="map" onclick="grdfOpenCountryNav(this)"' : '')+' >';
     html += '<span class="grdf-sig-dot" style="background:'+sc+'"></span>';
     html += '<div style="flex:1"><div style="font-size:11px;color:#d1d5db">'+_flag(c.country)+' '+esc(c.country_name||c.country)+'</div>';
-    html += '<div style="font-size:9px;color:#6f88ab;margin-top:1px">GRI '+gri+' · '+(c.dominant_domain||'')+'</div></div>';
+    var _sg = (window._cGri ? window._cGri(c) : null);
+    html += '<div style="font-size:9px;color:#6f88ab;margin-top:1px">'
+      + (_sg!==null ? 'GRI '+_sg+' · ' : '') + 'откл. '+gri+' · '+(c.dominant_domain||'')+'</div></div>';
     html += '<span style="font-size:10px;color:'+sc+';font-weight:500">'+STATUS_RU[getStatus(gri)]+'</span>';
     html += '</div>';
   });
@@ -12792,7 +12823,8 @@ function grdfPopulateWarnings(countries) {
     var lc = LEVEL_C[lv]||'#888';
     html += '<div class="grdf-warn-row">';
     html += '<span class="grdf-sig-dot" style="background:'+lc+';width:8px;height:8px;margin-top:3px"></span>';
-    html += '<div style="flex:1"><div style="font-size:11px;color:#d1d5db">'+_flag(c.country)+' '+esc(c.country_name||c.country)+' · GRI '+gri+'</div>';
+    html += '<div style="flex:1"><div style="font-size:11px;color:#d1d5db">'+_flag(c.country)+' '+esc(c.country_name||c.country)+' · '
+      + ((window._cGri && window._cGri(c)!==null) ? 'GRI '+window._cGri(c)+' · ' : '') + 'откл. '+gri+'</div>';
     html += '<div style="font-size:9px;color:#3d5068;margin-top:1px">Δ '+(c.delta>=0?'+':'')+parseFloat(c.delta||0).toFixed(1)+' · '+(c.dominant_domain||'')+'</div></div>';
     var LV_RU={RED:'Критично',ORANGE:'Высокий',YELLOW:'Повышенный',GREEN:'Умеренный'};
     html += '<span style="font-size:9px;padding:2px 5px;border-radius:3px;background:'+lc+'20;color:'+lc+';font-weight:500">'+(LV_RU[lv]||lv)+'</span>';
@@ -13949,7 +13981,9 @@ function grdfPopulateCountriesList(countries) {
     var _st = getStatus(gri);
     var _nev = _evCount[(c.country||'').toUpperCase()]||0;
     var _modelOnly = (_st==='ELEVATED'||_st==='ESCALATING'||_st==='CRITICAL') && _nev===0;
-    h += '<div style="font-size:10px;color:#3d5068;margin-top:1px">GRI '+gri+' · EWS '+fr(c.ews_score ?? gri)
+    var _rg = (window._cGri ? window._cGri(c) : null);
+    h += '<div style="font-size:10px;color:#3d5068;margin-top:1px">'
+       + (_rg!==null ? 'GRI '+_rg+' · ' : '') + 'откл. '+gri+' · EWS '+fr(c.ews_score ?? gri)
        + (_modelOnly?' · <span style="color:#7a6a3a">модельная оценка</span>':'')+'</div></div>';
     // Правая колонка со статусом и суточной дельтой снята: уровень риска
     // уже виден в GRI под названием страны, а дельта в списке из сорока
