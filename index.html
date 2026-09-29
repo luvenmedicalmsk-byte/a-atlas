@@ -16020,7 +16020,21 @@ function _scenIntel(s){
           if(_g.countries.length) _o+='<div class="gd-cl">Страны</div>'+_g.countries.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join('');
           if(_g.regions.length) _o+='<div class="gd-cl"'+(_g.countries.length?' style="margin-top:9px"':'')+'>Регионы · '+_g.regions.length+'</div>'+_g.regions.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join('');
           return _o; })():'')
-        +((s.included_processes&&s.included_processes.length>1)?'<div class="gd-cl" style="margin-top:9px">Развитие процесса</div>'+s.included_processes.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join(''):'')
+        +(function(){
+          // ПИЛЮЛИ СОСТАВА ПОКАЗЫВАЛИ СЫРЫЕ СЛАГИ (29.09.2026).
+          // included_processes у макропроцесса содержит ID участников,
+          // у обычного процесса содержал читаемые метки. Поле рендерилось
+          // как текст, поэтому все 48 макропроцессов выводили пилюли вида
+          // geop-военныеуда-украина-87b6. Движок теперь пишет метки
+          // в included_labels; included_processes остаётся для ID.
+          // Записи прошлых прогонов ещё держат старую форму, поэтому
+          // fallback берёт included_processes и отбрасывает слаги.
+          var _lab=(s.included_labels&&s.included_labels.length)?s.included_labels
+                   :(s.included_processes||[]).filter(function(x){return !/^[a-z]{4}-/.test(String(x));});
+          if(!(_lab&&_lab.length>1)) return '';
+          return '<div class="gd-cl" style="margin-top:9px">Развитие процесса</div>'
+            +_lab.map(function(x){return '<span class="gd-pill">'+esc(x)+'</span>';}).join('');
+        })()
         +'</div>';
     }
     // ADR-017 Phase 2: двухуровневое объяснение — Human (вверху) + Technical (свёрнут)
