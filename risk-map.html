@@ -12995,6 +12995,22 @@ var FEED_NOISE_OPINION=/(рискует вызвать гнев|моральн[�
 var FEED_NOISE_EXPLAINER=/(как .{0,55}(меняет|меняют|измени[лвт]|влияет на|разруша|ломает|перевернул)[а-яё]* жизн|финансовая смертная казнь|как .{0,40}(пережива|выжива)[а-яё]* в условиях|(^|['"«:]\s*)почему |^\s*кто (выигрывает|побежда|стоит за|виноват|контролир)|^\s*(является ли|стоит ли|будет ли|может ли|нужно ли|что (значит|означает))|уроки (для|от) )/i;
 var FEED_NOISE_DIGEST=/(новости вкратце|вкратце:|дайджест|коротко о главном|обзор недели|итоги недели|канал \S+ пишет|пишет интересное|в своём канале|построили город|как живут|один день из жизни|бэнкси|стрит-арт|граффити|арт-перформанс|протест-перформанс|перформанс против)/i;
 window._isNoiseEvent=function(e){ if(!e) return false; var t=(String(e.title||'')+' '+String(e.summary||'')).toLowerCase(); return (FEED_NOISE_CULTURE.test(t) && !FEED_RISK_KEEP.test(t)) || FEED_NOISE_PERSONAL.test(t) || FEED_NOISE_OPINION.test(t) || FEED_NOISE_EXPLAINER.test(t) || FEED_NOISE_DIGEST.test(t); };  // культура (с risk-guard) ИЛИ личная история (формат)
+// TASK-276: тематический сторож климата. FEED_CLIMATE_STRONG перечисляет
+// только погодные ЧС, поэтому климатическая аналитика уходила в геополитику
+// по слову «президент» или «выборы» в описании: «Что в климатическом
+// календаре на октябрь 2026 года?» получало ярлык «Геополитика» при
+// domain=climate в опубликованных данных. За 12 суток таких переносов 29.
+// Сторож читает заголовок, регион И описание, в отличие от
+// FEED_CLIMATE_STRONG, который читает только заголовок и регион.
+var FEED_CLIMATE_TOPIC = /(климат|потеплени|парников|углеродн|\bcop\s?\d|pre-cop|\bipcc\b|вырубк|обезлесен|тропическ\S* лес|амазон|ледник|таяни|опустынивани|биоразнообраз|экологическ|возобновляем\S* (?:источник|энерг)|загрязнен|нефтеразлив|разлив\S* нефт|пластиков\S* отход)/i;
+// TASK-276: сравнение основ было подстрочным, поэтому «интеракТИВ» давал
+// «теракт» и уводил климатическую аналитику в геополитику. Основа должна
+// начинаться с начала слова.
+var _GEO_STEM_RE = {};
+function _geoStemHit(txt, stem){
+  var rx = _GEO_STEM_RE[stem] || (_GEO_STEM_RE[stem] = new RegExp('(?:^|[^a-zа-яё])' + stem.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'i'));
+  return rx.test(txt);
+}
 function _fixDomain(e){
   if(!e) return null;
   var d=String(e.domain||'').toLowerCase();
@@ -13002,12 +13018,14 @@ function _fixDomain(e){
   var s=((e.title||'')+' '+(e.region||'')).toLowerCase();
   var _polTxt=((e.title||'')+' '+(e.summary||'')).toLowerCase();
   if(d!=='climate' && FEED_CLIMATE_STRONG.test(s) && !FEED_ECON_CORE.test(s) && !FEED_POL_CORE.test(_polTxt)) return 'climate';
+  var _cTxt=s+' '+String(e.summary||'').toLowerCase();
+  if(d==='climate' && FEED_CLIMATE_TOPIC.test(_cTxt)) return null;  // тема записи климатическая — из climate не уводим
   if((d==='climate'||d==='social') && FEED_ECON_STRONG.test(s) && !FEED_CLIMATE_STRONG.test(s)) return 'economy';
   if((d==='climate'||d==='social') && FEED_POL_CORE.test(_polTxt) && !FEED_CLIMATE_STRONG.test(s)) return 'geopolitics';  // политическое (выборы/партсписок), ошибочно в climate/social -> geopolitics
   if(d!=='climate' && d!=='social') return null;
   if(FEED_GEO_BLOCK.test(s)) return null;
-  for(var i=0;i<FEED_GEO_STRONG.length;i++){ if(s.indexOf(FEED_GEO_STRONG[i])>=0) return 'geopolitics'; }
-  if(FEED_GEO_MILCTX.test(s)){ for(var j=0;j<FEED_GEO_WEAK.length;j++){ if(s.indexOf(FEED_GEO_WEAK[j])>=0) return 'geopolitics'; } }
+  for(var i=0;i<FEED_GEO_STRONG.length;i++){ if(_geoStemHit(s,FEED_GEO_STRONG[i])) return 'geopolitics'; }
+  if(FEED_GEO_MILCTX.test(s)){ for(var j=0;j<FEED_GEO_WEAK.length;j++){ if(_geoStemHit(s,FEED_GEO_WEAK[j])) return 'geopolitics'; } }
   // гуманитарные последствия войны -> геополитика (Этап 9, п.4): гум.маркер + военный контекст
   var _sf = s + ' ' + String(e.summary||'').toLowerCase();
   if(FEED_HUMAN.test(_sf) && FEED_WAR.test(_sf)) return 'geopolitics';
