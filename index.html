@@ -4166,7 +4166,7 @@ window._grdfDisasterEnsure=function(){
   var st=document.createElement('style'); st.textContent='#cryo-tiers{display:flex;gap:6px;padding:10px 14px}#cryo-tiers .qt{padding:5px 12px;background:rgba(6,5,10,0.9);border:0.5px solid rgba(184,151,58,0.25);color:rgba(148,163,184,0.85);font-family:Montserrat,sans-serif;font-size:12px;cursor:pointer;border-radius:4px}#cryo-tiers .qt.active{border-color:#D4AF5A;color:#D4AF5A;background:rgba(184,151,58,0.12)}#cryo-list{padding:0 0 24px}'; document.head.appendChild(st);
 })();
 
-// === ВОЗДУШНОЕ ПРОСТРАНСТВО в полосе «Предупреждения» ===
+// === ВОЗДУШНОЕ ПРОСТРАНСТВО: переключатель в строке «Предупреждения» ===
 // Решение Мии 03.10.2026, уточнено вечером того же дня: не отдельная вкладка
 // и не плитка сверху, а строка внутри полосы предупреждений. Это согласуется
 // с запиской от 24.09: «предупреждение метеослужбы или ЗАКРЫТИЕ ВОЗДУШНОГО
@@ -4251,6 +4251,53 @@ window._grdfDisasterEnsure=function(){
       var wrap=document.getElementById('ga-warn');
       if(wrap && wrap.style.display==='none') wrap.style.display='block';
     }
+    mountSwitch(); applyMode();
+  }
+  // Режим полосы: предупреждения служб или воздушное пространство. Переключатель
+  // стоит в самой строке заголовка, справа, перед шевроном. Содержимое при этом
+  // одно и то же место: иначе строки воздушного пространства уезжали под
+  // карточки предупреждений, и их не было видно.
+  var _mode='warn';
+  function applyMode(){
+    var box=document.getElementById('rosgidromet-list'); if(!box) return;
+    for(var i=0;i<box.children.length;i++){
+      var ch=box.children[i];
+      if(ch.id==='airspace-warn') ch.style.display=(_mode==='air'?'block':'none');
+      else ch.style.display=(_mode==='air'?'none':'');
+    }
+    var b=document.getElementById('air-switch');
+    if(b){
+      var d=window._airspace;
+      b.innerHTML='Воздушное пространство'+(d&&num(d['всего действует'])!==null?(' · '+d['всего действует']):'');
+      b.style.color=(_mode==='air'?AIR_COL:'rgba(148,163,184,0.55)');
+      b.style.borderBottom=(_mode==='air'?('1.5px solid '+AIR_COL):'1.5px solid transparent');
+    }
+    var w=document.getElementById('ga-warn-head');
+    if(w){ var lbl=w.querySelector('span:nth-child(2)');
+      if(lbl) lbl.style.color=(_mode==='air'?'rgba(148,163,184,0.55)':'#D4AF5A'); }
+  }
+  function mountSwitch(){
+    var head=document.getElementById('ga-warn-head');
+    if(!head || document.getElementById('air-switch')) return;
+    var cv=document.getElementById('ga-warn-cv');
+    var b=document.createElement('span');
+    b.id='air-switch';
+    b.style.cssText='margin-left:auto;padding:2px 0 3px;font-family:Montserrat,sans-serif;'
+      +'font-size:9px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;'
+      +'cursor:pointer;color:rgba(148,163,184,0.55);border-bottom:1.5px solid transparent';
+    b.innerHTML='Воздушное пространство';
+    // Нажатие НЕ должно всплыть до заголовка: там висит сворачивание полосы.
+    b.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      _mode=(_mode==='air'?'warn':'air');
+      var box=document.getElementById('rosgidromet-list');
+      if(box && box.style.display==='none'){ try{ window.grdfAlertsTab(''); }catch(_){} }
+      applyMode();
+    });
+    if(cv) head.insertBefore(b,cv); else head.appendChild(b);
+    // Шеврон стоял справа за счёт margin-left:auto. Теперь эту роль берёт
+    // переключатель, иначе оба прижимаются к одному краю и наезжают.
+    if(cv) cv.style.marginLeft='10px';
   }
   window._airspaceAttach=attach;
 
