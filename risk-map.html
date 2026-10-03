@@ -4206,6 +4206,7 @@ window._grdfDisasterEnsure=function(){
   // (_NOTAM_C23_RU). Сопоставляем по корню слова, а не по точной строке:
   // формулировка в конвейере может смениться, корень останется.
   var GROUPS = [
+    ['adcl',  /закрыт аэродром/i,                 'закрытые аэродромы'],
     ['ban',   /запретн/i,                          'запретные зоны'],
     ['restr', /ограничения полётов|военных операц/i,'зоны ограничения доступа'],
     ['dang',  /опасн/i,                             'опасные зоны'],
@@ -4238,6 +4239,9 @@ window._grdfDisasterEnsure=function(){
   // разбираем расписание действия и высоты, и такая подпись была бы
   // утверждением, которое нечем подтвердить.
   function level(b){
+    // Закрытый аэродром старше любой зоны: это и есть «закрыли небо» в том
+    // смысле, в каком этот вопрос задают.
+    if (b.adcl)  return ['#DC143C', 'Закрыт аэродром'];
     if (b.ban)   return ['#DC143C', 'Есть запретные зоны'];
     if (b.restr) return ['#D4AF5A', 'Есть зоны ограничения доступа'];
     return ['#4F9D69', 'Только опасные и временные зоны'];
@@ -4259,7 +4263,7 @@ window._grdfDisasterEnsure=function(){
     });
     var _fn=(typeof window._flag==='function')?window._flag:((typeof _flag==='function')?_flag:null);
     var day=num(d['всего за сутки']);
-    var totBan=0, totRestr=0;
+    var totBan=0, totRestr=0, totAdcl=0;
 
     // Пояснительная врезка про «это не означает закрытие» убрана по решению
     // Мии. Оговорка о назначении данных остаётся внизу блока.
@@ -4267,7 +4271,7 @@ window._grdfDisasterEnsure=function(){
 
     var body=rows.map(function(c){
       var b=bucket(c), lv=level(b);
-      totBan+=(b.ban||0); totRestr+=(b.restr||0);
+      totBan+=(b.ban||0); totRestr+=(b.restr||0); totAdcl+=(b.adcl||0);
       var dd=num(c['за сутки']);
       var det=[];
       GROUPS.forEach(function(g){ if(g[0]!=='jam' && b[g[0]]) det.push(g[2]+' '+b[g[0]]); });
@@ -4277,7 +4281,7 @@ window._grdfDisasterEnsure=function(){
         +'<div style="display:flex;align-items:baseline;gap:7px">'
           +'<span style="font-size:13px;color:#d1d5db">'+fl+' '+esc(c['страна'])+'</span>'
           +'<span style="margin-left:auto;font-size:11px;color:rgba(148,163,184,.7)">'
-            +((dd>0)?(dd+' '+plural(dd,'новое','новых','новых')+' за 24 ч · '):'')
+            +((dd>0)?(dd+' за 24 ч · '):'')
             +(c['действует']||0)+' '+plural(c['действует']||0,'действующее','действующих','действующих')+'</span></div>'
         +'<div style="margin-top:4px;display:flex;align-items:center;gap:6px">'
           +'<span style="width:7px;height:7px;border-radius:50%;background:'+lv[0]+';flex-shrink:0"></span>'
@@ -4297,14 +4301,17 @@ window._grdfDisasterEnsure=function(){
       }).join('');
     var jam=(d['помехи навигации']||0);
     var gnss=jam?('<div style="padding:12px 14px 4px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Спутниковая навигация</div>'
-      +'<div style="padding:0 14px 6px;font-size:10.5px;color:rgba(148,163,184,.8)">'+jam+' уведомлений о помехах</div>'+jamRows):'';
+      +'<div style="padding:0 14px 6px;font-size:10.5px;color:rgba(148,163,184,.8)">'+jam+' '+plural(jam,'уведомление о помехах','уведомления о помехах','уведомлений о помехах')+'</div>'+jamRows):'';
 
     var sum='<div style="padding:12px 14px 4px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Сводка за 24 часа</div>'
       +'<div style="padding:0 14px 10px;font-size:11px;line-height:1.7;color:rgba(148,163,184,.9)">'
       +(day===null?'прирост за сутки не определён'
-                  :(day+' '+plural(day,'новое уведомление','новых уведомления','новых уведомлений')))+'<br>'
+                  :(day+' '+plural(day,'уведомление объявлено или изменено',
+                                       'уведомления объявлено или изменено',
+                                       'уведомлений объявлено или изменено')))+'<br>'
       +(d['всего действует']||0)+' '+plural(d['всего действует']||0,'действующее','действующих','действующих')+'<br>'
       +jam+' '+plural(jam,'с помехами навигации','с помехами навигации','с помехами навигации')+'<br>'
+      +(totAdcl?(totAdcl+' '+plural(totAdcl,'закрытый аэродром','закрытых аэродрома','закрытых аэродромов')+'<br>'):'')
       +totBan+' '+plural(totBan,'запретная зона','запретные зоны','запретных зон')+', '
       +totRestr+' '+plural(totRestr,'зона ограничения доступа','зоны ограничения доступа','зон ограничения доступа')+'</div>';
 
