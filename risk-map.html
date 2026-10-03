@@ -4166,6 +4166,108 @@ window._grdfDisasterEnsure=function(){
   var st=document.createElement('style'); st.textContent='#cryo-tiers{display:flex;gap:6px;padding:10px 14px}#cryo-tiers .qt{padding:5px 12px;background:rgba(6,5,10,0.9);border:0.5px solid rgba(184,151,58,0.25);color:rgba(148,163,184,0.85);font-family:Montserrat,sans-serif;font-size:12px;cursor:pointer;border-radius:4px}#cryo-tiers .qt.active{border-color:#D4AF5A;color:#D4AF5A;background:rgba(184,151,58,0.12)}#cryo-list{padding:0 0 24px}'; document.head.appendChild(st);
 })();
 
+// === ВОЗДУШНОЕ ПРОСТРАНСТВО в «Рисках» ===
+// Решение Мии 03.10.2026. Четвёртый машинный детектор рядом с погодой,
+// сейсмикой и криосферой. На карту отдельные уведомления НЕ идут: 416
+// действующих ограничений это запас, а не поток, и точками он превращает
+// карту сигналов в OSINT-карту.
+//
+// Источник данных: docs/airspace.json конвейера, сводка по странам. Сами
+// уведомления NOTAM не публикуются: условие правообладателя (autorouter
+// case 9853), в сводке только числа и наши формулировки.
+(function(){
+  var AIR_COL='#8FB3D9';
+  var AIR_URL='https://luvenmedicalmsk-byte.github.io/secrett-archive/airspace.json';
+  window._airspace=null; window._airspaceLoading=false;
+  function esc(x){ return String(x||'').replace(/[&<>"]/g,function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[m];}); }
+  function num(v){ return (typeof v==='number' && isFinite(v))?v:null; }
+
+  window._airspaceLoad=function(){
+    if(window._airspaceLoading || window._airspace) return;
+    window._airspaceLoading=true;
+    try{
+      fetch(AIR_URL+'?v='+Math.floor(Date.now()/60000),{cache:'no-store'})
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(d){ window._airspace=d||null; window._airspaceLoading=false;
+          try{ window.renderAirspaceList(); }catch(_){}
+          try{ if(window.grdfRenderRiskPulse) window.grdfRenderRiskPulse(); }catch(_){} })
+        .catch(function(){ window._airspaceLoading=false; });
+    }catch(e){ window._airspaceLoading=false; }
+  };
+
+  window.renderAirspaceList=function(){
+    var box=document.getElementById('airspace-list'); if(!box) return 0;
+    var d=window._airspace;
+    var tab=document.querySelector('#grdf-alerts-tabs .ga-tab[data-tab="airspace"]');
+    if(tab) tab.textContent='Воздушное пространство'+((d&&num(d['всего действует'])!==null)?(' ('+d['всего действует']+')'):'');
+    if(!d){ box.innerHTML='<div class="qk-empty">Загрузка режима воздушного пространства…</div>'; return 0; }
+    var rows=(d['страны']||[]);
+    if(!rows.length){ box.innerHTML='<div class="qk-empty">Данных по режиму воздушного пространства сейчас нет.<br>Источник: '+esc(d['источник']||'')+'</div>'; return 0; }
+    var day=num(d['всего за сутки']);
+    var head='<div class="qk-summary">Действует ограничений: <b style="color:#fff">'+(d['всего действует']||0)+'</b>'
+      +' · за сутки открыто: <b style="color:'+AIR_COL+'">'+(day===null?'нет данных':('+'+day))+'</b>'
+      +' · помехи навигации: <b style="color:#fff">'+(d['помехи навигации']||0)+'</b></div>';
+    var note='<div class="qk-empty" style="text-align:left;padding:8px 14px 14px;font-size:10px;line-height:1.5">'
+      +esc(d['источник']||'')+'. '+esc(d['оговорка']||'')+'</div>';
+    box.innerHTML=head+rows.map(function(c){
+      var _fn=(typeof window._flag==='function')?window._flag:((typeof _flag==='function')?_flag:null);
+      var fl=_fn?_fn(c['код страны']):'';
+      var dd=num(c['за сутки']);
+      var types=Object.keys(c['по типу']||{}).map(function(k){ return esc(k)+': '+c['по типу'][k]; }).join('<br>');
+      return '<div class="qk-card" onclick="window._toggleQk(this)">'
+        +'<span class="qk-dot" style="background:'+(c['помехи навигации']?'#DC143C':AIR_COL)+'"></span>'
+        +'<div class="qk-main">'
+          +'<div class="qk-dom" style="color:'+AIR_COL+'">Режим воздушного пространства</div>'
+          +'<div class="qk-title">'+fl+' '+esc(c['страна'])+'</div>'
+          +'<div class="qk-meta"><span>'+c['действует']+' действующих</span><span>'
+            +(dd===null?'за сутки: нет данных':('за сутки: +'+dd))+'</span></div>'
+          +'<div class="qk-detail" style="display:none">'+types
+            +(c['помехи навигации']?('<br><span style="color:#DC143C">помехи спутниковой навигации: '+c['помехи навигации']+'</span>'):'')
+            +'<br>FIR: '+esc(c.fir)+'</div>'
+        +'</div>'
+      +'</div>';
+    }).join('')+note;
+    return rows.length;
+  };
+
+  // Четвёртая плитка в полосе над вкладками. Считаем по дням из истории
+  // сводки: пока истории меньше трёх суток, тренд не заявляем.
+  function airTile(){
+    var wrap=document.querySelector('#grdf-risk-pulse .rp-graphs'); if(!wrap) return;
+    if(wrap.querySelector('.rp-g-air')) wrap.querySelector('.rp-g-air').remove();
+    var d=window._airspace; if(!d) return;
+    var hist=(d['история']||[]).slice(-7);
+    var vals=hist.map(function(h){ var v=h['за сутки']; return (typeof v==='number')?v:0; });
+    var mx=Math.max.apply(null,[1].concat(vals));
+    var bars=vals.map(function(c){ var bh=Math.max(2,(c/mx)*26);
+      return '<i style="width:5px;height:'+bh.toFixed(0)+'px;background:'+AIR_COL+';opacity:'+(0.4+0.6*(c/mx)).toFixed(2)+'"></i>'; }).join('');
+    var sub;
+    if(hist.length<3){ sub='накопление базы'; }
+    else { var half=Math.floor(vals.length/2);
+      var er=vals.slice(0,half).reduce(function(a,b){return a+b;},0)/(half||1);
+      var rc=vals.slice(half).reduce(function(a,b){return a+b;},0)/((vals.length-half)||1);
+      sub=(rc>er*1.15?'↑ выше нормы':(rc<er*0.85?'↓ ниже нормы':'→ в норме'))+' · неделя'; }
+    var el=document.createElement('div'); el.className='rp-g rp-g-air';
+    el.innerHTML='<div class="rp-spark">'+bars+'</div>'
+      +'<span class="rp-gl" style="color:'+AIR_COL+'">воздушное пространство '+(d['всего действует']||0)+'</span>'
+      +'<span class="rp-gm" style="color:'+AIR_COL+'">'+sub+'</span>';
+    wrap.appendChild(el);
+  }
+  var _orp=window.grdfRenderRiskPulse;
+  window.grdfRenderRiskPulse=function(){ if(_orp) _orp(); try{ airTile(); }catch(_){} };
+
+  window._grdfAirspaceEnsure=function(){
+    try{ window._airspaceLoad(); window.renderAirspaceList(); }catch(e){}
+  };
+  var _oa=window.grdfAlertsTab;
+  window.grdfAlertsTab=function(name){ if(_oa) _oa(name);
+    var a=document.getElementById('ga-airspace'); if(a) a.style.display=(name==='airspace'?'block':'none');
+    if(name==='airspace'){ try{ window._grdfAirspaceEnsure&&window._grdfAirspaceEnsure(); }catch(_){} } };
+  // Данные нужны и для плитки, которая видна до выбора вкладки.
+  try{ window._airspaceLoad(); }catch(e){}
+})();
+
+
 
 
 
@@ -9043,6 +9145,7 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
     <button class="ga-tab" data-tab="weather" onclick="grdfAlertsTab('weather')">Экстремальная погода</button>
     <button class="ga-tab" data-tab="quakes" onclick="grdfAlertsTab('quakes')">Землетрясения</button>
     <button class="ga-tab" data-tab="cryo" onclick="grdfAlertsTab('cryo')">Криосфера</button>
+    <button class="ga-tab" data-tab="airspace" onclick="grdfAlertsTab('airspace')">Воздушное пространство</button>
   </div>
   <!-- 24.09.2026. Официальные предупреждения были четвёртой вкладкой, теперь
        это постоянная полоса над содержимым вкладок. Причина: предупреждение
@@ -9072,6 +9175,9 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
   </div>
   <div id="ga-weather" style="display:none">
     <div id="weather-list"><div class="qk-empty">Загрузка ленты ЧС…</div></div>
+  </div>
+  <div id="ga-airspace" style="display:none">
+    <div id="airspace-list"><div class="qk-empty">Загрузка режима воздушного пространства…</div></div>
   </div>
 </div>
 
