@@ -4211,28 +4211,49 @@ window._grdfDisasterEnsure=function(){
         + (window._airspaceErr ? ('Режим воздушного пространства недоступен: '+esc(window._airspaceErr))
                                : 'Загрузка режима воздушного пространства…')+'</div>';
     }
-    var rows=(d['страны']||[]);
+    var rows=(d['страны']||[]).slice();
     if(!rows.length) return '';
+    // Порядок по приросту, а не по запасу. Запас мало о чём говорит: часть
+    // зон стоит годами. Сигнал это то, что открылось за сутки.
+    rows.sort(function(a,b){
+      var an=num(a['за сутки']), bn=num(b['за сутки']);
+      if((bn||0)!==(an||0)) return (bn||0)-(an||0);
+      return (b['действует']||0)-(a['действует']||0);
+    });
     var day=num(d['всего за сутки']);
-    var out='<div style="padding:10px 14px 6px;margin-top:4px;border-top:0.5px solid rgba(184,151,58,0.12)">'
-      +'<span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Воздушное пространство</span>'
-      +'<span style="font-family:Montserrat,sans-serif;font-size:10px;color:rgba(148,163,184,.75);margin-left:8px">· действует '+(d['всего действует']||0)
-      +(day===null?'':(' · за сутки +'+day))
-      +' · помехи навигации '+(d['помехи навигации']||0)+'</span></div>';
+    var out='<div style="padding:10px 14px 2px;margin-top:4px;border-top:0.5px solid rgba(184,151,58,0.12)">'
+      +'<span style="font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Ограничения полётов</span>'
+      +'</div>'
+      // Одна поясняющая строка. Без неё числа читаются как таблица без
+      // подписи: было прямо сказано, что непонятно.
+      +'<div style="padding:2px 14px 8px;font-size:10px;line-height:1.5;color:rgba(148,163,184,.6)">'
+      +'Закрытие и ограничение воздушного пространства оформляется раньше, чем выходит новость: '
+      +'учения, опасные и запретные зоны, помехи спутниковой навигации. '
+      +'Важен прирост за сутки, а не общее число: часть зон стоит месяцами.</div>';
     out+=rows.map(function(c){
       var _fn=(typeof window._flag==='function')?window._flag:((typeof _flag==='function')?_flag:null);
       var fl=_fn?_fn(c['код страны']):'';
       var dd=num(c['за сутки']);
       var jam=c['помехи навигации']||0;
-      return '<div style="display:flex;align-items:baseline;gap:8px;padding:5px 14px">'
-        +'<span style="width:6px;height:6px;border-radius:50%;background:'+(jam?'#DC143C':AIR_COL)+';flex-shrink:0"></span>'
-        +'<span style="font-size:11px;color:#d1d5db;flex:1">'+fl+' '+esc(c['страна'])+'</span>'
-        +'<span style="font-size:10px;color:rgba(148,163,184,.8)">'+c['действует']+' действующих'
-          +(dd===null?'':(dd>0?(' · +'+dd+' за сутки'):''))
-          +(jam?(' · <span style="color:#DC143C">помехи '+jam+'</span>'):'')+'</span>'
-      +'</div>';
+      // Цвет по приросту. Красным помечаем не всех подряд: помехи есть
+      // хотя бы одни у каждой страны, и сплошной красный ничего не выделял.
+      var col=(dd===null?'rgba(148,163,184,.45)':(dd>=10?'#D4AF5A':(dd>0?AIR_COL:'rgba(148,163,184,.45)')));
+      var main=(dd===null?'нет данных за сутки':(dd>0?(dd+' новых за сутки'):'за сутки без изменений'));
+      return '<div style="display:flex;align-items:baseline;gap:8px;padding:6px 14px">'
+        +'<span style="width:6px;height:6px;border-radius:50%;background:'+col+';flex-shrink:0"></span>'
+        +'<span style="font-size:12px;color:#d1d5db;flex:1">'+fl+' '+esc(c['страна'])+'</span>'
+        +'<span style="font-size:11px;color:'+(dd>0?'#d1d5db':'rgba(148,163,184,.6)')+'">'+main+'</span>'
+        +'<span style="font-size:10px;color:rgba(148,163,184,.45);white-space:nowrap">всего '+(c['действует']||0)+'</span>'
+      +'</div>'
+      // Помехи отдельной строкой и только там, где их больше одной: одна это
+      // фон, который есть везде, и в общей строке он перебивал сигнал.
+      +(jam>1?('<div style="padding:0 14px 6px 28px;font-size:10px;color:#DC143C">'
+               +'помехи спутниковой навигации: '+jam+'</div>'):'');
     }).join('');
     out+='<div style="padding:8px 14px 12px;font-size:10px;color:rgba(148,163,184,.55);line-height:1.45">'
+      +'Всего действует '+(d['всего действует']||0)
+      +(day===null?'':(', за сутки открыто '+day))
+      +', помехи спутниковой навигации '+(d['помехи навигации']||0)+'. '
       +esc(d['источник']||'')+'. '+esc(d['оговорка']||'')+'</div>';
     return out;
   }
