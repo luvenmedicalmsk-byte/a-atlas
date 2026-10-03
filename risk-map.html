@@ -4378,6 +4378,23 @@ window._grdfDisasterEnsure=function(){
     // переключатель, иначе оба прижимаются к одному краю и наезжают.
     if(cv) cv.style.marginLeft='10px';
   }
+  // Слово «Предупреждения» это вторая половина переключателя. Без этого
+  // нажатие на него только СВОРАЧИВАЛО полосу, и экран падал на последнюю
+  // выбранную вкладку: нажимаешь «Предупреждения», получаешь погоду.
+  // Слушатель на фазе перехвата, чтобы успеть до обработчика сворачивания,
+  // который висит на том же заголовке.
+  document.addEventListener('click', function(e){
+    if(!e.target || !e.target.closest) return;
+    if(!e.target.closest('#ga-warn-head')) return;
+    if(e.target.closest('#air-switch')) return;   // своя кнопка, у неё своя логика
+    if(_mode !== 'air') return;                   // уже на предупреждениях: обычное сворачивание
+    e.stopPropagation();
+    _mode = 'warn';
+    var box=document.getElementById('rosgidromet-list');
+    if(box && box.style.display==='none'){ try{ window.grdfAlertsTab(''); }catch(_){} }
+    applyMode();
+  }, true);
+
   window._airspaceAttach=attach;
 
   // Список предупреждений перерисовывается целиком и стирает наш блок.
