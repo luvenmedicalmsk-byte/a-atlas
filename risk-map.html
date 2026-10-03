@@ -4261,11 +4261,9 @@ window._grdfDisasterEnsure=function(){
     var day=num(d['всего за сутки']);
     var totBan=0, totRestr=0;
 
-    var head='<div style="margin:12px 14px;padding:11px 12px;border-left:2px solid '+AIR_COL+';background:rgba(143,179,217,.06)">'
-      +'<div style="font-size:13px;color:#d1d5db">'+(d['всего действует']||0)+' действующих уведомлений</div>'
-      +'<div style="margin-top:4px;font-size:10.5px;line-height:1.5;color:rgba(148,163,184,.8)">'
-      +'Это не означает закрытие воздушного пространства. Уведомления фиксируют действующие ограничения и изменения в небе.</div></div>'
-      +'<div style="padding:12px 14px 6px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Статус по странам</div>';
+    // Пояснительная врезка про «это не означает закрытие» убрана по решению
+    // Мии. Оговорка о назначении данных остаётся внизу блока.
+    var head='<div style="padding:12px 14px 6px;margin-top:4px;border-top:0.5px solid rgba(184,151,58,0.12);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Статус по странам</div>';
 
     var body=rows.map(function(c){
       var b=bucket(c), lv=level(b);
