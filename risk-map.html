@@ -4271,7 +4271,23 @@ window._grdfDisasterEnsure=function(){
 
     // Пояснительная врезка про «это не означает закрытие» убрана по решению
     // Мии. Оговорка о назначении данных остаётся внизу блока.
-    var head='<div style="padding:12px 14px 6px;margin-top:4px;border-top:0.5px solid rgba(184,151,58,0.12);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Статус по странам</div>';
+    // Возраст данных. Источник может молчать часами, а числа при этом
+    // выглядят свежими. Если сводка старше двух часов, это сказано прямо:
+    // показывать вчерашнее как сегодняшнее нельзя.
+    var stale='';
+    try{
+      var _dt=new Date(String(d['дата']));
+      var _h=(Date.now()-_dt.getTime())/3600000;
+      if(isFinite(_h) && _h>=2){
+        var _p=function(n){ return (n<10?'0':'')+n; };
+        var _MM=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+        stale='<div style="margin:10px 14px 0;padding:8px 10px;border-left:2px solid #DC143C;background:rgba(220,20,60,.07);font-size:10.5px;line-height:1.5;color:rgba(148,163,184,.9)">'
+          +'Данные не обновлялись '+(_h<24?(Math.round(_h)+' ч'):(Math.round(_h/24)+' сут'))+'. '
+          +'Последнее обновление '+_dt.getDate()+' '+_MM[_dt.getMonth()]+' в '+_p(_dt.getHours())+':'+_p(_dt.getMinutes())+'. '
+          +'Источник временно недоступен, показаны последние полученные значения.</div>';
+      }
+    }catch(_){}
+    var head=stale+'<div style="padding:12px 14px 6px;margin-top:4px;border-top:0.5px solid rgba(184,151,58,0.12);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:'+AIR_COL+'">Статус по странам</div>';
 
     var body=rows.map(function(c){
       var b=bucket(c), lv=level(b);
