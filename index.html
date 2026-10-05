@@ -14873,7 +14873,8 @@ window.onTelegramAuth=function(user){
           // expired и expires_at даже при 403 — специально для этого экрана.
           var _d=res.d||{};
           if(_d.expired){
-            var _pn={SIGNAL_2M:'Сигнал Про · 2 месяца',SIGNAL_6M:'Сигнал Про · 6 месяцев',
+            var _pn={SIGNAL_1M:'Сигнал Про · 1 месяц',
+                     SIGNAL_2M:'Сигнал Про · 2 месяца',SIGNAL_6M:'Сигнал Про · 6 месяцев',
                      BUNDLE_2026:'Архив + Сигнал Про'}[String(_d.product||'')]||'Сигнал Про';
             // Свой массив месяцев: _MM объявлена внутри блока info.member
             // и в этой области видимости недоступна.
