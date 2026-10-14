@@ -2275,7 +2275,7 @@ function formatMSK(isoStr) {
 async function tryLoadFresh() {
   // 1. Пробуем Worker API
   try {
-    const r = await fetch(API_BASE + '/api/events?limit=300&sort=date&order=desc', {
+    const r = await fetch(API_BASE + '/api/events?limit=1000&sort=date&order=desc', {
       signal: AbortSignal.timeout(6000)
     });
     if (r.ok) {
@@ -14119,7 +14119,11 @@ function grdfRenderSignals(dom){
   items = items.filter(function(e){ var r=String(e.region||'').trim().toLowerCase(); return FEED_SRC_BLOCK.indexOf(r)<0; });
   // hide video-teaser clickbait (Смотрите:/Видео:/Watch:/Фото:) — событие приходит профильным сигналом
   items = items.filter(function(e){ var _t=String(e.title||'').trim().toLowerCase(); return !(_t.indexOf('смотри')===0||_t.indexOf('видео:')===0||_t.indexOf('watch:')===0||_t.indexOf('фото:')===0||_t.indexOf('look:')===0); });
-  items = items.filter(function(e){ return !(window._isNoiseEvent&&window._isNoiseEvent(e)); });  // шум: культура/искусство
+  // 14.10: официальные машинные ленты (GPSJam, NOAA, ВОЗ, NOTAM, санкции) — meta.verified —
+  // не проходят словарные фильтры шума и склейку перепостов: у очагов GPS одинаковый шаблон
+  // заголовка, и склейка C2 оставляла из четырёх очагов один.
+  var _offV=function(e){ return !!(e&&e.meta&&e.meta.verified); };
+  items = items.filter(function(e){ return _offV(e) || !(window._isNoiseEvent&&window._isNoiseEvent(e)); });  // шум: культура/искусство
   // C — collapse rolling multi-day duplicates of the same event (same domain|title|region)
   var _seen={}, _ded=[];
   items.forEach(function(e){
@@ -14134,6 +14138,7 @@ function grdfRenderSignals(dom){
   function _ovl(a,b){ if(!a.length||!b.length) return [0,0]; var sa={}; a.forEach(function(p){sa[p]=1;}); var inter=0; b.forEach(function(p){ if(sa[p]) inter++; }); return [inter, inter/Math.min(a.length,b.length)]; }
   var _kept=[], _ded2=[];
   items.forEach(function(e){
+    if(_offV(e)){ _ded2.push(e); return; }
     var ew=_stems(e.title), et=(Date.parse(String(e.date||'').slice(0,10))||0), dup=-1;
     for(var i=0;i<_kept.length;i++){ var k=_kept[i];
       if(k.dom!==(e.domain||'')) continue;
