@@ -4058,7 +4058,11 @@ window._grdfDisasterEnsure=function(){
   }
   async function loadRosgidromet(){
     try{
-      var r=await fetch(API_BASE+'/api/events',{cache:'no-store'});
+      // 16.10.2026. Без limit Worker отдаёт 50 событий с наибольшей тяжестью.
+      // Предупреждения ниже этой отсечки (жёлтый и оранжевый уровни MGM,
+      // часть MeteoAlarm) молча пропадали из панели: из 19 активных
+      // предупреждений показывалось 8. Берём всю ленту, как основной фид.
+      var r=await fetch(API_BASE+'/api/events?limit=1000',{cache:'no-store'});
       if(!r.ok) return;
       var j=await r.json();
       var evs=(j&&(j.events||j))||[];
