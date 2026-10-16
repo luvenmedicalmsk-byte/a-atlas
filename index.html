@@ -3596,26 +3596,27 @@ window.grdfRenderRiskPulse = function(){
      меньше недели, направление не выводится. */
   function spark(times, col, maxDays){
     var oldest=times.length?Math.min.apply(null,times):now;
-    var cover=Math.max(1,Math.ceil((now-oldest)/DAY));
-    var days=Math.min(maxDays,cover);
-    var W=days*DAY, buckets=Math.min(10,Math.max(3,days));
+    var cover=(now-oldest)/DAY;
+    var days=maxDays, W=days*DAY, buckets=days;
     var win=times.filter(function(t){return t>=now-W;});
     var step=W/buckets, dys=[];
     for(var b=buckets-1;b>=0;b--){ var lo=now-(b+1)*step, hi=now-b*step; dys.push(win.filter(function(t){return t>=lo&&t<hi;}).length); }
     var mx=Math.max(1,Math.max.apply(null,dys));
     var dir='nodata';
-    if(days>=7 && win.length>=6){
+    if(cover>=days-1 && win.length>=6){
       var half=Math.floor(buckets/2), rc=0,er=0,rn=0,en=0;
-      for(var i=0;i<buckets;i++){ if(i>=buckets-half){ rc+=dys[i]; rn++; } else { er+=dys[i]; en++; } }
+      for(var i=0;i<buckets;i++){ if(i>=buckets-half){ rc+=dys[i]; rn++; } else if(i<half){ er+=dys[i]; en++; } }
       rc=rc/(rn||1); er=er/(en||1);
       dir=rc>er*1.15?'up':(rc<er*0.85?'down':'flat');
     }
-    var bars=''; dys.forEach(function(c){ var bh=Math.max(2,(c/mx)*26); bars+='<i style="width:7px;height:'+bh.toFixed(0)+'px;background:'+col+';opacity:'+(0.4+0.6*(c/mx)).toFixed(2)+'"></i>'; });
+    var bars=''; dys.forEach(function(c){ var bh=Math.max(2,(c/mx)*26); bars+='<i style="width:9px;height:'+bh.toFixed(0)+'px;background:'+col+';opacity:'+(0.4+0.6*(c/mx)).toFixed(2)+'"></i>'; });
     return {bars:bars, total:win.length, dir:dir, days:days};
   }
   function per(d){ if(d>=28) return 'месяц'; if(d===7) return 'неделя'; var a=d%10,b=d%100; return d+' '+(a===1&&b!==11?'день':(a>=2&&a<=4&&(b<12||b>14)?'дня':'дней')); }
   function dline(s){ if(s.dir==='nodata') return 'мало истории для тренда \u00b7 '+per(s.days); return (s.dir==='up'?'\u2191 растёт':(s.dir==='down'?'\u2193 снижается':'\u2192 без изменений'))+' \u00b7 '+per(s.days); }
-  var _src=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[];
+  /* климат: все опубликованные события домена (не только видимые в ленте) -
+     у ленты история 2-3 дня, у публикации - больше недели */
+  var _src=(window._ANALYTIC_EVENTS&&window._ANALYTIC_EVENTS.length)?window._ANALYTIC_EVENTS:((typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[]);
   var wt=[]; _src.forEach(function(e){ if(e&&e.domain==='climate'&&!e.alerts_only){ var t=Date.parse(e.date); if(!isNaN(t)&&t<=now) wt.push(t); } });
   var qc=(typeof quakeCache!=='undefined'&&quakeCache)?quakeCache:[];
   var qt=[]; qc.forEach(function(q){ if(q&&q.time) qt.push(q.time); });
@@ -3624,12 +3625,16 @@ window.grdfRenderRiskPulse = function(){
   if(cs && !cc.length && !cs._loading && cs.ensure){ try{ cs.ensure(); }catch(_){} }
   var ct=[]; cc.forEach(function(c){ var t=Date.parse(c.date); if(!isNaN(t)&&t<=now) ct.push(t); });
   /* сейсмика: лента USGS M4,5+ за неделю - окно не больше 7 дней */
-  var W=spark(wt,COL_W,30), Q=spark(qt,COL_Q,7), C=spark(ct,COL_C,30);
+  /* единый период для всех трёх графиков - 7 дней (лента землетрясений USGS - неделя).
+     Тренд показывается только для сейсмики: лента USGS полная за всю неделю.
+     Публикация событий хранит свежие сообщения дольше старых, поэтому сравнение
+     начала и конца недели для климата всегда давало бы ложный «рост». */
+  var W=spark(wt,COL_W,7), Q=spark(qt,COL_Q,7), C=spark(ct,COL_C,7);
   el.innerHTML=
     '<div class="rp-graphs">'
-    +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">климат '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">'+dline(W)+'</span></div>'
-    +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+dline(Q)+'</span></div>'
-    +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+(cc.length!==C.total?('новых за '+per(C.days)+': '+C.total+' \u00b7 '):'')+dline(C).replace(/ \u00b7 [^\u00b7]+$/,'')+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">климат: сигналов '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">за неделю</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика: M4,5+ '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+dline(Q)+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера: объектов '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+'новых за неделю: '+C.total+'</span></div>'
     +'</div>';
 };
 
