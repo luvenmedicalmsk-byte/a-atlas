@@ -3962,6 +3962,10 @@ window._grdfDisasterEnsure=function(){
     return 'Предупреждение';
   }
   function _rgPlace(it){
+    /* 16.10.2026. Единый вид карточки: место готовит конвейер в meta.place -
+       «район, район и ещё N районов, Страна», без сокращений и с переводом
+       названий. Остальное ниже - для записей старого вида. */
+    var _mp=it&&it.meta&&it.meta.place; if(_mp) return String(_mp);
     var t=String(it.title||''), reg=String(it.region||'').replace(/,\s*Россия/,'').trim();
     if(reg && !/^(Россия|Russia)$/i.test(reg)) return reg;
     /* Субъект не распознался, но он есть в заголовке: «Гроза: Республика
