@@ -3588,35 +3588,48 @@ window.grdfRenderRiskPulse = function(){
   var el=document.getElementById('grdf-risk-pulse'); if(!el) return;
   var now=Date.now(), DAY=86400000;
   var COL_W='#F0E68C', COL_Q='#DC143C', COL_C='#FFFFFF';
-  function spark(times, col, winDays, buckets){
-    var W=winDays*DAY;
+  /* 16.10.2026. График и вывод «выше/ниже нормы» строятся только по периоду,
+     за который в данных реально есть история. Раньше окно было 30 дней при
+     ленте землетрясений за неделю и ленте событий за несколько дней: первая
+     половина месяца пустая, и вывод всегда был «выше нормы». Теперь период
+     берётся по источнику (maxDays) и по самой ранней записи; если истории
+     меньше недели, направление не выводится. */
+  function spark(times, col, maxDays){
+    var oldest=times.length?Math.min.apply(null,times):now;
+    var cover=Math.max(1,Math.ceil((now-oldest)/DAY));
+    var days=Math.min(maxDays,cover);
+    var W=days*DAY, buckets=Math.min(10,Math.max(3,days));
     var win=times.filter(function(t){return t>=now-W;});
     var step=W/buckets, dys=[];
     for(var b=buckets-1;b>=0;b--){ var lo=now-(b+1)*step, hi=now-b*step; dys.push(win.filter(function(t){return t>=lo&&t<hi;}).length); }
     var mx=Math.max(1,Math.max.apply(null,dys));
-    var half=Math.floor(buckets/2), rc=0,er=0,rn=0,en=0;
-    for(var i=0;i<buckets;i++){ if(i>=buckets-half){ rc+=dys[i]; rn++; } else { er+=dys[i]; en++; } }
-    rc=rc/(rn||1); er=er/(en||1);
-    var dir=rc>er*1.15?'up':(rc<er*0.85?'down':'flat');
+    var dir='nodata';
+    if(days>=7 && win.length>=6){
+      var half=Math.floor(buckets/2), rc=0,er=0,rn=0,en=0;
+      for(var i=0;i<buckets;i++){ if(i>=buckets-half){ rc+=dys[i]; rn++; } else { er+=dys[i]; en++; } }
+      rc=rc/(rn||1); er=er/(en||1);
+      dir=rc>er*1.15?'up':(rc<er*0.85?'down':'flat');
+    }
     var bars=''; dys.forEach(function(c){ var bh=Math.max(2,(c/mx)*26); bars+='<i style="width:7px;height:'+bh.toFixed(0)+'px;background:'+col+';opacity:'+(0.4+0.6*(c/mx)).toFixed(2)+'"></i>'; });
-    return {bars:bars, total:win.length, dir:dir};
+    return {bars:bars, total:win.length, dir:dir, days:days};
   }
-  function dtxt(d){ return d==='up'?'выше нормы':(d==='down'?'ниже нормы':'в норме'); }
-  function darr(d){ return d==='up'?'\u2191':(d==='down'?'\u2193':'\u2192'); }
+  function per(d){ if(d>=28) return 'месяц'; if(d===7) return 'неделя'; var a=d%10,b=d%100; return d+' '+(a===1&&b!==11?'день':(a>=2&&a<=4&&(b<12||b>14)?'дня':'дней')); }
+  function dline(s){ if(s.dir==='nodata') return 'мало истории для тренда \u00b7 '+per(s.days); return (s.dir==='up'?'\u2191 растёт':(s.dir==='down'?'\u2193 снижается':'\u2192 без изменений'))+' \u00b7 '+per(s.days); }
   var _src=(typeof ALL_EVENTS!=='undefined'&&ALL_EVENTS)?ALL_EVENTS:[];
-  var wt=[]; _src.forEach(function(e){ if(e&&e.domain==='climate'){ var t=Date.parse(e.date); if(!isNaN(t)) wt.push(t); } });
+  var wt=[]; _src.forEach(function(e){ if(e&&e.domain==='climate'&&!e.alerts_only){ var t=Date.parse(e.date); if(!isNaN(t)&&t<=now) wt.push(t); } });
   var qc=(typeof quakeCache!=='undefined'&&quakeCache)?quakeCache:[];
   var qt=[]; qc.forEach(function(q){ if(q&&q.time) qt.push(q.time); });
   var cs=(window._overlaySources&&window._overlaySources.cryo)?window._overlaySources.cryo:null;
   var cc=(cs&&cs._cache)||[];
   if(cs && !cc.length && !cs._loading && cs.ensure){ try{ cs.ensure(); }catch(_){} }
-  var ct=[]; cc.forEach(function(c){ var t=Date.parse(c.date); if(!isNaN(t)) ct.push(t); });
-  var W=spark(wt,COL_W,30,10), Q=spark(qt,COL_Q,30,10), C=spark(ct,COL_C,30,10);
+  var ct=[]; cc.forEach(function(c){ var t=Date.parse(c.date); if(!isNaN(t)&&t<=now) ct.push(t); });
+  /* сейсмика: лента USGS M4,5+ за неделю - окно не больше 7 дней */
+  var W=spark(wt,COL_W,30), Q=spark(qt,COL_Q,7), C=spark(ct,COL_C,30);
   el.innerHTML=
     '<div class="rp-graphs">'
-    +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">погода '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">'+darr(W.dir)+' '+dtxt(W.dir)+' \u00b7 месяц</span></div>'
-    +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+darr(Q.dir)+' '+dtxt(Q.dir)+' \u00b7 месяц</span></div>'
-    +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+darr(C.dir)+' '+dtxt(C.dir)+' \u00b7 месяц</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+W.bars+'</div><span class="rp-gl" style="color:'+COL_W+'">климат '+W.total+'</span><span class="rp-gm" style="color:'+COL_W+'">'+dline(W)+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+Q.bars+'</div><span class="rp-gl" style="color:'+COL_Q+'">сейсмика '+Q.total+'</span><span class="rp-gm" style="color:'+COL_Q+'">'+dline(Q)+'</span></div>'
+    +'<div class="rp-g"><div class="rp-spark">'+C.bars+'</div><span class="rp-gl" style="color:'+COL_C+'">криосфера '+cc.length+'</span><span class="rp-gm" style="color:'+COL_C+'">'+(cc.length!==C.total?('новых за '+per(C.days)+': '+C.total+' \u00b7 '):'')+dline(C).replace(/ \u00b7 [^\u00b7]+$/,'')+'</span></div>'
     +'</div>';
 };
 
