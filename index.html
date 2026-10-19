@@ -2218,6 +2218,27 @@ function showDetail(ev) {
 document.getElementById('z-in').onclick  = () => map.zoomIn();
 document.getElementById('z-out').onclick = () => map.zoomOut();
 document.getElementById('z-reset').onclick = () => map.flyTo([20, 10], 2, {duration: 0.8});
+// 19.10.2026. Булавка по ссылке: ?pin=50.7287,2.3665&label=Ренескюр&z=8
+// Голубая метка для скриншотов и материалов. Без параметра ничего не меняется.
+(function(){
+  try{
+    var u=new URLSearchParams(location.search), p=(u.get('pin')||'').split(',');
+    var la=parseFloat(p[0]), ln=parseFloat(p[1]);
+    if(!isFinite(la)||!isFinite(ln)||Math.abs(la)>85||Math.abs(ln)>180) return;
+    var z=parseInt(u.get('z')||'8',10); if(!isFinite(z)) z=8; z=Math.max(2,Math.min(10,z));
+    var lbl=(u.get('label')||'').slice(0,60).replace(/[<>&"]/g,'');
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="34" height="46" viewBox="0 0 34 46">'
+      +'<path d="M17 1C8.2 1 1 8.1 1 16.9 1 28.6 17 45 17 45s16-16.4 16-28.1C33 8.1 25.8 1 17 1z" fill="#3B9EFF" stroke="#E8F4FF" stroke-width="2"/>'
+      +'<circle cx="17" cy="17" r="6" fill="#E8F4FF"/></svg>';
+    var html='<div style="position:relative;width:34px;height:46px;filter:drop-shadow(0 0 10px rgba(59,158,255,.75))">'+svg
+      +(lbl?'<div style="position:absolute;left:50%;top:-30px;transform:translateX(-50%);white-space:nowrap;padding:3px 10px;border-radius:6px;'
+        +'background:rgba(6,5,10,.85);border:1px solid rgba(59,158,255,.6);color:#E8F4FF;font:600 13px Montserrat,sans-serif;letter-spacing:.02em">'+lbl+'</div>':'')+'</div>';
+    var icon=L.divIcon({className:'atlas-pin',html:html,iconSize:[34,46],iconAnchor:[17,45]});
+    var place=function(){ try{ map.setView([la,ln],z,{animate:false}); }catch(_){} };
+    L.marker([la,ln],{icon:icon,interactive:false,zIndexOffset:10000}).addTo(map);
+    place(); setTimeout(place,1500); setTimeout(place,4000);
+  }catch(_e){}
+})();
 (function(){ var ob=document.getElementById('overlay-toggle'), om=document.getElementById('overlay-menu');
   if(ob&&om){ ob.onclick=function(e){ e.stopPropagation(); om.classList.toggle('open'); };
     om.querySelectorAll('.bb').forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); try{ if(window._setOverlaySource) window._setOverlaySource(b.getAttribute('data-ovs'), b.getAttribute('data-ov')==='on'); }catch(_){} om.classList.remove('open'); }; });
