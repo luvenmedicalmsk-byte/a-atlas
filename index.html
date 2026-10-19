@@ -1256,6 +1256,10 @@ html,body{overscroll-behavior-y:contain}
 .grdf-screen-title{font-size:15px;font-weight:600;color:#f1f5f9;font-family:'Montserrat',sans-serif}
 .grdf-screen-x{position:absolute;top:44px;right:12px;z-index:6;cursor:pointer;color:rgba(255,255,255,0.32);font-size:15px;line-height:1;padding:8px}
 .grdf-screen-x:hover{color:#D4AF5A}
+/* 19.10.2026. «Риски»: закреплённый верх и строка предупреждений под ним */
+#ga-top{position:sticky;top:0;z-index:6;background:#06050a;box-shadow:0 -42px 0 0 #06050a}
+#ga-top .grdf-screen-x{top:2px}
+#ga-warn-head{position:sticky;top:var(--ga-top-h,0px);z-index:5;background:#06050a}
 @media(max-width:100000px){
   #grdf-warnings-screen,#grdf-countries-screen,#grdf-analytics-screen,#grdf-signals-screen,#grdf-alerts-screen{display:block;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
   #grdf-warnings-screen.visible,#grdf-countries-screen.visible,#grdf-analytics-screen.visible,#grdf-signals-screen.visible,#grdf-alerts-screen.visible{transform:translateX(0);pointer-events:all}
@@ -4152,6 +4156,23 @@ window._grdfDisasterEnsure=function(){
     }
   });
 
+})();
+
+// 19.10.2026. Высота закреплённого верха «Рисков» меняется (графики, перенос
+// вкладок на узком экране), поэтому отступ строки «Предупреждения» считается
+// по факту, а не задаётся числом.
+(function(){
+  function setH(){
+    var t=document.getElementById('ga-top'), sc=document.getElementById('grdf-alerts-screen');
+    if(t && sc) sc.style.setProperty('--ga-top-h', t.offsetHeight + 'px');
+  }
+  function init(){
+    var t=document.getElementById('ga-top'); if(!t) return;
+    setH();
+    if(window.ResizeObserver){ try{ new ResizeObserver(setH).observe(t); }catch(e){} }
+    window.addEventListener('resize', setH);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
 // === КРИОСФЕРА в «Рисках» ===
@@ -9345,6 +9366,11 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
 
 <!-- Алерты: землетрясения + экстремальная погода -->
 <div id="grdf-alerts-screen">
+  <!-- 19.10.2026. Верх экрана «Риски» закреплён: заголовок, графики и вкладки
+       остаются на месте, прокручиваются только карточки. Строка
+       «Предупреждения» закрепляется сразу под ним (её отступ - высота верха,
+       считается в скрипте ниже). -->
+  <div id="ga-top">
   <span class="grdf-screen-x" onclick="grdfNavTo('map')">✕</span>
   <div class="grdf-screen-head"><div class="grdf-screen-title">Риски</div></div>
   <div id="grdf-risk-pulse"></div>
@@ -9352,6 +9378,7 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
     <button class="ga-tab" data-tab="weather" onclick="grdfAlertsTab('weather')">Экстремальная погода</button>
     <button class="ga-tab" data-tab="quakes" onclick="grdfAlertsTab('quakes')">Землетрясения</button>
     <button class="ga-tab" data-tab="cryo" onclick="grdfAlertsTab('cryo')">Криосфера</button>
+  </div>
   </div>
   <!-- 24.09.2026. Официальные предупреждения были четвёртой вкладкой, теперь
        это постоянная полоса над содержимым вкладок. Причина: предупреждение
