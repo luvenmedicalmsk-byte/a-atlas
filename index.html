@@ -1260,6 +1260,9 @@ html,body{overscroll-behavior-y:contain}
 #ga-top{position:sticky;top:0;z-index:6;background:#06050a;box-shadow:0 -42px 0 0 #06050a}
 #ga-top .grdf-screen-x{top:2px}
 #ga-warn-head{position:sticky;top:var(--ga-top-h,0px);z-index:5;background:#06050a}
+/* 19.10.2026. «События»: закреплённый верх, прокручивается только лента */
+#gs-top{position:sticky;top:0;z-index:6;background:#06050a;box-shadow:0 -42px 0 0 #06050a}
+#gs-top .grdf-screen-x{top:2px}
 @media(max-width:100000px){
   #grdf-warnings-screen,#grdf-countries-screen,#grdf-analytics-screen,#grdf-signals-screen,#grdf-alerts-screen{display:block;transform:translateX(100%);transition:transform .3s ease;pointer-events:none}
   #grdf-warnings-screen.visible,#grdf-countries-screen.visible,#grdf-analytics-screen.visible,#grdf-signals-screen.visible,#grdf-alerts-screen.visible{transform:translateX(0);pointer-events:all}
@@ -9346,6 +9349,10 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
 
 <!-- S36.1: Signals feed screen (same source as map: ALL_EVENTS) -->
 <div id="grdf-signals-screen">
+  <!-- 19.10.2026. Верх экрана «События» закреплён, как в «Рисках»: заголовок,
+       вкладки «Хронология · Процессы · Система», пояснение, домены и
+       «Оперативная лента · Контекст» остаются на месте, прокручивается лента. -->
+  <div id="gs-top">
   <span class="grdf-screen-x" onclick="grdfNavTo('map')">✕</span>
   <div class="grdf-screen-head"><div class="grdf-screen-title">События</div><span style="font-size:10px;color:rgba(148,163,184,0.5)" id="grdf-sig-count"></span></div>
   <div style="padding:2px 16px 9px;font-size:10px;line-height:1.45;color:rgba(148,163,184,0.85);font-family:Montserrat,sans-serif">Индекс риска (0–100) отражает масштаб и потенциальные последствия события.<details style="margin-top:6px"><summary style="cursor:pointer;color:rgba(184,151,58,0.85);list-style:none;outline:none">▾ Как рассчитывается риск события?</summary><div style="margin-top:6px;display:grid;grid-template-columns:auto 1fr;gap:2px 8px;align-items:center"><span style="color:#E24A3B;font-weight:600">90–100</span><span>Критический — максимальный уровень угрозы</span><span style="color:#FFD700;font-weight:600">75–89</span><span>Высокий риск — очень высокая опасность</span><span style="color:#FFA07A;font-weight:600">60–74</span><span>Повышенный риск — значимое влияние</span><span style="color:#A89150;font-weight:600">40–59</span><span>Средний риск — ограниченное влияние</span><span style="color:#D8D8D8;font-weight:600">0–39</span><span>Низкий риск — локальные последствия</span></div><div style="margin-top:6px;line-height:1.45">Индекс отражает масштаб возможных последствий, а не только количество пострадавших.</div></details></div>
@@ -9360,6 +9367,7 @@ body:not(.atlas-admin) #grdf-nav-system{display:none !important}
   <div id="grdf-sic-switch" class="grdf-sig-filters" style="padding-top:0;border-top:0.5px solid rgba(184,151,58,0.08)">
     <button class="grdf-sig-pill active" data-view="operational">Оперативная лента</button>
     <button class="grdf-sig-pill" data-view="context">Контекст</button>
+  </div>
   </div>
   <div id="grdf-sig-feed"></div>
 </div>
@@ -15304,7 +15312,7 @@ function _fGeoPending(s){ var f=_fSt(s); return f.geo_resolution==='pending'||_f
       head.insertAdjacentElement('afterend', tg);
     }
     if(!document.getElementById('grdf-proc-desc')){
-      var expl=null; Array.prototype.forEach.call(screen.children,function(c){ if(!expl && c.textContent && c.textContent.indexOf('Индекс риска')>=0 && !c.classList.contains('grdf-screen-head')) expl=c; });
+      var expl=null; Array.prototype.forEach.call((document.getElementById('gs-top')||screen).children,function(c){ if(!expl && c.textContent && c.textContent.indexOf('Индекс риска')>=0 && !c.classList.contains('grdf-screen-head')) expl=c; });
       var pd=document.createElement('div'); pd.id='grdf-proc-desc';
       pd.style.cssText='padding:6px 16px 11px;font-size:10.5px;line-height:1.5;color:rgba(148,163,184,0.85);font-family:Montserrat,sans-serif;display:none';
       pd.textContent='Atlas объединяет связанные события в единые процессы, отображая их развитие, динамику и накопление риска во времени.';
