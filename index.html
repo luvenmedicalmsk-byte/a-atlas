@@ -15488,7 +15488,7 @@ window.grdfSetMode=function(mode){
     blocks.sort(function(a,b){ return a.tier-b.tier || (b.rep.pressure||b.rep.priority||0)-(a.rep.pressure||a.rep.priority||0); });
     // ── СТАТИСТИКА по тем же правилам, что список (client-side → всегда совпадает) ──
     var tc=[0,0,0,0,0,0,0]; blocks.forEach(function(b){ tc[b.tier]++; });
-    var c=document.getElementById('grdf-sig-count'); if(c) c.textContent=blocks.length+' процессов';
+    var c=document.getElementById('grdf-sig-count'); if(c) c.textContent=blocks.filter(function(b){return b.tier!==5&&b.tier!==6;}).length+' процессов';
     var g=_data.global_health||{};
     var gp=(g.global_pressure!=null)?Math.round(g.global_pressure):(blocks[0]?Math.round(blocks[0].rep.pressure||0):0);
     var pc=g.pressure_change_pct;
@@ -15502,12 +15502,13 @@ window.grdfSetMode=function(mode){
     // ── РЕНДЕР: секции по тиру → карточки типа (главный процесс + раскрытие проявлений) ──
     var html=dash;
     // ── ADR-025 Этап2: единая шапка над obs/det (одна гипотеза, стадии внутри) ──
-    var _hypN=(tc[5]||0)+(tc[6]||0);
+    /* 31.10.2026: блок «Аналитические гипотезы» (наблюдение/обнаружение перехода) скрыт по решению продукта. */
+    var _hypN=0;
     if(_hypN>0){ var _hw=(_hypN===1?'активная':(_hypN%10>=2&&_hypN%10<=4&&(_hypN<10||_hypN>20)?'активные':'активных'));
       html+='<div style="padding:17px 14px 1px;font-size:10.5px;font-weight:700;font-family:Montserrat,sans-serif;letter-spacing:0.16em;text-transform:uppercase;color:#D4AF5A">Аналитические гипотезы · '+_hypN+' '+_hw+'</div>'
         +'<div style="padding:0 14px 4px;font-size:11px;color:rgba(148,163,184,0.6)">Один жизненный цикл: наблюдение → обнаружение перехода</div>'; }
     // ADR-024 Phase2: слой наблюдений/обнаружения — НАВЕРХ, перед кризисными
-    var _tierOrder=[5,6,0,1,2,3,4];
+    var _tierOrder=[0,1,2,3,4];
     for(var _oi=0;_oi<_tierOrder.length;_oi++){ var ti=_tierOrder[_oi];
       var bl=blocks.filter(function(b){return b.tier===ti;});
       if(!bl.length) continue;
