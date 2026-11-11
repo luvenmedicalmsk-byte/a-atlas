@@ -1142,6 +1142,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#06050A;font-family:
    flex:1 с min-width:0 даёт равные доли: пять кнопок делят строку
    без прокрутки. Разрядка и отступы уменьшены, иначе «События»
    и «Прогноз» не помещаются на узком экране. */
+.ctab-head{position:sticky;top:0;z-index:7;background:#06050A;padding-top:6px}
+.ctab-head .ctab-nav{position:static}
 .ctab-nav{display:flex;gap:4px;padding:10px 12px 12px;position:sticky;top:0;z-index:6;
   background:#06050A;border-bottom:0.5px solid rgba(184,151,58,.16)}
 .ctab-btn{flex:1 1 0;min-width:0;background:transparent;
@@ -12226,14 +12228,16 @@ function grdfRenderCountryPanel(cc) {
   }catch(_e){}
   // Пять контейнеров плюс навигация. ОБЗОР активен: новая страна
   // всегда открывается с состояния, а не наследует вкладку прошлой.
-  html = _T.ov
+  // 11.11.2026. Шапка страны (индексы GRI/EWS/CRI и вкладки) закреплена:
+  // при прокрутке остаётся сверху, уходит только содержимое вкладки.
+  html = '<div class="ctab-head">' + _T.ov
     + '<div class="ctab-nav">'
     +   '<button class="ctab-btn on" data-ctab="ov" onclick="_ctabGo(\'ov\')">Обзор</button>'
     +   '<button class="ctab-btn" data-ctab="ri" onclick="_ctabGo(\'ri\')">Риски</button>'
     +   '<button class="ctab-btn" data-ctab="ev" onclick="_ctabGo(\'ev\')">События</button>'
     +   '<button class="ctab-btn" data-ctab="fc" onclick="_ctabGo(\'fc\')">Прогноз</button>'
     +   '<button class="ctab-btn" data-ctab="re" onclick="_ctabGo(\'re\')">Архив</button>'
-    + '</div>'
+    + '</div></div>'
     + '<div class="ctab-pane on" data-ctab="ov">' + _T.ovBody + '</div>'
     + '<div class="ctab-pane" data-ctab="ri">' + _T.ri + '</div>'
     + '<div class="ctab-pane" data-ctab="ev">' + _T.ev + '</div>'
@@ -12266,6 +12270,8 @@ function grdfRenderCountryPanel(cc) {
     try{ window._renderCountryLocal(c); }catch(_e){}
     if(isSig){ try{ _grdfLoadHistory(c.country); }catch(e){} }
     _csEl.scrollTop = 0;       // reset AFTER setting content (point 5)
+    // Якоря внутри вкладок не прячутся под закреплённой шапкой.
+    try{ var _ch=_csEl.querySelector('.ctab-head'); if(_ch) _csEl.style.scrollPaddingTop=_ch.offsetHeight+'px'; }catch(_e){}
   }
 }
 
