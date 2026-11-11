@@ -9805,7 +9805,11 @@ function _ruStale(ds){
     + '</div>';
 }
 var _RU_W = [1.2,1,0.8,1.1,0.9];
-function _ruOkrIdx(r){
+function _ruOkrIdx(r, P){
+  // 11.11.2026. Профиль с idxMode 'stored' показывает индекс, записанный в
+  // строке (r[7]), а не средневзвешенное по доменам: так индекс страны
+  // совпадает с комплексным профилем во вкладке «Риски» (Греция, 61).
+  if (P && P.idxMode === 'stored' && typeof r[7] === 'number') return r[7];
   var t = 0, w = 0;
   for (var i = 0; i < 5; i++){ t += r[i+2] * _RU_W[i]; w += _RU_W[i]; }
   return Math.round(t / w);
@@ -9894,7 +9898,7 @@ function _ruProfileHtml(c, isSig){
     // TASK-241: значение в шапке выводится из строки «Россия в целом», а не
     // вбито числом. До правки 67 стояло литералом в трёх местах подряд и не
     // было связано ни со строкой РФ, ни с округами.
-    var _ruTop = _ruOkrIdx(P.okr[P.okr.length-1]);
+    var _ruTop = _ruOkrIdx(P.okr[P.okr.length-1], P);
     o += '<div style="'+W+'">'
       +  '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:7px">'
       +  '<div style="flex:1"><div style="'+H+';margin-bottom:4px">Комплексный профиль риска</div>'
@@ -9943,7 +9947,7 @@ function _ruProfileHtml(c, isSig){
       +  '<td style="padding:6px 5px;color:#E8E0D0;font-weight:600;white-space:nowrap">Индекс</td>';
     P.okr.forEach(function(r, ix){
       var last = ix === P.okr.length-1;
-      var _ix = _ruOkrIdx(r);
+      var _ix = _ruOkrIdx(r, P);
       o += '<td style="padding:6px 2px;text-align:center;font-weight:600;font-size:13px;color:'+_ruCol(_ix)
         +  (last?';background:rgba(184,151,58,.05)':'')+'">'+_ix
         +  '<div style="font-size:8px;font-weight:400;color:rgba(148,163,184,.7);line-height:1">'+(r[8]==='up'?'\u2191':r[8]==='down'?'\u2193':'\u2192')+'</div></td>';
